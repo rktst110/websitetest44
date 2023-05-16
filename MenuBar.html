@@ -144,7 +144,7 @@ body {
   <a href="#news">News</a>
   <a href="#contact">Contact</a>
   <a href="#about">About</a>
- <a href="javascript:void(0);" class="icon" onclick="myFunction()">&#9776;</a>
+ <a href="javascript:void(0);" class="icon" onclick="var x = document.getElementById('myTopnav'); if (x.className === 'topnav') {  x.className += ' responsive';  } else {  x.className = 'topnav'; }">&#9776;</a>
 </div>
 
 <div id="mySidenav" class="sidenav">
@@ -158,6 +158,7 @@ body {
 <br/>
 
 <script>
+
 function myFunction() {
   var x = document.getElementById("myTopnav");
   if (x.className === "topnav") {
