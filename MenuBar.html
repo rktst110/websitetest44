@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
 body {
   margin: 0;
@@ -98,44 +97,65 @@ body {
   .sidenav {padding-top: 15px;}
   .sidenav a {font-size: 18px;}
 }
+
+* {
+  box-sizing: border-box;
+}
+.column1 {
+  float: left;
+  width: 29.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.column2 {
+  float: left;
+  width: 69.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+@media screen and (max-width: 600px) {
+  .column1 {
+    width: 100%;
+  }
+  .column2 {
+    width: 100%;
+  }
+}
 </style>
 </head>
-<body>
+<body style="background-color: #555;">
 
 <div class="topnav" id="myTopnav">
-<a style="font-size:17px;cursor:pointer;color:white;" onclick="openNav()">&#9776;</a>
+<a style="font-size:17px;cursor:pointer;color:white;" onclick="document.getElementById('mySidenav').style.width = '250px';">&#9776;</a>
  <a href="#home" class="active">Home</a>
   <a href="#news">News</a>
   <a href="#contact">Contact</a>
   <a href="#about">About</a>
-  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
-    <i class="fa fa-bars"></i>
-  </a>
+ <a href="javascript:void(0);" class="icon" onclick="myFunction()">&#9776;</a>
 </div>
 
 <div id="mySidenav" class="sidenav">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <a href="javascript:void(0)" class="closebtn" onclick="document.getElementById('mySidenav').style.width = '0';">&times;</a>
   <a href="#">About</a>
   <a href="#">Services</a>
   <a href="#">Clients</a>
   <a href="#">Contact</a>
 </div>
 
-
-<script>
-function openNav() {
-  document.getElementById("mySidenav").style.width = "250px";
-}
-
-function closeNav() {
-  document.getElementById("mySidenav").style.width = "0";
-}
-</script>
-
-<div style="padding-left:16px">
-  <h2>Responsive Topnav Example</h2>
-  <p>Resize the browser window to see how it works.</p>
-</div>
+<br/>
 
 <script>
 function myFunction() {
@@ -147,6 +167,17 @@ function myFunction() {
   }
 }
 </script>
+
+<!--Content Start From Here-->
+<div class="row">
+  <div class="column1" style="background-color:#aaa;">
+    <h2>Column 1</h2>
+    </div>
+  <div class="column2" style="background-color:#bbb;">
+    <h2>Column 2</h2>
+  </div>
+</div>
+<!--Content Ends Here-->
 
 </body>
 </html>
