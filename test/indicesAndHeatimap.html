@@ -1,0 +1,214 @@
+ <script src="importFiles.js"></script>
+ <script src="firebase.js"></script>
+ <div id="importedContent"></div>
+ 
+ <title>Indices + HeatMap</title>
+ 
+ 
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+}
+
+* {
+  box-sizing: border-box;
+}
+.column1 {
+  float: left;
+  width: 29.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.column2 {
+  float: left;
+  width: 69.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+@media screen and (max-width: 600px) {
+  .column1 {
+    width: 100%;
+  }
+  .column2 {
+    width: 100%;
+  }
+}
+</style>
+
+
+ <label for="year">Month Year:</label>
+<select id="dataMonthYear" name="year" onchange="getFirestoreData()">
+</select>
+
+ <label for="year"> | Trading Date:</label>
+<select id="dataTradingDate" name="year" onchange="setSelector()">
+</select>
+
+ <label for="year"> | Indices TimeValues:</label>
+<select id="indicesTimeValues" name="year" onchange="getIndicesData()">
+</select>
+
+
+<!--Content Start From Here-->
+<div class="row">
+  <div class="column1" style="background-color:#aaa;">
+    <h2>Column 1</h2>
+    </div>
+  <div class="column2" style="background-color:#bbb;">
+    <h2>Column 2</h2>
+  </div>
+</div>
+<!--Content Ends Here-->
+
+  <div id="firebaseData"></div>
+
+    
+ <script>
+	var dataTemp ;
+    
+    
+    
+    function getFirestoreData()
+	{
+	document.getElementById('firebaseData').innerHTML = ""
+	var monthYearCollection = document.getElementById('dataMonthYear').value
+    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+    //var usersRef = db.collection('May 2023')  
+    var usersRef = db.collection(monthYearCollection)  
+
+	
+    // Retrieve all documents in the 'users' collection
+    usersRef.get()
+      .then(function(querySnapshot) {
+      dataTemp = querySnapshot 
+      //console.log( querySnapshot );
+	  
+
+	   const selectElement = document.getElementById("dataTradingDate");
+	   selectElement.innerHTML = '<option>Select</option>'
+        querySnapshot.forEach(function(doc) {
+
+          //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
+          //console.log(doc.id, " => ", doc.data());
+		  firestoreIndexObj [doc.id] = doc.data()
+		  const optionElement = document.createElement("option");
+    optionElement.text = doc.id;
+    selectElement.add(optionElement);
+	
+        });
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+	}
+    
+ 
+ function generateMonthYearFromDate(startDate) {
+  const currentDate = new Date();
+  const months = [];
+
+  // Helper function to format the month and year as a string
+  function formatDate(date) {
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June", 
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const monthIndex = date.getMonth();
+    const year = date.getFullYear();
+    return monthNames[monthIndex] + " " + year;
+  }
+
+  // Loop through each month from startDate to currentDate
+  let currentDateTemp = new Date(startDate.getTime());
+  while (currentDateTemp <= currentDate) {
+    months.push(formatDate(currentDateTemp));
+    currentDateTemp.setMonth(currentDateTemp.getMonth() + 1);
+  }
+
+  // Add the options to the select element
+  const selectElement = document.getElementById("dataMonthYear");
+  for (let i = 0; i < months.length; i++) {
+    const optionElement = document.createElement("option");
+    optionElement.text = months[i];
+    selectElement.add(optionElement);
+  }
+}
+
+// Example usage: generate month and year from January 2022 till now
+//const startDate = new Date(2022, 0, 1); // January 1st, 2022
+generateMonthYearFromDate( new Date("March 2023") );
+
+
+function setSelector()
+{
+	var tradingDate = document.getElementById('dataTradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+
+const selectElement = document.getElementById("indicesTimeValues");
+selectElement.innerHTML = '<option>Select</option>'
+  for (let i = 0; i < timeValuesArray.length; i++) {
+    const optionElement = document.createElement("option");
+    optionElement.text = timeValuesArray[i];
+    selectElement.add(optionElement);
+  }
+
+}
+
+var dataPointsArray = []
+function getIndicesData()
+{
+	var selectedMonthYear = document.getElementById('dataMonthYear').value
+	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+
+	document.getElementById('firebaseData').innerHTML = ""
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	
+    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+    var usersRef = db.doc( docPath );
+    //var usersRef = db.collection('May 2023')  
+    //var usersRef = db.collection(monthYearCollection)  
+
+	
+	dataPointsArray = []
+    // Retrieve all documents in the 'users' collection
+    usersRef.get()
+      .then(function(doc) {
+      dataTemp = doc 
+      //console.log( querySnapshot );
+	  //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
+   
+   for( var indices in JSON.parse(dataTemp.data()['data'])['data'] )
+   {
+   dataPointsArray.push(
+		{ 'y': JSON.parse(dataTemp.data()['data'])['data'][indices]['percentChange'], 'label': indices }
+   )
+   }
+   
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+
+showIndices ( dataPointsArray )
+}
+
+
+ </script>
+ 
