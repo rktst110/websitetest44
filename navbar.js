@@ -4,5 +4,6 @@ xhttp.onreadystatechange = function() {
     document.getElementById("navbar").innerHTML = this.responseText;
   }
 };
-xhttp.open("GET", "navbar.html", true);
+//xhttp.open("GET", "navbar.html", true);
+xhttp.open("GET", "MenuBar.html", true);
 xhttp.send();
