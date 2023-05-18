@@ -16,7 +16,7 @@
         document.getElementById('csvContent').innerText = content;
       })
       .catch(error => {
-        console.log('Error fetching the CSV file:', error);
+        document.getElementById('csvContent').innerText = ('Error fetching the CSV file:', error);
       });
   </script>
 </body>
