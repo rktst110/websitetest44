@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,16 +7,30 @@
   <div id="csvContent"></div>
 
   <script>
-    const url = 'https://archives.nseindia.com/products/content/sec_bhavdata_full_17052023.csv';
+    function handleFile(file) {
+      const reader = new FileReader();
 
-    fetch(url)
-      .then(response => response.text())
-      .then(content => {
+      reader.onload = function(event) {
+        const content = event.target.result;
         document.getElementById('csvContent').innerText = content;
-      })
-      .catch(error => {
-        document.getElementById('csvContent').innerText = ('Error fetching the CSV file:', error);
-      });
+      };
+
+      reader.readAsText(file);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const url = 'https://archives.nseindia.com/products/content/sec_bhavdata_full_17052023.csv';
+
+      fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+          const file = new File([blob], 'sec_bhavdata_full_17052023.csv');
+          handleFile(file);
+        })
+        .catch(error => {
+          console.log('Error fetching the CSV file:', error);
+        });
+    });
   </script>
 </body>
 </html>
