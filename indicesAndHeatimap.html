@@ -1,0 +1,719 @@
+
+<!-- Importing Firebase SDK Starts Here-->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+ <!-- Importing Firebase SDK Ends Here-->
+ 
+ <script src="importFiles.js"></script>
+ <script src="firebase.js"></script>
+ <div id="importedContent"></div>
+ 
+ <title>Indices + HeatMap</title>
+ 
+ 
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+}
+
+* {
+  box-sizing: border-box;
+}
+.column1 {
+  float: left;
+  width: 29.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.column2 {
+  float: left;
+  width: 69.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+@media screen and (max-width: 600px) {
+  .column1 {
+    width: 100%;
+  }
+  .column2 {
+    width: 100%;
+  }
+}
+</style>
+
+
+ <label for="year">Month Year:</label>
+<select id="dataMonthYear" onchange="getFirestoreData()">
+</select>
+
+ <label for="year"> | Trading Date:</label>
+<select id="dataTradingDate" onchange="setSelector()">
+</select>
+
+
+ <label for="year"> | Common TimeValues:</label>
+<select id="commonTimeValues" onchange="saveSelectedValues();fetchDataForAllSegments()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+<button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
+<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
+
+<hr>
+
+ <label for="year"> | Indices TimeValues:</label>
+<select id="indicesTimeValues" name="year" onchange="getIndicesData()">
+</select>
+
+
+<!--Content Start From Here-->
+<div class="row">
+  <div class="column1" style="background-color:#aaa;">
+   <!--  <h2>Column 1</h2> -->
+   <!-- <div id="IndicesPerformanceChart" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div> -->
+   <!-- <div id="chartContainer" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div>   -->
+<div id="IndicesPerformanceChart" style="min-height: 500px; height: auto;width: 100%;"></div>
+
+
+    </div>
+  <div class="column2" style="background-color:#bbb;">
+   <!--  <h2>Column 2</h2> -->
+	
+<figure class="highcharts-figure">
+    <div id="container"></div>
+</figure>
+
+  </div>
+</div>
+<!--Content Ends Here-->
+
+  <div id="firebaseData"></div>
+
+
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<script>
+function saveSelectedValues()
+{
+
+	var selectedMonthYear = document.getElementById('dataMonthYear').value
+	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	var selectedCommonTimeValues = document.getElementById('commonTimeValues').value
+	var selectedValuesObj = {
+	"selectedMonthYear":selectedMonthYear,
+	"selectedTradingDate": selectedTradingDate,
+	"selectedCommonTimeValues":selectedCommonTimeValues,
+	}
+	localStorage.setItem( 'selectedValues', JSON.stringify(selectedValuesObj) )
+
+}
+
+function setSavedSelectedTimeValues()
+{
+	var savedSelectedValues = JSON.parse( localStorage.getItem( 'selectedValues' ) )
+	document.getElementById('dataMonthYear').value = savedSelectedValues["selectedMonthYear"]
+	document.getElementById('dataTradingDate').value = savedSelectedValues["selectedTradingDate"]
+	
+	setSelector()
+	document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
+	
+}
+
+function fetchDataForAllSegments()
+{
+getIndicesData( "useCommonTimeValues" );
+}
+</script>
+
+<script>
+	
+	
+async function showIndicesPerformanceChart ( returnedDataObj )
+{
+	
+	//var selectedValue = document.getElementById("indices_performance_time").value;
+		
+	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
+	var indicesPerformanceObject = returnedDataObj ['data']
+		
+	var dataPointsArray=[]
+	var dataPointsArrayAdvances=[]
+	var dataPointsArrayDeclines=[]
+	var dataPointsArrayUnchanged=[]
+	var dataPointsArrayPChangeAddition=[]
+	
+	var tempObj={}
+	for (var symbol in indicesPerformanceObject) {
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY PSU BANK' && symbol !='NIFTY PVT BANK' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+			
+		{
+		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+		}
+	}
+	
+// tempObj is sorted by this code
+//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=symbol.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=symbol
+}
+	
+		temp["y"]=tempObj[symbol]; 
+		if(tempObj[symbol]<0) 
+		{
+			temp["color"]="#cd5652"
+		}
+		else if(tempObj[symbol]>0) 
+		{
+			temp["color"]="#3a7dd4"
+		}
+		else if(tempObj[symbol]==0) 
+		{
+			temp["color"]="black"
+		}
+		
+		dataPointsArray.push(temp)
+	});
+	
+/*
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][9]; 
+		temp["color"]="#089981"
+			
+		dataPointsArrayAdvances.push(temp)
+		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
+	});
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][10]; 
+		temp["color"]="#cd5652"
+		
+	
+		
+		dataPointsArrayDeclines.push(temp)
+		
+	});	
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][11]; 
+	
+		temp["color"]="#cbba4d"
+		
+		
+		dataPointsArrayUnchanged.push(temp)
+	});
+	
+	*/
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+	animationEnabled: false,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			//text: selectedValue+' | '+ mainOIDataObject['Date'],
+			verticalAlign: "top",
+
+			 horizontalAlign: "right",
+	
+			 //fontSize: 15,
+			 fontSize: 10,
+			dockInsidePlotArea: true
+	}],
+	
+	toolTip: {
+			//fontSize: 19,
+			fontSize: 15,
+	},
+	axisY: {
+		//title: "Growth Rate (in %)",
+		//includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.1,
+		//labelFontSize: 18,
+		labelFontSize: 11, // bottom size for change%
+	},
+	axisX: {
+		interval: 1,
+		//title: "Countries"
+		includeZero: true,
+		 //labelFontSize: 17,
+		 labelFontSize: 11, // vertical axis size for text
+		 //labelFontWeight: "bold",
+	},
+	dataPointWidth: 9,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		//click: onClick,
+		//type: "column",
+		type: "bar",
+		yValueFormatString: "#,##0.0#\"%\"",
+		dataPoints: dataPointsArray
+	}]
+});
+
+
+
+chart.render();
+//chart2.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+	
+function showIndices ( dataPointsArray ) {
+
+var chart = new CanvasJS.Chart("chartContainer", {
+	animationEnabled: true,
+	theme: "light2", // "light1", "light2", "dark1", "dark2"
+	title:{
+		
+	},
+	axisY: {
+		
+	},
+	data: [{        
+		type: "bar",  
+		
+		legendMarkerColor: "grey",
+		
+		dataPoints: dataPointsArray
+	}]
+});
+chart.render();
+
+}
+
+</script>
+
+
+
+<style>
+.highcharts-figure,
+.highcharts-data-table table {
+  height: 500px;   
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid #ebebeb;
+    margin: 1px auto;
+    text-align: center;
+    width: 100%;
+	height: 500px;   
+}
+
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.highcharts-data-table th {
+    font-weight: 600;
+    padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+    padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+</style>
+
+<script>
+Highcharts.chart('container', {
+    colorAxis: {
+        minColor: '#FFFFFF',
+        maxColor: Highcharts.getOptions().colors[0]
+    },
+    series: [{
+        type: 'treemap',
+        layoutAlgorithm: 'squarified',
+        clip: false,
+        data: [{
+            name: 'A',
+            value: 6,
+            colorValue: 1
+        }, {
+            name: 'B',
+            value: 6,
+            colorValue: 2
+        }, {
+            name: 'C',
+            value: 4,
+            colorValue: 3
+        }, {
+            name: 'D',
+            value: 3,
+            colorValue: 4
+        }, {
+            name: 'E',
+            value: 2,
+            colorValue: 5
+        }, {
+            name: 'F',
+            value: 2,
+            colorValue: 6
+        }, {
+            name: 'G',
+            value: 1,
+            colorValue: 7
+        }]
+    }],
+    title: {
+        text: 'Highcharts Treemap'
+    }
+});
+
+</script>
+
+    
+ <script>
+	var dataTemp ;
+
+function getFirestoreData( passedValue, passedObj )
+	{
+
+	const selectElement = document.getElementById("dataTradingDate");
+	 selectElement.innerHTML = '<option>Select</option>'
+	 if( passedObj !=undefined && passedObj !="" )
+	 {
+		for( var tradingDate in passedObj )
+		{
+		const optionElement = document.createElement("option");
+		optionElement.text = tradingDate;
+		selectElement.add(optionElement);
+		}
+	 	
+	 }
+	 else
+	 {
+	var monthYearCollection = document.getElementById('dataMonthYear').value
+
+    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+    //var usersRef = db.collection('May 2023')  
+    var usersRef = db.collection(monthYearCollection)  
+
+	
+    // Retrieve all documents in the 'users' collection
+    usersRef.get()
+      .then(function(querySnapshot) {
+      dataTemp = querySnapshot 
+      //console.log( querySnapshot );
+	  
+
+	  
+        querySnapshot.forEach(function(doc) {
+
+          //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
+          //console.log(doc.id, " => ", doc.data());
+		  firestoreIndexObj [doc.id] = doc.data()
+		  const optionElement = document.createElement("option");
+    optionElement.text = doc.id;
+    selectElement.add(optionElement);
+	
+        });
+		localStorage.setItem( 'firestoreIndexObj', JSON.stringify(firestoreIndexObj) )
+	refreshOrLiveFirebaseData(passedValue)
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+	  }
+	  
+
+	  
+	}
+    
+	function refreshOrLiveFirebaseData(passedValue)
+	{
+	//console.log(passedValue)
+	
+	if( passedValue=="refresh" )
+	  {
+	  var savedSelectedValues = JSON.parse( localStorage.getItem( 'selectedValues' ) )
+	document.getElementById('dataMonthYear').value = savedSelectedValues["selectedMonthYear"]
+	document.getElementById('dataTradingDate').value = savedSelectedValues["selectedTradingDate"]
+	
+	setSelector()
+	document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
+	
+	  }
+	  else if( passedValue=="live" )
+	  {
+	  var savedSelectedValues = JSON.parse( localStorage.getItem( 'selectedValues' ) )
+	document.getElementById('dataMonthYear').value = savedSelectedValues["selectedMonthYear"]
+	document.getElementById('dataTradingDate').value = savedSelectedValues["selectedTradingDate"]
+	
+	setSelector()
+	document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
+	
+	
+	
+	  	var theSelect = document.getElementById('commonTimeValues');
+		var lastValue = theSelect.options[theSelect.options.length - 1].value;
+		document.getElementById("commonTimeValues").value = lastValue
+		
+		saveSelectedValues();
+		fetchDataForAllSegments();
+	  }
+	  
+	}
+
+function generateMonthYearFromDate(startDate) {
+  const currentDate = new Date();
+  const months = [];
+
+  // Helper function to format the month and year as a string
+  function formatDate(date) {
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June", 
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const monthIndex = date.getMonth();
+    const year = date.getFullYear();
+    return monthNames[monthIndex] + " " + year;
+  }
+
+  // Loop through each month from startDate to currentDate
+  let currentDateTemp = new Date(startDate.getTime());
+  while (currentDateTemp <= currentDate) {
+    months.push(formatDate(currentDateTemp));
+    currentDateTemp.setMonth(currentDateTemp.getMonth() + 1);
+  }
+
+  // Add the options to the select element
+  const selectElement = document.getElementById("dataMonthYear");
+  for (let i = 0; i < months.length; i++) {
+    const optionElement = document.createElement("option");
+    optionElement.text = months[i];
+    selectElement.add(optionElement);
+  }
+  
+/*
+  // Select the current month and year by default
+  const currentMonthYear = formatDate(currentDate);
+  selectElement.value = currentMonthYear;
+  */
+
+  if( localStorage.getItem( 'firestoreIndexObj' ) !=undefined )
+  {
+	firestoreIndexObj = JSON.parse( localStorage.getItem( 'firestoreIndexObj' ) )
+	getFirestoreData( "", firestoreIndexObj )
+	
+	setSavedSelectedTimeValues()
+	fetchDataForAllSegments()
+  }
+}
+
+// Example usage: generate month and year from January 2022 till now
+//const startDate = new Date(2022, 0, 1); // January 1st, 2022
+generateMonthYearFromDate( new Date("April 2023") );
+
+
+function setSelector()
+{
+	var tradingDate = document.getElementById('dataTradingDate').value
+	var timeValuesArray 
+	if( firestoreIndexObj[ tradingDate ]['Index']['common_timeValues'] !=undefined )
+	{
+		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_timeValues']
+		// handle common time values
+	}
+	else
+	{
+		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+	}
+
+const selectElement = document.getElementById("indicesTimeValues");
+selectElement.innerHTML = '<option>Select</option>'
+  for (let i = 0; i < timeValuesArray.length; i++) {
+    const optionElement = document.createElement("option");
+    optionElement.text = timeValuesArray[i];
+    selectElement.add(optionElement);
+  }
+
+setIndicesSelectorTimeValues();
+}
+
+function setIndicesSelectorTimeValues()
+{
+	var tradingDate = document.getElementById('dataTradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+
+
+const selectElement = document.getElementById("commonTimeValues");
+selectElement.innerHTML = '<option>Select</option>'
+  for (let i = 0; i < timeValuesArray.length; i++) {
+    const optionElement = document.createElement("option");
+    optionElement.text = timeValuesArray[i];
+    selectElement.add(optionElement);
+  }
+
+}
+
+
+var dataPointsArray = []
+function getIndicesData2()
+{
+	var selectedMonthYear = document.getElementById('dataMonthYear').value
+	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+
+	document.getElementById('firebaseData').innerHTML = ""
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	
+    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+    var usersRef = db.doc( docPath );
+    //var usersRef = db.collection('May 2023')  
+    //var usersRef = db.collection(monthYearCollection)  
+
+	
+	dataPointsArray = []
+    // Retrieve all documents in the 'users' collection
+    usersRef.get()
+      .then(function(doc) {
+      dataTemp = doc 
+      //console.log( querySnapshot );
+	  //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
+   
+   for( var indices in JSON.parse(dataTemp.data()['data'])['data'] )
+   {
+   dataPointsArray.push(
+		{ 'y': JSON.parse(dataTemp.data()['data'])['data'][indices]['percentChange'], 'label': indices }
+   )
+   }
+   
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+
+showIndices ( dataPointsArray )
+}
+
+	var returnedDataObj;
+function getIndicesData( passedValue )
+{
+
+	var selectedMonthYear = document.getElementById('dataMonthYear').value
+	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	
+	var selectedIndicesTimeValues
+	if( passedValue == "useCommonTimeValues" )
+	{
+		selectedIndicesTimeValues = document.getElementById('commonTimeValues').value
+	}
+	else
+	{
+		selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	}
+	
+	
+
+	document.getElementById('firebaseData').innerHTML = ""
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	
+    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+    var usersRef = db.doc( docPath );
+    //var usersRef = db.collection('May 2023')  
+    //var usersRef = db.collection(monthYearCollection)  
+
+	
+	dataPointsArray = []
+    // Retrieve all documents in the 'users' collection
+    usersRef.get()
+      .then(function(doc) {
+      dataTemp = doc 
+      //console.log( querySnapshot );
+	  //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
+   returnedDataObj = JSON.parse(dataTemp.data()['data'])
+   showIndicesPerformanceChart ( returnedDataObj )
+   
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+
+
+}
+
+ </script>
+ 
