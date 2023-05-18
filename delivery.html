@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Display CSV Content</title>
+</head>
+<body>
+  <div id="csvContent"></div>
+
+  <script>
+    const url = 'https://archives.nseindia.com/products/content/sec_bhavdata_full_17052023.csv';
+
+    fetch(url)
+      .then(response => response.text())
+      .then(content => {
+        document.getElementById('csvContent').innerText = content;
+      })
+      .catch(error => {
+        console.log('Error fetching the CSV file:', error);
+      });
+  </script>
+</body>
+</html>
