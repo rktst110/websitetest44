@@ -152,7 +152,7 @@ getIndicesData( "useCommonTimeValues" );
 	
 async function showIndicesPerformanceChart ( returnedDataObj )
 {
-	
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
 	//var selectedValue = document.getElementById("indices_performance_time").value;
 		
 	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
@@ -176,7 +176,7 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 	
 // tempObj is sorted by this code
 //Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
-Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
 var temp={}
 if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
 //if(symbol !='NIFTY BANK')
@@ -276,14 +276,15 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 	subtitles: [{
 			//text: "Subtitle 1"
 		  },{
-			//text: selectedValue+' | '+ mainOIDataObject['Date'],
-			verticalAlign: "top",
+			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
+			//verticalAlign: "top",
 
-			 horizontalAlign: "right",
+			 //horizontalAlign: "right",
 	
 			 //fontSize: 15,
-			 fontSize: 10,
-			dockInsidePlotArea: true
+			 fontSize: 12,
+			//dockInsidePlotArea: true
+			dockInsidePlotArea: false
 	}],
 	
 	toolTip: {
@@ -319,35 +320,11 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 });
 
 
-
+console.log("dataPointsArray",dataPointsArray)
 chart.render();
 //chart2.render();
 
 } // showIndicesPerformanceChart ENDS HERE
-
-	
-function showIndices ( dataPointsArray ) {
-
-var chart = new CanvasJS.Chart("chartContainer", {
-	animationEnabled: true,
-	theme: "light2", // "light1", "light2", "dark1", "dark2"
-	title:{
-		
-	},
-	axisY: {
-		
-	},
-	data: [{        
-		type: "bar",  
-		
-		legendMarkerColor: "grey",
-		
-		dataPoints: dataPointsArray
-	}]
-});
-chart.render();
-
-}
 
 </script>
 
