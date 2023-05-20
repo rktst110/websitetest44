@@ -1,0 +1,1346 @@
+
+<!-- Importing Firebase SDK Starts Here-->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+ <!-- Importing Firebase SDK Ends Here-->
+ 
+ <script src="importFiles.js"></script>
+ <script src="firebase.js"></script>
+ <div id="importedContent"></div>
+ 
+ <title>Indices + HeatMap</title>
+ 
+ 
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+}
+
+* {
+  box-sizing: border-box;
+}
+.column1 {
+  float: left;
+  width: 29.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.column2 {
+  float: left;
+  width: 69.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+@media screen and (max-width: 600px) {
+  .column1 {
+    width: 100%;
+  }
+  .column2 {
+    width: 100%;
+  }
+}
+</style>
+
+
+ <label>Month Year:</label>
+<select id="dataMonthYear" onchange="getFirestoreData()">
+</select>
+
+ <label> | Trading Date:</label>
+<select id="dataTradingDate" onchange="setCommonSelectors()">
+</select>
+
+
+ <label> | Common TimeValues:</label>
+<select id="commonTimeValues" onchange="saveSelectedValues();fetchDataForAllSegments()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+<button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
+&nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
+
+<hr>
+
+ <label> Indices TimeValues:</label>
+<select id="indicesTimeValues" onchange="getIndicesData()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+ <label> Spurts TimeValues:</label>
+<select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
+</select>
+
+<!--Content Start From Here-->
+<div class="row">
+  <div class="column1" style="background-color:#aaa;">
+   <!--  <h2>Column 1</h2> -->
+   <!-- <div id="IndicesPerformanceChart" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div> -->
+   <!-- <div id="chartContainer" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div>   -->
+<div id="IndicesPerformanceChart" style="min-height: 500px; height: auto;width: 100%;"></div>
+
+
+    </div>
+  <div class="column2" style="background-color:#bbb;">
+   <!--  <h2>Column 2</h2> -->
+   
+<div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
+
+
+<!--  		<figure class="highcharts-figure">   <div id="container"></div></figure> 		-->
+
+  </div>
+</div>
+<!--Content Ends Here-->
+
+
+
+  <div id="firebaseData"></div>
+
+
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<script>
+function fetchDataForAllSegments()
+{
+setIndicesSelectorTimeValues( "syncWithCommonTime" );
+setSpurtsSelectorTimeValues( "syncWithCommonTime" )
+}
+</script>
+
+<!-- Common Code for all pages Starts Here -->
+<script>
+function saveSelectedValues()
+{
+
+	var selectedMonthYear = document.getElementById('dataMonthYear').value
+	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	var selectedCommonTimeValues = document.getElementById('commonTimeValues').value
+	var selectedValuesObj = {
+	"selectedMonthYear":selectedMonthYear,
+	"selectedTradingDate": selectedTradingDate,
+	"selectedCommonTimeValues":selectedCommonTimeValues,
+	}
+	localStorage.setItem( 'selectedValues', JSON.stringify(selectedValuesObj) )
+
+}
+
+function setSavedSelectedTimeValues()
+{
+	var savedSelectedValues = JSON.parse( localStorage.getItem( 'selectedValues' ) )
+	document.getElementById('dataMonthYear').value = savedSelectedValues["selectedMonthYear"]
+	document.getElementById('dataTradingDate').value = savedSelectedValues["selectedTradingDate"]
+	
+	setCommonSelectors()
+	document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
+	
+}
+
+function syncTimeValues( syncToTimeValuesArray, syncWith )
+{
+		//var selectedSymbolTime = document.getElementById("indicesTimeValues").value;
+		var syncWithTimeValue = syncWith;
+		
+		var syncedTimeValue;
+		var tempPreviousTime=""
+		//for (var timeValue in syncToTimeValues) {
+		for (var i=0;i<syncToTimeValuesArray.length;i++) {
+		var timeValue = syncToTimeValuesArray[i]
+			if( timeToMinutes(timeValue) == timeToMinutes(syncWithTimeValue) )
+			{
+				syncedTimeValue = timeValue
+				/*
+				document.getElementById("indices_performance_time").value = timeValue
+				  showIndicesPerformanceChart()
+				  */
+				break
+			}
+			else if( timeToMinutes(timeValue) > timeToMinutes(syncWithTimeValue) )
+			{
+				syncedTimeValue = tempPreviousTime
+				/*
+				document.getElementById("indices_performance_time").value = tempPreviousTime
+				 showIndicesPerformanceChart()
+				 */
+				break
+			}
+			else
+			{
+				tempPreviousTime=timeValue
+			}
+				
+		}
+		
+		
+		var previousTimeValue = syncToTimeValuesArray[ syncToTimeValuesArray.indexOf( syncedTimeValue )-1 ]
+		
+	return [syncedTimeValue, previousTimeValue];
+
+
+}
+
+function handleTimeValues( passedValue, timeValuesArray, selectElementRef, callBackFunction )
+{
+// this is common function which handles selectors timeValues. it takes some element references and call-back function references and then handle according to requirement
+
+	var commonTimeValues = document.getElementById("commonTimeValues").value;
+	//const selectElementRef = document.getElementById("commonTimeValues");
+	selectElementRef.innerHTML = '<option>Select</option>'
+  for (let i = 0; i < timeValuesArray.length; i++) {
+    var optionElement = document.createElement("option");
+    optionElement.text = timeValuesArray[i];
+    selectElementRef.add(optionElement);
+  }
+  
+  	if (passedValue=="last")
+	{
+	var lastValue = selectElementRef.options[selectElementRef.options.length - 1].value;
+	selectElementRef.value = lastValue
+	//showIndicesPerformanceChart()
+	}
+	else if (passedValue=="syncWithCommonTime")
+	{
+		
+		var syncedTimeValue = syncTimeValues( timeValuesArray, commonTimeValues )
+		selectElementRef.value = syncedTimeValue[0]
+		//console.log(commonTimeValues,syncedTimeValue)
+		if ( syncedTimeValue !=undefined )
+		{
+		//showIndicesPerformanceChart()
+		callBackFunction()
+		}
+
+	}
+}
+
+//Time to Minutes
+function timeToMinutes(hms) {
+
+	//var hms = '15:24:33';   // your input string
+	var a = hms.split(':'); // split it at the colons
+	// Hours are worth 60 minutes.
+	var minutes = (+a[0]) * 60 + (+a[1]);
+
+	////console.log(minutes + "," + ((+a[2]) / 60));
+	return minutes;
+}
+
+
+//Minutes to Time
+function minutesToTime(minutes) {
+
+	var format2 = (n) => `0${n / 60 ^ 0}`.slice(-2) + ':' + ('0' + n % 60).slice(-2)
+	////console.log(format2(601)) // "00:05"
+	//console.log(format2(minutes)) // "00:05"
+}
+
+
+</script>
+<!-- Common Code for all pages Ends Here -->
+
+
+<!-- Indices Code Starts Here -->
+<script>
+
+function setIndicesSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('dataTradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+	var selectElementRef = document.getElementById("indicesTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+}
+
+async function getIndicesData( passedValue )
+{
+	var selectedMonthYear = document.getElementById('dataMonthYear').value
+	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+
+}
+
+async function showIndicesPerformanceChart ( returnedDataObj )
+{
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	//var selectedValue = document.getElementById("indices_performance_time").value;
+		
+	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
+	var indicesPerformanceObject = returnedDataObj ['data']
+		
+	var dataPointsArray=[]
+	var dataPointsArrayAdvances=[]
+	var dataPointsArrayDeclines=[]
+	var dataPointsArrayUnchanged=[]
+	var dataPointsArrayPChangeAddition=[]
+	
+	var tempObj={}
+	for (var symbol in indicesPerformanceObject) {
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY PSU BANK' && symbol !='NIFTY PVT BANK' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+			
+		{
+		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+		}
+	}
+	
+// tempObj is sorted by this code
+//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
+Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
+var temp={}
+if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=symbol.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=symbol
+}
+	
+		//temp["y"]=tempObj[symbol]; 
+		temp["y"]= Math.abs( tempObj[symbol] ); 
+		if(tempObj[symbol]<0) 
+		{
+			temp["color"]="#cd5652"
+		}
+		else if(tempObj[symbol]>0) 
+		{
+			temp["color"]="#3a7dd4"
+		}
+		else if(tempObj[symbol]==0) 
+		{
+			temp["color"]="black"
+		}
+		
+		dataPointsArray.push(temp)
+	});
+	
+/*
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][9]; 
+		temp["color"]="#089981"
+			
+		dataPointsArrayAdvances.push(temp)
+		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
+	});
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][10]; 
+		temp["color"]="#cd5652"
+		
+	
+		
+		dataPointsArrayDeclines.push(temp)
+		
+	});	
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][11]; 
+	
+		temp["color"]="#cbba4d"
+		
+		
+		dataPointsArrayUnchanged.push(temp)
+	});
+	
+	*/
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+	animationEnabled: false,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
+			//verticalAlign: "top",
+
+			 //horizontalAlign: "right",
+	
+			 //fontSize: 15,
+			 fontSize: 13,
+			//dockInsidePlotArea: true
+			dockInsidePlotArea: false
+	}],
+	
+	toolTip: {
+			//fontSize: 19,
+			fontSize: 15,
+	},
+	axisY: {
+		//title: "Growth Rate (in %)",
+		//includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.1,
+		//labelFontSize: 18,
+		labelFontSize: 11, // bottom size for change%
+	},
+	axisX: {
+		interval: 1,
+		//title: "Countries"
+		includeZero: true,
+		 //labelFontSize: 17,
+		 labelFontSize: 11, // vertical axis size for text
+		 //labelFontWeight: "bold",
+	},
+	dataPointWidth: 9,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		//click: onClick,
+		//type: "column",
+		type: "bar",
+		yValueFormatString: "#,##0.0#\"%\"",
+		dataPoints: dataPointsArray
+	}]
+});
+
+
+console.log("dataPointsArray",dataPointsArray)
+chart.render();
+//chart2.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+</script>
+<!-- Indices Code Ends Here -->
+
+
+
+<!-- Spurts-Equity Code Starts Here -->
+<script>
+
+function setSpurtsSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('dataTradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['spurts_in_open_interest_by_underlyings']
+	var selectElementRef = document.getElementById("spurtsTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSpurtsEquityData )
+}
+
+async function getSpurtsEquityData( passedValue )
+{
+	var tradingDate = document.getElementById('dataTradingDate').value
+	var selectedMonthYear = document.getElementById('dataMonthYear').value
+	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	
+	var selectedSpurtsTimeRef = document.getElementById('spurtsTimeValues')
+	var selectedSpurtsTimeValue = selectedSpurtsTimeRef.value
+	var selectedSpurtsTimeValuePrevious = selectedSpurtsTimeRef.options[selectedSpurtsTimeRef.selectedIndex - 1].value
+	
+	var docPathForSpurts = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValue
+	var docPathForSpurtsPrevious = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValuePrevious
+	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
+	var spurtsDataObjPrevious = await fetchFirebaseDocData( docPathForSpurtsPrevious )
+	console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
+	console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	
+	
+	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
+	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedSpurtsTimeValue )
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	
+	var docPathForEquityPrevious = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[1]+'/'+equitySyncedTimeValue[1]
+	//console.log( "docPathForEquity", docPathForEquity )
+	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
+	var equityDataObjPrevious = await fetchFirebaseDocData( docPathForEquityPrevious )
+	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+	console.log( "equityDataObjPrevious",JSON.parse( equityDataObjPrevious['data'] ) )
+	
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, JSON.parse( equityDataObj['data'] ), JSON.parse( equityDataObjPrevious['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( spurtsDataObjPrevious['data'] )  )
+}
+
+
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+{
+	 document.getElementById('equityDataTableContainer').innerHTML = "";
+	
+	var selectedValue = selectedSpurtsTimeValue
+	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
+	
+	var niftyTotalMarketObject = equityDataObj['data']
+	var niftyTotalMarket2MinutePreviousObject = equityDataObjPrevious['data']
+	
+
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+	var spurtsInOIUnderlyingsPrevObject = spurtsDataObjPrevious['data']
+
+	
+console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+
+		var tempObj = {};
+
+	
+	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Equity Stocks | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
+	  +'<th>Symbol</th>'
+	//  +'<th>Open</th>'
+	  //+' <th>LTP</th>'
+	//  +' <th>PrevC.</th>'
+	  +' <th>Chng(%)</th>'
+	   +' <th>VolSpike</th>'
+	  +' <th>T.O.</th>'
+	 // +' <th>ETO</th>'
+	 // +' <th>STO</th>'
+	  +'  <th>TVI</th>'
+	 +' <th>Rank</th>'
+	  +' <th>Rank2</th>'
+	//  +' <th>Val</th>'
+	//  +' <th>no.Trades</th>'
+	//  +' <th>NearH</th>'
+	 // +' <th>Near Highs</th>'
+	  //+'  <th>Vol Spike</th>'
+	  // +'  <th>V. Spike</th>'
+	    +'  <th>Pattern</th>'
+	  +' </tr> </thead> <tbody>'
+
+		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
+		if( Symbol.includes('NIFTY')==false )
+		{
+		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+		var previousSymbolArray = niftyTotalMarket2MinutePreviousObject [Symbol]  
+		
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+		var previousSpurtsSymbolArray = spurtsInOIUnderlyingsPrevObject [S]  
+
+	   var NoMinuspChng = Math.abs(symbolArray['pChange'] - previousSymbolArray['pChange'])
+	   var pChng = Math.abs(symbolArray['pChange'])
+	   var SpurtsTO = Number(spurtsSymbolArray['total'] )
+	   var SpurtsTOEqtTO = Number(spurtsSymbolArray['total'] ) + Number(symbolArray['totalTradedValue'] / 100000 )
+	   var SpurtsVolOI = (  Number(spurtsSymbolArray['latestOI'] )+  Number(spurtsSymbolArray['volume'] ))
+	   var TVI = ( Number(SpurtsTO) /  Number(SpurtsVolOI )).toFixed(2)
+	   var TVI2 = ( Number(SpurtsTOEqtTO) /  Number(SpurtsVolOI )).toFixed(2)
+	   
+	   var Rank =  (  Number(TVI) +  Number(NoMinuspChng)).toFixed(2)
+	   var Rank2 =  (  Number(TVI2) +  Number(NoMinuspChng)).toFixed(2)
+	   var volSpike = ( ( ( symbolArray['totalTradedVolume'] -  previousSymbolArray['totalTradedVolume']) / previousSymbolArray['totalTradedVolume'] ) * 100).toFixed(2)
+	
+	  var OIvsVol =  (1/(  Number(spurtsSymbolArray['latestOI'] ) /  Number(spurtsSymbolArray['volume'] ))).toFixed(2)
+		//this block of code is for sectors heatMap chart. (START)
+		//this block adds stocks in a object with few values. this code was written on 7-Jan-2023
+		/*
+		{
+			dataObjectForHeatChart["selectedTime"] =selectedValue.value
+		   var colorValue;
+		   var dataLabelFontColor="white";
+		   
+		if(symbolArray[6]>=0)
+	   {
+		   if( symbolArray[6]>=0 && symbolArray[6]<=0.5)
+		   {
+			   colorValue = '#7cb67e' 
+			  // dataLabelFontColor="black"
+		   }
+		   else if( symbolArray[6]>0.5 && symbolArray[6]<=1)
+		   {
+			   colorValue = '#6cac6e'
+		   } 
+		   else if( symbolArray[6]>1 && symbolArray[6]<=2)
+		   {
+			    colorValue = '#5ca35e'
+		   }
+		   else if( symbolArray[6]>2)
+		   {
+			   colorValue = '#539355'
+		   }
+			   
+		  
+		   dataObjectForHeatChart[Symbol] ={
+			  parent: 'Green',
+			 name: Symbol,
+			 pChange:symbolArray[6],
+			 value: Number(Rank2),
+			 //colorValue: Number(symbolArray[6])
+			 color: colorValue,
+			 
+			 dataLabels: {
+				 shadow: false,
+				 color: dataLabelFontColor //data label font color
+				 //format: '{name pChange} %'
+			 }
+		 }
+		   
+		 
+	   }
+	   else
+	   {
+		   if( symbolArray[6]>=-0.5 && symbolArray[6]<0)
+		   {
+			   colorValue = '#d4777a'
+			   //dataLabelFontColor="black"
+		   }
+		   else if( symbolArray[6]>-1 && symbolArray[6]<=-0.5)
+		   {
+			   colorValue = '#ce6467'
+		   }
+		   else if( symbolArray[6]>-2 && symbolArray[6]<=-1)
+		   {
+			   colorValue = '#ca575a'
+		   }
+		   else if( symbolArray[6]>-2)
+		   {
+			   colorValue = '#c85155'
+		   }
+			   
+			 dataObjectForHeatChart[Symbol] ={
+			  parent: 'Red',
+			 name: Symbol,
+			 pChange:symbolArray[6],
+			 value: Number(Rank2),
+			 //colorValue: Number(symbolArray[6])
+			 color: colorValue,
+			 
+			 dataLabels: {
+				  shadow: false,
+				 color: dataLabelFontColor, //data label font color
+				 //format: '{name pChange} %'
+			 }
+		 }
+		  
+		  
+	   }
+		
+		}	   	//this block of code is for sectors heatMap chart. (END)
+		  */
+		  
+		//if( openingNearHigh <=0.50 || ( symbolArray[4] >= price50PerBelowHigh && symbolArray[4] <= price50PerAboveHigh) )
+		//if( ( nearHighs <= 1 && symbolArray[4] >= price50PerBelowHigh ) || ( nearLows <=1 && symbolArray[4] <= price50PerAboveHigh ) )
+	//	if( symbolArray[4]<=5000 && symbolArray[4]>=60  )
+		 //if( document.getElementById('toggleSwitchForOnlyCandlestickPatterns').checked==false )
+		{
+			onlyEquityTableStr +='<tr class="item"><td>'
+			 +Symbol
+			 +'</td><td>'
+			+ symbolArray['pChange']  //pchange
+			 +'</td><td>'
+			 + volSpike //NoMinuspChng.toFixed(2) 
+			 +'</td><td>'
+			 +(SpurtsTOEqtTO ).toFixed(2)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+			//+'</td><td>'
+		 //+ (symbolArray[8] / 10000000).toFixed(2)
+		// +'</td><td>'
+		// + (SpurtsTO / 1000).toFixed(2)
+			 +'</td><td>'
+			+ (Number(TVI2) + Number(pChng)).toFixed(2)
+		 +'</td><td>'
+		 + Rank
+		+'</td><td>'
+		+ Rank2
+	
+		//	 +previous_Trading_Date_Array[7] // 7 VWAP
+		//	 +'</td><td>'
+		//	 + previous_Trading_Date_Array[8] // 8 total_traded_quantity
+		//	 +'</td><td>'
+		//	 +  previous_Trading_Date_Array[9]  // 9 value / turnover / total_traded_value
+		//	 +'</td><td>'
+		//	  +  previous_Trading_Date_Array[10]  // 10 no_of_trades
+		//	 +'</td><td>'
+		//	  + ( nearHighs + ltpNearHighPercentage ).toFixed(2) // difference between 2 previous highs
+			// +'</td><td>'
+			//  + (  Math.abs( 1 - (1 / (nearHighs) ) )  + (1 / Math.abs( 1 - (1 / (ltpNearHighPercentage) ) ))  + Math.abs( 1 - (1 / (symbolArray[8]/100000000) ) ) ).toFixed(2) // difference between 2 previous highs
+		//	 +'</td><td>'
+			//  + ((( symbolArray[7]  - previous_Trading_Date_Array[7] ) / previous_Trading_Date_Array[7] )*100) .toFixed(2) // volume spike
+			// +'</td><td>'
+		  //+ ((( symbolArray[7]  - previous_Trading_Date_Array[7] ) / previous_Trading_Date_Array[7] )*100) .toFixed(2) // turnover or value spike
+			+'</td><td>'
+			+''
+		//+ returnedCandlestickPatternsStr
+			+'</td></tr>'
+			
+		
+		}
+	}
+		} //for Loop ENDS HERE
+		
+		onlyEquityTableStr +=' </tbody> </table>    </div>  </div>'
+		
+	document.getElementById('equityDataTableContainer').innerHTML = onlyEquityTableStr
+	 addEventListnerInTables()
+	 //add_Sectors_In_HeatMapSelector()
+}	//	show_volume_value_spike_Data() Function ENDS HERE
+
+
+</script>
+<!-- Spurts-Equity Code Ends Here -->
+
+
+
+<style>
+.highcharts-figure,
+.highcharts-data-table table {
+  height: 500px;   
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid #ebebeb;
+    margin: 1px auto;
+    text-align: center;
+    width: 100%;
+	height: 500px;   
+}
+
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.highcharts-data-table th {
+    font-weight: 600;
+    padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+    padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+</style>
+
+<script>
+Highcharts.chart('container', {
+    colorAxis: {
+        minColor: '#FFFFFF',
+        maxColor: Highcharts.getOptions().colors[0]
+    },
+    series: [{
+        type: 'treemap',
+        layoutAlgorithm: 'squarified',
+        clip: false,
+        data: [{
+            name: 'A',
+            value: 6,
+            colorValue: 1
+        }, {
+            name: 'B',
+            value: 6,
+            colorValue: 2
+        }, {
+            name: 'C',
+            value: 4,
+            colorValue: 3
+        }, {
+            name: 'D',
+            value: 3,
+            colorValue: 4
+        }, {
+            name: 'E',
+            value: 2,
+            colorValue: 5
+        }, {
+            name: 'F',
+            value: 2,
+            colorValue: 6
+        }, {
+            name: 'G',
+            value: 1,
+            colorValue: 7
+        }]
+    }],
+    title: {
+        text: 'Highcharts Treemap'
+    }
+});
+
+</script>
+
+
+<!-- common firebase Codes Starts Here -->
+ <script>
+	var dataTemp ;
+var returnedDataObj;
+function getFirestoreData( passedValue, passedObj )
+{
+
+	const selectElement = document.getElementById("dataTradingDate");
+	 selectElement.innerHTML = '<option>Select</option>'
+	 if( passedObj !=undefined && passedObj !="" )
+	 {
+		for( var tradingDate in passedObj )
+		{
+		const optionElement = document.createElement("option");
+		optionElement.text = tradingDate;
+		selectElement.add(optionElement);
+		}
+	 	
+	 }
+	 else
+	 {
+	var monthYearCollection = document.getElementById('dataMonthYear').value
+
+    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+    //var usersRef = db.collection('May 2023')  
+    var usersRef = db.collection(monthYearCollection)  
+	firestoreIndexObj = {};
+	
+    // Retrieve all documents in the 'users' collection
+    usersRef.get()
+      .then(function(querySnapshot) {
+      dataTemp = querySnapshot 
+      //console.log( querySnapshot );
+	  
+
+	  
+        querySnapshot.forEach(function(doc) {
+
+          //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
+          //console.log(doc.id, " => ", doc.data());
+		  firestoreIndexObj [doc.id] = doc.data()
+		  const optionElement = document.createElement("option");
+    optionElement.text = doc.id;
+    selectElement.add(optionElement);
+	
+        });
+		localStorage.setItem( 'firestoreIndexObj', JSON.stringify(firestoreIndexObj) )
+	refreshOrLiveFirebaseData(passedValue)
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+	  }
+	  
+
+	  
+	}
+
+
+function fetchFirebaseDocData(docPath) {
+  var docRef = db.doc(docPath);
+  //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+  //var usersRef = db.collection('May 2023')  
+	
+  // Retrieve the document from Firebase
+  return docRef.get()
+    .then(function(doc) {
+      if (doc.exists) {
+        var dataObj =  doc.data();
+        return dataObj;
+      } else {
+        console.log("Document does not exist");
+        return null;
+      }
+    })
+    .catch(function(error) {
+      console.log("Error getting document:", error);
+      return null;
+    });
+}
+   
+function refreshOrLiveFirebaseData(passedValue)
+{
+	//console.log(passedValue)
+	
+	if( passedValue=="refresh" || passedValue=="live")
+	  {
+	  var savedSelectedValues = JSON.parse( localStorage.getItem( 'selectedValues' ) )
+	document.getElementById('dataMonthYear').value = savedSelectedValues["selectedMonthYear"]
+	document.getElementById('dataTradingDate').value = savedSelectedValues["selectedTradingDate"]
+	
+	setCommonSelectors()
+	document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
+	
+	  }
+	  
+	  
+	if( passedValue=="refresh")
+	  {
+	fetchDataForAllSegments();
+	  }
+	  else if( passedValue=="live" )
+	  {
+
+	  	var theSelect = document.getElementById('commonTimeValues');
+		var lastValue = theSelect.options[theSelect.options.length - 1].value;
+		document.getElementById("commonTimeValues").value = lastValue
+		
+		saveSelectedValues();
+		fetchDataForAllSegments();
+	  }
+	  
+	}
+
+function generateMonthYearFromDate(startDate) {
+  const currentDate = new Date();
+  const months = [];
+
+  // Helper function to format the month and year as a string
+  function formatDate(date) {
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June", 
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const monthIndex = date.getMonth();
+    const year = date.getFullYear();
+    return monthNames[monthIndex] + " " + year;
+  }
+
+  // Loop through each month from startDate to currentDate
+  let currentDateTemp = new Date(startDate.getTime());
+  while (currentDateTemp <= currentDate) {
+    months.push(formatDate(currentDateTemp));
+    currentDateTemp.setMonth(currentDateTemp.getMonth() + 1);
+  }
+
+  // Add the options to the select element
+  const selectElement = document.getElementById("dataMonthYear");
+  selectElement.innerHTML = '<option>Select</option>'
+  
+  for (let i = 0; i < months.length; i++) {
+    const optionElement = document.createElement("option");
+    optionElement.text = months[i];
+    selectElement.add(optionElement);
+  }
+  
+/*
+  // Select the current month and year by default
+  const currentMonthYear = formatDate(currentDate);
+  selectElement.value = currentMonthYear;
+  */
+
+  if( localStorage.getItem( 'firestoreIndexObj' ) !=undefined )
+  {
+	firestoreIndexObj = JSON.parse( localStorage.getItem( 'firestoreIndexObj' ) )
+	getFirestoreData( "", firestoreIndexObj )
+	
+	setSavedSelectedTimeValues()
+	fetchDataForAllSegments()
+  }
+}
+
+// Example usage: generate month and year from April 2023 till now
+generateMonthYearFromDate( new Date("April 2023") );
+
+
+function setCommonSelectors()
+{
+	var tradingDate = document.getElementById('dataTradingDate').value
+	var timeValuesArray 
+	if( firestoreIndexObj[ tradingDate ]['Index']['common_timeValues'] !=undefined )
+	{
+		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_timeValues']
+		// handle common time values
+	}
+	else
+	{
+		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+	}
+
+const selectElement = document.getElementById("commonTimeValues");
+selectElement.innerHTML = '<option>Select</option>'
+  for (let i = 0; i < timeValuesArray.length; i++) {
+    const optionElement = document.createElement("option");
+    optionElement.text = timeValuesArray[i];
+    selectElement.add(optionElement);
+  }
+
+
+}
+
+
+ </script>
+ 
+ <!-- common firebase Codes Ends Here -->
+  
+  
+ 
+ <!-- General Table Sorting and Pushing Data into Tables Code STARTS HERE -->
+
+
+ <style> table, th, td, caption, th span,  th i  {color: white; }   table { width: 100%; }  </style>
+<style> table tr td:nth-child(1) {  width: 120px; background-color: #5c58dd; border-radius: 15px; /* Green */border: none;  color: #f0f0f0; font-weight: ;  text-align: center;  text-decoration: none;  display: inline-block;  font-size: 15.5px; padding: 2.7px 4px; margin: 2px 1px; }</style>
+
+<style>   * {   box-sizing: border-box;   } .spaceBetweenTablesSpurtsEquity { border: 2px solid #4b4d4e;min-height:500px;height: 500px;overflow-y: scroll;background-color: #32373a; }  .tableColumnForSpurtsUnderlyings {  float: left;   width: 24.9%;   padding: 5px;  border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a;  }   .tableRowForSpurtsUnderlyings:after {   content: "";   display: table;   clear: both;   }    .tableRowClass {   color: #ffffff;   background: #27ae60;   }   .PreOpenMarketClassLoosers{   color: #ffffff;   background: #ea6153;   }  caption {	white-space: nowrap;  text-align: center; color: #9a9c9e; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }</style>
+
+ <script>
+ 
+ 
+
+var myelement = document.createElement("link");
+myelement.setAttribute("rel", "stylesheet");
+myelement.setAttribute("href", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css");
+document.head.appendChild(myelement);
+
+//document.body.innerHTML +='<style> table, th, td {border: 1px solid black;border-collapse: collapse;}th, td {padding: 5px;}th {text-align: left;}</style>'
+
+
+    var caretUpClassName = 'fa fa-caret-up';
+    var caretDownClassName = 'fa fa-caret-down';
+
+    const sort_by = (field, reverse, primer) => {
+
+      const key = primer ?
+        function (x) {
+          return primer(x[field]);
+        } :
+        function (x) {
+          return x[field];
+        };
+		
+      reverse = !reverse ? 1 : -1;
+
+      return function (a, b) {
+        return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+      };
+    };
+
+
+
+    function clearArrow() {
+      let carets = document.getElementsByClassName('caret');
+	 // console.log(carets)
+      for (let caret of carets) {
+        caret.className = "caret";
+      }
+    }
+
+
+   
+    function populateTable( tableDataArray, table_id ) {
+	    var tbody = document.getElementById(table_id).getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+	  //console.log(tableDataArray, table_id)
+	   
+	  var tbodyStrs=''
+
+	  	for( var dataObj=0;  dataObj < tableDataArray.length; dataObj++ ) {
+	   //console.log( Object.keys(tableDataArray[dataObj]).length )
+	  tbodyStrs = '<tr>'
+
+	  for( var column=0;  column < Object.keys(tableDataArray[dataObj]).length; column++ ) 
+	  {
+		  tbodyStrs += '<td>'+ (tableDataArray[dataObj]["column"+column]) +'</td>'
+	  }
+	
+	  
+	  tbodyStrs += '</tr>'
+	   tbody.innerHTML += tbodyStrs;
+      }
+	  
+    }
+
+
+	function tableSortAndPushData(tableHead,event)
+	{
+	var clicked_heading_index = tableHead.closest('th').cellIndex
+	var clicked_table_id=tableHead.closest("table").id
+	
+	//console.log("clicked heading index "+ clicked_heading_index  )
+	//console.log("clicked table index "+ clicked_table_id )
+	
+	var table=tableHead.closest("table")
+   	var fetchedTableData = [];
+	table.tBodies[0].getElementsByTagName('tr').length
+
+	for( var tableRow=0;  tableRow<table.tBodies[0].getElementsByTagName('tr').length; tableRow++ )
+	{
+	var keysValuesObj={}
+	var td=(table.tBodies[0].getElementsByTagName('tr')[tableRow]).getElementsByTagName('td')
+	for( var tableData=0;  tableData< td.length; tableData++ )
+	{
+	if(isNaN(td[tableData].innerText) == false )
+	{
+	keysValuesObj["column"+tableData] = Number( td[tableData].innerText )
+	}
+	else
+	{
+	keysValuesObj["column"+tableData] =  td[tableData].innerText 
+	}
+
+	}
+	
+	fetchedTableData.push(keysValuesObj)
+	}
+	//console.log(fetchedTableData)
+	
+	
+	
+	   let element = event.target;
+		//  console.log(element)
+      let caret, field, reverse;
+      if (element.tagName === 'SPAN') {
+        caret = element.getElementsByClassName('caret')[0];
+ 
+      }
+      else {
+        caret = element;
+ 
+      }
+	  
+	       field = "column"+clicked_heading_index 
+		   
+      let iconClassName = caret.className;
+      clearArrow();
+	 // console.log("cleared carets, iconClassName: " + iconClassName)
+      if (iconClassName.includes(caretUpClassName)) {
+        caret.className = `caret ${caretDownClassName}`;
+        reverse = false;
+      } else {
+		 caret.className = `caret ${caretUpClassName}`;
+        reverse = true;
+      }
+
+      fetchedTableData.sort(sort_by(field, reverse));
+      populateTable(fetchedTableData, clicked_table_id);
+	
+	} // tableSortAndPushData() ENDS HERE
+	
+
+function addEventListnerInTablesDEL()
+{
+	
+
+	var allTableInDocument = document.getElementsByTagName('table');
+	for (var table of allTableInDocument) {
+		//console.log( table.id ) 
+	var ths = table.getElementsByTagName('tHead')[0].getElementsByTagName('tr')[0].getElementsByTagName('th')
+    for (var th of ths) {
+	
+	
+	if ( th.getAttribute('listener') !== 'true') {
+    th.setAttribute('listener', 'true');
+	
+	th.innerHTML = '<span>' + th.innerText +'<i class="caret"></i></span>'
+	
+      th.addEventListener('click', function (event) {
+		tableSortAndPushData(this, event)
+      });
+	}
+	else
+	{
+		 th.removeEventListener('click', function (event) {
+		tableSortAndPushData(this, event)
+      });
+	  
+	      th.setAttribute('listener', 'true');
+	
+	th.innerHTML = '<span>' + th.innerText +'<i class="caret"></i></span>'
+	
+      th.addEventListener('click', function (event) {
+		tableSortAndPushData(this, event)
+      });
+	  
+	}
+    }
+	
+	}
+}
+
+
+function addEventListnerInTables()
+{
+	
+    clearArrow();
+	var allTableInDocument = document.getElementsByTagName('table');
+	for (var table of allTableInDocument) {
+		table.getElementsByTagName('caption')[0].setAttribute('onclick', 'copyList(this)');
+		table.getElementsByTagName('caption')[0].setAttribute('oncontextmenu', 'copyTable(this); return false;');
+		//console.log( table.id ) 
+	var ths = table.getElementsByTagName('tHead')[0].getElementsByTagName('tr')[0].getElementsByTagName('th')
+    for (var th of ths) {
+	th.innerHTML = '<span>' + th.innerText +'<i class="caret"></i></span>'
+	th.setAttribute('onclick', 'tableSortAndPushData(this, event)')
+	}
+	}
+	
+	//setTimeout(function() {  clickOnVolumeAutomatically(); }, 1000);
+	clickOnVolumeAutomatically(); 
+}
+
+addEventListnerInTables()
+
+function copyList(caption)
+{
+	var tempStr=''
+	var clicked_table_id=caption.closest("table").id
+	tempStr="NSE:"+caption.innerHTML.replace(/ /g,"_").replace(/\(/g,"").replace(/\)/g,"").replace(/\%/g,"").replace(/\-/g,"")+"," 
+	
+	var tablerows=document.getElementById(clicked_table_id).getElementsByTagName('tbody')[0].getElementsByTagName('tr')
+	for ( var tr=0; tr < tablerows.length; tr++ )
+	//for ( var tr=0; tr < 25; tr++ )
+	{
+		tempStr +="NSE:"+ tablerows[tr].getElementsByTagName('td')[0].innerText.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +"," 
+		//console.log(tablerows[tr].getElementsByTagName('td')[0])
+	}
+	
+	
+	 navigator.clipboard.writeText(tempStr);
+
+}
+
+function copyTable(caption)
+{
+	var tempStr=''
+	//var clicked_table_id=caption.closest("table").id
+	var clicked_table_id=caption.closest("table").innerText
+	/*
+	var tablerows=document.getElementById(clicked_table_id).getElementsByTagName('tbody')[0].getElementsByTagName('tr')
+	for ( var tr=0; tr < tablerows.length; tr++ )
+	{
+		tempStr +="NSE:"+ tablerows[tr].getElementsByTagName('td')[0].innerText.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +"," 
+		//console.log(tablerows[tr].getElementsByTagName('td')[0])
+	}
+	*/
+	
+	 navigator.clipboard.writeText(clicked_table_id);
+
+}
+
+function clickOnVolumeAutomatically()
+{
+	var allTableInDocument = document.getElementsByTagName('table');
+	
+	for (var table of allTableInDocument) {
+		var tableId = table.id;
+	var ths = table.getElementsByTagName('tHead')[0].getElementsByTagName('tr')[0].getElementsByTagName('th')
+    for (var th of ths) {
+		if( tableId=='stockOptionsTable' || tableId=='stockFuturesTable' || tableId=='mostActiveUnderlyingTable' || tableId=='mostActiveFutureContractsTable' ) 
+		{
+		if( th.innerText.includes('Volume') )
+		{
+			th.click()
+		}
+		}
+		
+		if( tableId=='SpurtsOIUnderlyingsPreviousDifference' ) 
+		{
+		if( th.innerText.includes('Chng (%)') )
+		{
+			th.click()
+		}
+		}
+		
+		if( th.innerText.includes('TO Spike')==true || th.innerText.includes('V. Spike') )
+		{
+			th.click()
+		}
+		
+		if( th.innerText.includes('Flat') )
+		{
+			th.click()
+			th.click()
+		}
+		
+		if( th.innerText.includes('NearH') )
+		{
+			th.click()
+			th.click()
+		}
+		
+		if( th.innerText.includes('NearL') )
+		{
+			th.click()
+			th.click()
+		}
+		
+		if( th.innerText.includes('NearHL') )
+		{
+			th.click()
+			th.click()
+		}
+		
+		if( th.innerText.includes('N.R.P.') )
+		{
+			th.click()
+			th.click()
+		}
+		
+
+		if( tableId=='onlySpurtsOIUnderlyingsTableStr' ) 
+		{
+		if( th.innerText.includes('TO/OI') )
+		{
+			th.click()
+		}
+		}
+		
+		if( tableId=='onlyEquityTableStr' ) 
+		{
+		//if( th.innerText.includes('T.O.') )
+		if( th.innerText=='Rank2' )
+		{
+			th.click()
+		}
+		}
+	
+	}
+	}
+}
+
+ </script>
+ 
+ <!-- General Table Sorting and Pushing Data into Tables Code ENDS HERE -->

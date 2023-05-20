@@ -25,7 +25,3 @@
     firebase.initializeApp(firebaseConfig);
     // Get a reference to the Firestore database
     var db = firebase.firestore();
-
-
-
-

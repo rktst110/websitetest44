@@ -4,8 +4,23 @@
   <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
  <!-- Importing Firebase SDK Ends Here-->
  
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Starts Here-->
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
+ 
+
+  <script src="commonFunctions.js"></script>
+  <script src="tableSortingFunctons.js"></script>
  <script src="importFiles.js"></script>
  <script src="firebase.js"></script>
+ <script src="firebaseFunctions.js"></script>
+
  <div id="importedContent"></div>
  
  <title>Indices + HeatMap</title>
@@ -17,6 +32,7 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #555;
+  color: white; /* Set the text color to white */
 }
 
 * {
@@ -59,11 +75,11 @@ body {
 
 
  <label>Month Year:</label>
-<select id="dataMonthYear" onchange="getFirestoreData()">
+<select id="monthYear" onchange="getFirestoreData()">
 </select>
 
  <label> | Trading Date:</label>
-<select id="dataTradingDate" onchange="setSelector()">
+<select id="tradingDate" onchange="setCommonSelectors()">
 </select>
 
 
@@ -89,178 +105,32 @@ body {
 <!--Content Start From Here-->
 <div class="row">
   <div class="column1" style="background-color:#aaa;">
-   <!--  <h2>Column 1</h2> -->
-   <!-- <div id="IndicesPerformanceChart" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div> -->
-   <!-- <div id="chartContainer" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div>   -->
-<div id="IndicesPerformanceChart" style="min-height: 500px; height: auto;width: 100%;"></div>
-
-
-    </div>
-  <div class="column2" style="background-color:#bbb;">
-   <!--  <h2>Column 2</h2> -->
+  
+ <div id="IndicesPerformanceChart" style="min-height: 500px; height: auto;width: 100%;"></div>
    
+   </div>
+  <div class="column2" style="background-color:#bbb;">
 <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
-
-
-<!--  		<figure class="highcharts-figure">   <div id="container"></div></figure> 		-->
-
   </div>
 </div>
 <!--Content Ends Here-->
 
 
-
-  <div id="firebaseData"></div>
-
-
-<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/heatmap.js"></script>
-<script src="https://code.highcharts.com/modules/treemap.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
 <script>
-function saveSelectedValues()
-{
-
-	var selectedMonthYear = document.getElementById('dataMonthYear').value
-	var selectedTradingDate = document.getElementById('dataTradingDate').value
-	var selectedCommonTimeValues = document.getElementById('commonTimeValues').value
-	var selectedValuesObj = {
-	"selectedMonthYear":selectedMonthYear,
-	"selectedTradingDate": selectedTradingDate,
-	"selectedCommonTimeValues":selectedCommonTimeValues,
-	}
-	localStorage.setItem( 'selectedValues', JSON.stringify(selectedValuesObj) )
-
-}
-
-function setSavedSelectedTimeValues()
-{
-	var savedSelectedValues = JSON.parse( localStorage.getItem( 'selectedValues' ) )
-	document.getElementById('dataMonthYear').value = savedSelectedValues["selectedMonthYear"]
-	document.getElementById('dataTradingDate').value = savedSelectedValues["selectedTradingDate"]
-	
-	setSelector()
-	document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
-	
-}
-
 function fetchDataForAllSegments()
 {
 setIndicesSelectorTimeValues( "syncWithCommonTime" );
 setSpurtsSelectorTimeValues( "syncWithCommonTime" )
 }
-
-function syncTimeValues( syncToTimeValuesArray, syncWith )
-{
-		//var selectedSymbolTime = document.getElementById("indicesTimeValues").value;
-		var syncWithTimeValue = syncWith;
-		
-		var syncedTimeValue;
-		var tempPreviousTime=""
-		//for (var timeValue in syncToTimeValues) {
-		for (var i=0;i<syncToTimeValuesArray.length;i++) {
-		var timeValue = syncToTimeValuesArray[i]
-			if( timeToMinutes(timeValue) == timeToMinutes(syncWithTimeValue) )
-			{
-				syncedTimeValue = timeValue
-				/*
-				document.getElementById("indices_performance_time").value = timeValue
-				  showIndicesPerformanceChart()
-				  */
-				break
-			}
-			else if( timeToMinutes(timeValue) > timeToMinutes(syncWithTimeValue) )
-			{
-				syncedTimeValue = tempPreviousTime
-				/*
-				document.getElementById("indices_performance_time").value = tempPreviousTime
-				 showIndicesPerformanceChart()
-				 */
-				break
-			}
-			else
-			{
-				tempPreviousTime=timeValue
-			}
-				
-		}
-		
-		
-		var previousTimeValue = syncToTimeValuesArray[ syncToTimeValuesArray.indexOf( syncedTimeValue )-1 ]
-		
-	return [syncedTimeValue, previousTimeValue];
-
-
-}
-
-function handleTimeValues( passedValue, timeValuesArray, selectElementRef, callBackFunction )
-{
-// this is common function which handles selectors timeValues. it takes some element references and call-back function references and then handle according to requirement
-
-	var commonTimeValues = document.getElementById("commonTimeValues").value;
-	//const selectElementRef = document.getElementById("commonTimeValues");
-	selectElementRef.innerHTML = '<option>Select</option>'
-  for (let i = 0; i < timeValuesArray.length; i++) {
-    var optionElement = document.createElement("option");
-    optionElement.text = timeValuesArray[i];
-    selectElementRef.add(optionElement);
-  }
-  
-  	if (passedValue=="last")
-	{
-	var lastValue = selectElementRef.options[selectElementRef.options.length - 1].value;
-	selectElementRef.value = lastValue
-	//showIndicesPerformanceChart()
-	}
-	else if (passedValue=="syncWithCommonTime")
-	{
-		
-		var syncedTimeValue = syncTimeValues( timeValuesArray, commonTimeValues )
-		selectElementRef.value = syncedTimeValue[0]
-		//console.log(commonTimeValues,syncedTimeValue)
-		if ( syncedTimeValue !=undefined )
-		{
-		//showIndicesPerformanceChart()
-		callBackFunction()
-		}
-
-	}
-}
-
-//Time to Minutes
-function timeToMinutes(hms) {
-
-	//var hms = '15:24:33';   // your input string
-	var a = hms.split(':'); // split it at the colons
-	// Hours are worth 60 minutes.
-	var minutes = (+a[0]) * 60 + (+a[1]);
-
-	////console.log(minutes + "," + ((+a[2]) / 60));
-	return minutes;
-}
-
-
-//Minutes to Time
-function minutesToTime(minutes) {
-
-	var format2 = (n) => `0${n / 60 ^ 0}`.slice(-2) + ':' + ('0' + n % 60).slice(-2)
-	////console.log(format2(601)) // "00:05"
-	//console.log(format2(minutes)) // "00:05"
-}
-
-
 </script>
+
 
 <!-- Indices Code Starts Here -->
 <script>
 
 function setIndicesSelectorTimeValues( passedValue )
 {
-	var tradingDate = document.getElementById('dataTradingDate').value
+	var tradingDate = document.getElementById('tradingDate').value
 	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
 	var selectElementRef = document.getElementById("indicesTimeValues");
 	
@@ -269,8 +139,8 @@ function setIndicesSelectorTimeValues( passedValue )
 
 async function getIndicesData( passedValue )
 {
-	var selectedMonthYear = document.getElementById('dataMonthYear').value
-	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
 	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
 	
 	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
@@ -467,7 +337,7 @@ chart.render();
 
 function setSpurtsSelectorTimeValues( passedValue )
 {
-	var tradingDate = document.getElementById('dataTradingDate').value
+	var tradingDate = document.getElementById('tradingDate').value
 	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['spurts_in_open_interest_by_underlyings']
 	var selectElementRef = document.getElementById("spurtsTimeValues");
 	
@@ -476,9 +346,9 @@ function setSpurtsSelectorTimeValues( passedValue )
 
 async function getSpurtsEquityData( passedValue )
 {
-	var tradingDate = document.getElementById('dataTradingDate').value
-	var selectedMonthYear = document.getElementById('dataMonthYear').value
-	var selectedTradingDate = document.getElementById('dataTradingDate').value
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
 	
 	var selectedSpurtsTimeRef = document.getElementById('spurtsTimeValues')
 	var selectedSpurtsTimeValue = selectedSpurtsTimeRef.value
@@ -528,7 +398,7 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 		var tempObj = {};
 
 	
-	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Equity Stocks | '+selectedValue+'</caption> <thead> <tr class="NiftyTotalMarketClass">'
+	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Equity Stocks | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Symbol</th>'
 	//  +'<th>Open</th>'
 	  //+' <th>LTP</th>'
@@ -722,7 +592,7 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 <!-- Spurts-Equity Code Ends Here -->
 
 
-
+<!-- high charts example Code Starts Here -->
 <style>
 .highcharts-figure,
 .highcharts-data-table table {
@@ -813,525 +683,9 @@ Highcharts.chart('container', {
 });
 
 </script>
-
-    
- <script>
-	var dataTemp ;
-var returnedDataObj;
-function getFirestoreData( passedValue, passedObj )
-{
-
-	const selectElement = document.getElementById("dataTradingDate");
-	 selectElement.innerHTML = '<option>Select</option>'
-	 if( passedObj !=undefined && passedObj !="" )
-	 {
-		for( var tradingDate in passedObj )
-		{
-		const optionElement = document.createElement("option");
-		optionElement.text = tradingDate;
-		selectElement.add(optionElement);
-		}
-	 	
-	 }
-	 else
-	 {
-	var monthYearCollection = document.getElementById('dataMonthYear').value
-
-    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
-    //var usersRef = db.collection('May 2023')  
-    var usersRef = db.collection(monthYearCollection)  
-
-	
-    // Retrieve all documents in the 'users' collection
-    usersRef.get()
-      .then(function(querySnapshot) {
-      dataTemp = querySnapshot 
-      //console.log( querySnapshot );
-	  
-
-	  
-        querySnapshot.forEach(function(doc) {
-
-          //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
-          //console.log(doc.id, " => ", doc.data());
-		  firestoreIndexObj [doc.id] = doc.data()
-		  const optionElement = document.createElement("option");
-    optionElement.text = doc.id;
-    selectElement.add(optionElement);
-	
-        });
-		localStorage.setItem( 'firestoreIndexObj', JSON.stringify(firestoreIndexObj) )
-	refreshOrLiveFirebaseData(passedValue)
-      })
-      .catch(function(error) {
-        console.log("Error getting documents: ", error);
-      });
-	  }
-	  
-
-	  
-	}
+<!--  high charts example Code Ends Here -->
 
 
-function fetchFirebaseDocData(docPath) {
-  var docRef = db.doc(docPath);
-  //var usersRef = db.doc('/April 2023/26-Apr-2023/');
-  //var usersRef = db.collection('May 2023')  
-	
-  // Retrieve the document from Firebase
-  return docRef.get()
-    .then(function(doc) {
-      if (doc.exists) {
-        var dataObj =  doc.data();
-        return dataObj;
-      } else {
-        console.log("Document does not exist");
-        return null;
-      }
-    })
-    .catch(function(error) {
-      console.log("Error getting document:", error);
-      return null;
-    });
-}
-   
-function refreshOrLiveFirebaseData(passedValue)
-{
-	//console.log(passedValue)
-	
-	if( passedValue=="refresh" || passedValue=="live")
-	  {
-	  var savedSelectedValues = JSON.parse( localStorage.getItem( 'selectedValues' ) )
-	document.getElementById('dataMonthYear').value = savedSelectedValues["selectedMonthYear"]
-	document.getElementById('dataTradingDate').value = savedSelectedValues["selectedTradingDate"]
-	
-	setSelector()
-	document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
-	
-	  }
-	  
-	  
-	if( passedValue=="refresh")
-	  {
-	fetchDataForAllSegments();
-	  }
-	  else if( passedValue=="live" )
-	  {
-
-	  	var theSelect = document.getElementById('commonTimeValues');
-		var lastValue = theSelect.options[theSelect.options.length - 1].value;
-		document.getElementById("commonTimeValues").value = lastValue
-		
-		saveSelectedValues();
-		fetchDataForAllSegments();
-	  }
-	  
-	}
-
-function generateMonthYearFromDate(startDate) {
-  const currentDate = new Date();
-  const months = [];
-
-  // Helper function to format the month and year as a string
-  function formatDate(date) {
-    const monthNames = [
-      "January", "February", "March", "April", "May", "June", 
-      "July", "August", "September", "October", "November", "December"
-    ];
-    const monthIndex = date.getMonth();
-    const year = date.getFullYear();
-    return monthNames[monthIndex] + " " + year;
-  }
-
-  // Loop through each month from startDate to currentDate
-  let currentDateTemp = new Date(startDate.getTime());
-  while (currentDateTemp <= currentDate) {
-    months.push(formatDate(currentDateTemp));
-    currentDateTemp.setMonth(currentDateTemp.getMonth() + 1);
-  }
-
-  // Add the options to the select element
-  const selectElement = document.getElementById("dataMonthYear");
-  for (let i = 0; i < months.length; i++) {
-    const optionElement = document.createElement("option");
-    optionElement.text = months[i];
-    selectElement.add(optionElement);
-  }
-  
-/*
-  // Select the current month and year by default
-  const currentMonthYear = formatDate(currentDate);
-  selectElement.value = currentMonthYear;
-  */
-
-  if( localStorage.getItem( 'firestoreIndexObj' ) !=undefined )
-  {
-	firestoreIndexObj = JSON.parse( localStorage.getItem( 'firestoreIndexObj' ) )
-	getFirestoreData( "", firestoreIndexObj )
-	
-	setSavedSelectedTimeValues()
-	fetchDataForAllSegments()
-  }
-}
-
-// Example usage: generate month and year from January 2022 till now
-//const startDate = new Date(2022, 0, 1); // January 1st, 2022
+<script>
 generateMonthYearFromDate( new Date("April 2023") );
-
-
-function setSelector()
-{
-	var tradingDate = document.getElementById('dataTradingDate').value
-	var timeValuesArray 
-	if( firestoreIndexObj[ tradingDate ]['Index']['common_timeValues'] !=undefined )
-	{
-		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_timeValues']
-		// handle common time values
-	}
-	else
-	{
-		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
-	}
-
-const selectElement = document.getElementById("commonTimeValues");
-selectElement.innerHTML = '<option>Select</option>'
-  for (let i = 0; i < timeValuesArray.length; i++) {
-    const optionElement = document.createElement("option");
-    optionElement.text = timeValuesArray[i];
-    selectElement.add(optionElement);
-  }
-
-
-}
-
-
- </script>
- 
- 
- 
- <!-- General Table Sorting and Pushing Data into Tables Code STARTS HERE -->
-
-
- <style> table, th, td, caption, th span,  th i  {color: white; }   table { width: 100%; }  </style>
-<style> table tr td:nth-child(1) {  width: 120px; background-color: #5c58dd; border-radius: 15px; /* Green */border: none;  color: #f0f0f0; font-weight: ;  text-align: center;  text-decoration: none;  display: inline-block;  font-size: 15.5px; padding: 2.7px 4px; margin: 2px 1px; }</style>
-
-<style>   * {   box-sizing: border-box;   } .spaceBetweenTablesSpurtsEquity { border: 2px solid #4b4d4e;min-height:500px;height: 500px;overflow-y: scroll;background-color: #32373a; }  .tableColumnForSpurtsUnderlyings {  float: left;   width: 24.9%;   padding: 5px;  border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a;  }   .tableRowForSpurtsUnderlyings:after {   content: "";   display: table;   clear: both;   }    .SpurtsUnderlyingsClassGainers{   color: #ffffff;   background: #27ae60;   }   .PreOpenMarketClassLoosers{   color: #ffffff;   background: #ea6153;   }  caption {	white-space: nowrap;  text-align: center; color: #9a9c9e; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }</style>
-
- <script>
- 
- 
-
-var myelement = document.createElement("link");
-myelement.setAttribute("rel", "stylesheet");
-myelement.setAttribute("href", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css");
-document.head.appendChild(myelement);
-
-//document.body.innerHTML +='<style> table, th, td {border: 1px solid black;border-collapse: collapse;}th, td {padding: 5px;}th {text-align: left;}</style>'
-
-
-    var caretUpClassName = 'fa fa-caret-up';
-    var caretDownClassName = 'fa fa-caret-down';
-
-    const sort_by = (field, reverse, primer) => {
-
-      const key = primer ?
-        function (x) {
-          return primer(x[field]);
-        } :
-        function (x) {
-          return x[field];
-        };
-		
-      reverse = !reverse ? 1 : -1;
-
-      return function (a, b) {
-        return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
-      };
-    };
-
-
-
-    function clearArrow() {
-      let carets = document.getElementsByClassName('caret');
-	 // console.log(carets)
-      for (let caret of carets) {
-        caret.className = "caret";
-      }
-    }
-
-
-   
-    function populateTable( tableDataArray, table_id ) {
-	    var tbody = document.getElementById(table_id).getElementsByTagName('tbody')[0];
-      tbody.innerHTML = '';
-	  //console.log(tableDataArray, table_id)
-	   
-	  var tbodyStrs=''
-
-	  	for( var dataObj=0;  dataObj < tableDataArray.length; dataObj++ ) {
-	   //console.log( Object.keys(tableDataArray[dataObj]).length )
-	  tbodyStrs = '<tr>'
-
-	  for( var column=0;  column < Object.keys(tableDataArray[dataObj]).length; column++ ) 
-	  {
-		  tbodyStrs += '<td>'+ (tableDataArray[dataObj]["column"+column]) +'</td>'
-	  }
-	
-	  
-	  tbodyStrs += '</tr>'
-	   tbody.innerHTML += tbodyStrs;
-      }
-	  
-    }
-
-
-	function tableSortAndPushData(tableHead,event)
-	{
-	var clicked_heading_index = tableHead.closest('th').cellIndex
-	var clicked_table_id=tableHead.closest("table").id
-	
-	//console.log("clicked heading index "+ clicked_heading_index  )
-	//console.log("clicked table index "+ clicked_table_id )
-	
-	var table=tableHead.closest("table")
-   	var fetchedTableData = [];
-	table.tBodies[0].getElementsByTagName('tr').length
-
-	for( var tableRow=0;  tableRow<table.tBodies[0].getElementsByTagName('tr').length; tableRow++ )
-	{
-	var keysValuesObj={}
-	var td=(table.tBodies[0].getElementsByTagName('tr')[tableRow]).getElementsByTagName('td')
-	for( var tableData=0;  tableData< td.length; tableData++ )
-	{
-	if(isNaN(td[tableData].innerText) == false )
-	{
-	keysValuesObj["column"+tableData] = Number( td[tableData].innerText )
-	}
-	else
-	{
-	keysValuesObj["column"+tableData] =  td[tableData].innerText 
-	}
-
-	}
-	
-	fetchedTableData.push(keysValuesObj)
-	}
-	//console.log(fetchedTableData)
-	
-	
-	
-	   let element = event.target;
-		//  console.log(element)
-      let caret, field, reverse;
-      if (element.tagName === 'SPAN') {
-        caret = element.getElementsByClassName('caret')[0];
- 
-      }
-      else {
-        caret = element;
- 
-      }
-	  
-	       field = "column"+clicked_heading_index 
-		   
-      let iconClassName = caret.className;
-      clearArrow();
-	 // console.log("cleared carets, iconClassName: " + iconClassName)
-      if (iconClassName.includes(caretUpClassName)) {
-        caret.className = `caret ${caretDownClassName}`;
-        reverse = false;
-      } else {
-		 caret.className = `caret ${caretUpClassName}`;
-        reverse = true;
-      }
-
-      fetchedTableData.sort(sort_by(field, reverse));
-      populateTable(fetchedTableData, clicked_table_id);
-	
-	} // tableSortAndPushData() ENDS HERE
-	
-
-function addEventListnerInTablesDEL()
-{
-	
-
-	var allTableInDocument = document.getElementsByTagName('table');
-	for (var table of allTableInDocument) {
-		//console.log( table.id ) 
-	var ths = table.getElementsByTagName('tHead')[0].getElementsByTagName('tr')[0].getElementsByTagName('th')
-    for (var th of ths) {
-	
-	
-	if ( th.getAttribute('listener') !== 'true') {
-    th.setAttribute('listener', 'true');
-	
-	th.innerHTML = '<span>' + th.innerText +'<i class="caret"></i></span>'
-	
-      th.addEventListener('click', function (event) {
-		tableSortAndPushData(this, event)
-      });
-	}
-	else
-	{
-		 th.removeEventListener('click', function (event) {
-		tableSortAndPushData(this, event)
-      });
-	  
-	      th.setAttribute('listener', 'true');
-	
-	th.innerHTML = '<span>' + th.innerText +'<i class="caret"></i></span>'
-	
-      th.addEventListener('click', function (event) {
-		tableSortAndPushData(this, event)
-      });
-	  
-	}
-    }
-	
-	}
-}
-
-
-function addEventListnerInTables()
-{
-	
-    clearArrow();
-	var allTableInDocument = document.getElementsByTagName('table');
-	for (var table of allTableInDocument) {
-		table.getElementsByTagName('caption')[0].setAttribute('onclick', 'copyList(this)');
-		table.getElementsByTagName('caption')[0].setAttribute('oncontextmenu', 'copyTable(this); return false;');
-		//console.log( table.id ) 
-	var ths = table.getElementsByTagName('tHead')[0].getElementsByTagName('tr')[0].getElementsByTagName('th')
-    for (var th of ths) {
-	th.innerHTML = '<span>' + th.innerText +'<i class="caret"></i></span>'
-	th.setAttribute('onclick', 'tableSortAndPushData(this, event)')
-	}
-	}
-	
-	//setTimeout(function() {  clickOnVolumeAutomatically(); }, 1000);
-	clickOnVolumeAutomatically(); 
-}
-
-addEventListnerInTables()
-
-function copyList(caption)
-{
-	var tempStr=''
-	var clicked_table_id=caption.closest("table").id
-	tempStr="NSE:"+caption.innerHTML.replace(/ /g,"_").replace(/\(/g,"").replace(/\)/g,"").replace(/\%/g,"").replace(/\-/g,"")+"," 
-	
-	var tablerows=document.getElementById(clicked_table_id).getElementsByTagName('tbody')[0].getElementsByTagName('tr')
-	for ( var tr=0; tr < tablerows.length; tr++ )
-	//for ( var tr=0; tr < 25; tr++ )
-	{
-		tempStr +="NSE:"+ tablerows[tr].getElementsByTagName('td')[0].innerText.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +"," 
-		//console.log(tablerows[tr].getElementsByTagName('td')[0])
-	}
-	
-	
-	 navigator.clipboard.writeText(tempStr);
-
-}
-
-function copyTable(caption)
-{
-	var tempStr=''
-	//var clicked_table_id=caption.closest("table").id
-	var clicked_table_id=caption.closest("table").innerText
-	/*
-	var tablerows=document.getElementById(clicked_table_id).getElementsByTagName('tbody')[0].getElementsByTagName('tr')
-	for ( var tr=0; tr < tablerows.length; tr++ )
-	{
-		tempStr +="NSE:"+ tablerows[tr].getElementsByTagName('td')[0].innerText.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +"," 
-		//console.log(tablerows[tr].getElementsByTagName('td')[0])
-	}
-	*/
-	
-	 navigator.clipboard.writeText(clicked_table_id);
-
-}
-
-function clickOnVolumeAutomatically()
-{
-	var allTableInDocument = document.getElementsByTagName('table');
-	
-	for (var table of allTableInDocument) {
-		var tableId = table.id;
-	var ths = table.getElementsByTagName('tHead')[0].getElementsByTagName('tr')[0].getElementsByTagName('th')
-    for (var th of ths) {
-		if( tableId=='stockOptionsTable' || tableId=='stockFuturesTable' || tableId=='mostActiveUnderlyingTable' || tableId=='mostActiveFutureContractsTable' ) 
-		{
-		if( th.innerText.includes('Volume') )
-		{
-			th.click()
-		}
-		}
-		
-		if( tableId=='SpurtsOIUnderlyingsPreviousDifference' ) 
-		{
-		if( th.innerText.includes('Chng (%)') )
-		{
-			th.click()
-		}
-		}
-		
-		if( th.innerText.includes('TO Spike')==true || th.innerText.includes('V. Spike') )
-		{
-			th.click()
-		}
-		
-		if( th.innerText.includes('Flat') )
-		{
-			th.click()
-			th.click()
-		}
-		
-		if( th.innerText.includes('NearH') )
-		{
-			th.click()
-			th.click()
-		}
-		
-		if( th.innerText.includes('NearL') )
-		{
-			th.click()
-			th.click()
-		}
-		
-		if( th.innerText.includes('NearHL') )
-		{
-			th.click()
-			th.click()
-		}
-		
-		if( th.innerText.includes('N.R.P.') )
-		{
-			th.click()
-			th.click()
-		}
-		
-
-		if( tableId=='onlySpurtsOIUnderlyingsTableStr' ) 
-		{
-		if( th.innerText.includes('TO/OI') )
-		{
-			th.click()
-		}
-		}
-		
-		if( tableId=='onlyEquityTableStr' ) 
-		{
-		//if( th.innerText.includes('T.O.') )
-		if( th.innerText=='Rank2' )
-		{
-			th.click()
-		}
-		}
-	
-	}
-	}
-}
-
- </script>
- 
- <!-- General Table Sorting and Pushing Data into Tables Code ENDS HERE -->
+</script>
