@@ -193,9 +193,10 @@ function setCommonSelectors()
 {
 	var tradingDate = document.getElementById('tradingDate').value
 	var timeValuesArray 
-	if( firestoreIndexObj[ tradingDate ]['Index']['common_timeValues'] !=undefined )
+	if( firestoreIndexObj[ tradingDate ]['Index']['common_time_values'] !=undefined )
 	{
-		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_timeValues']
+		//timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_timeValues']
+		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_time_values']
 		// handle common time values
 	}
 	else
