@@ -1,0 +1,461 @@
+
+<!-- Importing Firebase SDK Starts Here-->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+ <!-- Importing Firebase SDK Ends Here-->
+ 
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Starts Here-->
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
+ 
+
+  <script src="functions/commonFunctions.js"></script>
+  <script src="functions/tableSortingFunctons.js"></script>
+ <script src="functions/importFiles.js"></script>
+ <script src="functions/firebase.js"></script>
+ <script src="functions/firebaseFunctions.js"></script>
+
+ <div id="importedContent"></div>
+ 
+ <title>Page Title</title>
+ 
+ 
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+
+* {
+  box-sizing: border-box;
+}
+.column1 {
+  float: left;
+  width: 29.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.column2 {
+  float: left;
+  width: 69.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+@media screen and (max-width: 600px) {
+  .column1 {
+    width: 100%;
+  }
+  .column2 {
+    width: 100%;
+  }
+}
+</style>
+
+
+ <label>Month Year:</label>
+<select id="monthYear" onchange="getFirestoreData()">
+</select>
+
+ <label> | Trading Date:</label>
+<select id="tradingDate" onchange="setCommonSelectors()">
+</select>
+
+
+ <label> | Common TimeValues:</label>
+<select id="commonTimeValues" onchange="saveSelectedValues();fetchDataForAllSegments()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+<button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
+&nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
+
+<hr>
+
+
+
+<!--Content Start From Here-->
+<style>   * {   box-sizing: border-box;   }   .tableColumnFor3 {  float: left;   padding: 5px;   }   .tableRowFor3:after {   content: "";   display: table;   clear: both;   }   .StockOptionsClass{   color: #ffffff;   background: #3a7dd4;   }  .StockFuturesClass{   color: #ffffff;   background: #3a7dd4;   }   .MostActiveUnderlyingClass{   color: #ffffff;   background: #3a7dd4; 	} 	 .MostActiveFutureContractsClass{   color: #ffffff;   background: #3a7dd4; 	}	caption {	white-space: nowrap;  text-align: center; color: #9a9c9e; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }</style>
+
+ <div class="tableRowFor3"> <div class="tableColumnFor3" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRowFor3"> <center> Stock Options Time: &nbsp;<select id="stockOptionsTimeValues" aria-labelledby="expiryLbl" onchange="getStockOptionsData()"> <option value="">Select</option> </select> </center> </div> <div class="tableRowFor3"> <div class="" style="border: 2px solid #4b4d4e;height: 385px;overflow-y: scroll;background-color: #32373a;"> <table id="stockOptionsTable"> <caption style="caption-side:top">Stock Options (Volume-Wise)</caption> <thead> <tr> <th class="StockOptionsClass">Symbol (Type)</th> <th class="StockOptionsClass">Strike Price</th> <th class="StockOptionsClass">LTP</th> <th class="StockOptionsClass">Volume</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="tableColumnFor3" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRowFor3"> <center> Stock Futures Time: &nbsp;<select id="stockFuturesTimeValues" aria-labelledby="expiryLbl" onchange="getStockFuturesData()"> <option value="">Select</option> </select> </center> </div> <div class="tableRowFor3"> <div class="" style="border: 2px solid #4b4d4e;height: 385px;overflow-y: scroll;background-color: #32373a;"> <table id="stockFuturesTable"> <caption style="caption-side:top">Stock Futures (Volume-Wise)</caption> <thead> <tr> <th class="StockFuturesClass">Symbol</th> <th class="StockFuturesClass">LTP</th> <th class="StockFuturesClass">Change(%)</th> <th class="StockFuturesClass">Volume</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="tableColumnFor3" style="border: 2px solid #4b4d4e;"> <div class="tableRowFor3"> <center> Most Active Underlying Time: &nbsp;<select id="mostActiveUnderlyingTimeValues" aria-labelledby="expiryLbl" onchange="getMostActiveUnderlyingData()"> <option value="">Select</option> </select> </center> </div> <div class="tableRowFor3"> <div class="" style="border: 2px solid #4b4d4e;height: 385px;overflow-y: scroll;background-color: #32373a;"> <table id="mostActiveUnderlyingTable"> <caption style="caption-side:top">Most Active Underlying (Value-Wise)</caption> <thead> <tr> <th class="MostActiveUnderlyingClass">Symbol</th> <th class="MostActiveUnderlyingClass">Underlying</th> <th class="MostActiveUnderlyingClass">Total Volume</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="tableColumnFor3" style="border: 2px solid #4b4d4e;"> <div class="tableRowFor3"> <center> Most Active Future Contracts Time: &nbsp;<select id="mostActiveFutureContractsTimeValues" aria-labelledby="expiryLbl" onchange="getMostActiveFutureContractsData()"> <option value="">Select</option> </select> </center> </div> <div class="tableRowFor3"> <div class="" style="border: 2px solid #4b4d4e;height: 385px;overflow-y: scroll;background-color: #32373a;"> <table id="mostActiveFutureContractsTable"> <caption style="caption-side:top">Most Active Future Contracts (Volume-Wise)</caption> <thead> <tr> <th class="MostActiveFutureContractsClass">Symbol</th> <th class="MostActiveFutureContractsClass">LTP</th> <th class="MostActiveFutureContractsClass">Change(%)</th> <th class="MostActiveFutureContractsClass">Volume</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> 
+
+<!--Content Ends Here-->
+
+
+<script>
+function fetchDataForAllSegments()
+{
+setStockOptionsSelectorTimeValues( "syncWithCommonTime" );
+setStockFuturesSelectorTimeValues( "syncWithCommonTime" );
+setMostActiveUnderlyingSelectorTimeValues( "syncWithCommonTime" );
+setMostActiveFutureContractsSelectorTimeValues( "syncWithCommonTime" );
+
+}
+</script>
+
+
+<!-- Stock Options Code Starts Here -->
+<script>
+
+function setStockOptionsSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['stock_options']
+	var selectElementRef = document.getElementById("stockOptionsTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getStockOptionsData )
+}
+
+async function getStockOptionsData()
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedTimeValue = document.getElementById('stockOptionsTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/stock_options/'+selectedTimeValue
+	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
+	
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	//console.log("dataObj",JSON.parse( dataObj['data'] ) )
+	show_stock_options_Data( JSON.parse( dataObj['data'] )  )
+	addEventListnerInTables()
+}
+
+async function show_stock_options_Data( dataObj )
+{
+//var tableStr = '<table id="stockOptionsTable"> <caption style="caption-side:top">Stock Options (Volume-Wise)</caption> <thead> <tr> <th class="StockOptionsClass">Symbol (Type)</th> <th class="StockOptionsClass">Strike Price</th> <th class="StockOptionsClass">LTP</th> <th class="StockOptionsClass">Volume</th> </tr> </thead> <tbody></tbody> </table>'
+	 var stockOptionsTable =document.getElementById('stockOptionsTable')
+
+	stockOptionsTable.getElementsByTagName('tbody')[0].innerHTML = "";
+
+	var selectedValue = document.getElementById("stockOptionsTimeValues").value;
+	
+	//await getData("currentDay")
+	//var mainOIDataObject = {};
+	//mainOIDataObject = JSON.parse(localStorage.getItem('NSE_APIs_Data'));
+	//mainOIDataObject = generatedDataInObject;
+	
+	var stockOptionsObject = dataObj['data']
+
+			
+	for (var i=0;i<stockOptionsObject.length;i++) {
+	var symbol = stockOptionsObject[i]['identifier']
+	//for (var symbol in stockOptionsObject) {
+		var symbolArray = stockOptionsObject[i]
+		 var tbody = stockOptionsTable.getElementsByTagName('tbody')[0]
+		 
+		 var stockName=symbol.split('OPTSTK')[1].split(/[0-9]/)[0]
+		 var CEorPE;
+		 var strikePrice;
+		 if(symbol.split(stockName)[1].includes('CE')==true){
+			 CEorPE='CE'
+			 strikePrice=symbol.split(stockName)[1].split('CE')[1]+' ('+CEorPE+')'
+		 }
+		 else if(symbol.split(stockName)[1].includes('PE')==true){
+			 CEorPE='PE'
+			 strikePrice=symbol.split(stockName)[1].split('PE')[1]+' ('+CEorPE+')'
+		 }
+		//var symbolPlusType=stockName
+			
+		var tr = document.createElement("tr");
+		 tr.setAttribute("class","item");
+		 
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(stockName));  	//symbol
+          tr.appendChild(td);
+		
+		 var td = document.createElement('td');
+          td.appendChild(document.createTextNode(strikePrice));  //Strike Price
+          tr.appendChild(td);
+		  
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray["underlyingValue"]));		//"underlyingValue" 
+          tr.appendChild(td);
+		  
+		  var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray["volume"]));		// Volume 
+          tr.appendChild(td);
+		
+	 tbody.appendChild(tr);
+
+	}
+
+}	//	show_stock_options_Data() Function ENDS HERE
+
+</script>
+<!-- Stock Options Code Ends Here -->
+
+
+<!-- Stock Futures Code Starts Here -->
+<script>
+
+function setStockFuturesSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['stock_futures']
+	var selectElementRef = document.getElementById("stockFuturesTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getStockFuturesData )
+}
+
+async function getStockFuturesData()
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedTimeValue = document.getElementById('stockFuturesTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/stock_futures/'+selectedTimeValue
+	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
+	
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	//console.log("dataObj",JSON.parse( dataObj['data'] ) )
+	show_stock_futures_Data( JSON.parse( dataObj['data'] )  )
+	addEventListnerInTables()
+}
+
+async function show_stock_futures_Data( dataObj )
+{
+	 var stockFuturesTable =document.getElementById('stockFuturesTable')
+
+	stockFuturesTable.getElementsByTagName('tbody')[0].innerHTML = "";
+
+	var selectedValue = document.getElementById("stockFuturesTimeValues").value;
+	
+	//await getData("currentDay")
+	//var mainOIDataObject = {};
+	//mainOIDataObject = JSON.parse(localStorage.getItem('NSE_APIs_Data'));
+	//mainOIDataObject = generatedDataInObject;
+	
+	var StockFuturesObject = dataObj['data']
+
+				
+	for (var i=0;i<StockFuturesObject.length;i++) {
+	var symbol = StockFuturesObject[i]['underlying']
+	//for (var symbol in stockOptionsObject) {
+		var symbolArray = StockFuturesObject[i]
+		
+	//for (var symbol in StockFuturesObject) {
+		//var symbolArray=StockFuturesObject[symbol]
+		 var tbody = stockFuturesTable.getElementsByTagName('tbody')[0]
+		 
+		var tr = document.createElement("tr");
+		 tr.setAttribute("class","item");
+		 
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbol));  	//symbol
+          tr.appendChild(td);
+		
+		 var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['lastPrice']));  //lastPrice
+          tr.appendChild(td);
+		  
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['pChange']));		//pChange
+          tr.appendChild(td);
+		  
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['volume']));		//volume
+          tr.appendChild(td);
+		
+	 tbody.appendChild(tr);
+
+	}
+
+}	//	show_stock_futures_Data() Function ENDS HERE
+
+</script>
+<!-- Stock Futures Code Ends Here -->
+
+
+<!-- Most Active Underlying Code Starts Here -->
+<script>
+
+function setMostActiveUnderlyingSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['most_active_underlying']
+	var selectElementRef = document.getElementById("mostActiveUnderlyingTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getMostActiveUnderlyingData )
+}
+
+async function getMostActiveUnderlyingData()
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedTimeValue = document.getElementById('mostActiveUnderlyingTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/most_active_underlying/'+selectedTimeValue
+	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
+	
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	//console.log("dataObj",JSON.parse( dataObj['data'] ) )
+	show_most_active_underlying_Data( JSON.parse( dataObj['data'] )  )
+	addEventListnerInTables()
+}
+
+async function show_most_active_underlying_Data( dataObj )
+{
+	 var mostActiveUnderlyingTable =document.getElementById('mostActiveUnderlyingTable')
+
+	mostActiveUnderlyingTable.getElementsByTagName('tbody')[0].innerHTML = "";
+
+	var selectedValue = document.getElementById("mostActiveUnderlyingTimeValues").value;
+	
+	//await getData("currentDay")
+	//var mainOIDataObject = {};
+	//mainOIDataObject = JSON.parse(localStorage.getItem('NSE_APIs_Data'));
+	//mainOIDataObject = generatedDataInObject;
+	
+	var mostActiveUnderlyingObject = dataObj['data']
+
+				
+	for (var i=0;i<mostActiveUnderlyingObject.length;i++) {
+	var symbol = mostActiveUnderlyingObject[i]['symbol']
+	//for (var symbol in stockOptionsObject) {
+		var symbolArray = mostActiveUnderlyingObject[i]
+		
+	//for (var symbol in mostActiveUnderlyingObject) {
+		//var symbolArray=mostActiveUnderlyingObject[symbol]
+		 var tbody = mostActiveUnderlyingTable.getElementsByTagName('tbody')[0]
+		 
+		var tr = document.createElement("tr");
+		 tr.setAttribute("class","item");
+		 
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbol));  	//symbol
+          tr.appendChild(td);
+		
+		 var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['underlying']));  //underlying
+          tr.appendChild(td);
+		  
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['totVolume']));	    	//0 totVolume 
+          tr.appendChild(td);
+		
+	 tbody.appendChild(tr);
+
+	}
+
+}	//	show_most_active_underlying_Data() Function ENDS HERE
+
+</script>
+<!-- Most Active Underlying Code Ends Here -->
+
+
+
+<!-- Most Active Future Contracts Code Starts Here -->
+<script>
+
+function setMostActiveFutureContractsSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['most_active_future_contracts']
+	var selectElementRef = document.getElementById("mostActiveFutureContractsTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getMostActiveFutureContractsData )
+}
+
+async function getMostActiveFutureContractsData()
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedTimeValue = document.getElementById('mostActiveFutureContractsTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/most_active_future_contracts/'+selectedTimeValue
+	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
+	
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	//console.log("dataObj",JSON.parse( dataObj['data'] ) )
+	show_most_Active_Future_Contracts_Data( JSON.parse( dataObj['data'] )  )
+	addEventListnerInTables()
+}
+
+async function show_most_Active_Future_Contracts_Data( dataObj )
+{
+	 var mostActiveFutureContractsTable =document.getElementById('mostActiveFutureContractsTable')
+
+	mostActiveFutureContractsTable.getElementsByTagName('tbody')[0].innerHTML = "";
+
+	var selectedValue = document.getElementById("mostActiveFutureContractsTimeValues").value;
+	
+
+	var mostActiveFutureContractsObject = dataObj [ "volume" ] ['data']
+
+		
+				
+	for (var i=0;i<mostActiveFutureContractsObject.length;i++) {
+	var symbol = mostActiveFutureContractsObject[i]['identifier']
+	//for (var symbol in stockOptionsObject) {
+		var symbolArray = mostActiveFutureContractsObject[i]
+		
+		
+	//for (var symbol in mostActiveFutureContractsObject) {
+		//var symbolArray=mostActiveFutureContractsObject[symbol]
+		 var tbody = mostActiveFutureContractsTable.getElementsByTagName('tbody')[0]
+		 
+		 var symbolName=symbol
+		 if (symbol.includes('FUTIDX')==true)
+			symbolName=symbol.split('FUTIDX')[1].split(/[0-9]/)[0]
+		else if (symbol.includes('FUTSTK')==true)
+			symbolName=symbol.split('FUTSTK')[1].split(/[0-9]/)[0]
+				 
+		var tr = document.createElement("tr");
+		 tr.setAttribute("class","item");
+		 
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode( symbolName ));  	//symbol
+          tr.appendChild(td);
+		
+		 var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['lastPrice']));  //lastPrice
+          tr.appendChild(td);
+		  
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['pChange'].toFixed(2)));		//pChange
+          tr.appendChild(td);
+		  
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['numberOfContractsTraded']));  //numberOfContractsTraded/Volume
+          tr.appendChild(td);
+		
+	 tbody.appendChild(tr);
+
+	}
+
+}	//	show_most_Active_Future_Contracts_Data() Function ENDS HERE
+
+</script>
+<!-- Most Active Future Contracts Code Ends Here -->
+
+
+<script>
+// Example usage: generate month and year from April 2023 till now
+generateMonthYearFromDate( new Date("April 2023") );
+</script>
