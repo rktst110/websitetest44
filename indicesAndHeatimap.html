@@ -15,11 +15,11 @@
  <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
  
 
-  <script src="commonFunctions.js"></script>
-  <script src="tableSortingFunctons.js"></script>
- <script src="importFiles.js"></script>
- <script src="firebase.js"></script>
- <script src="firebaseFunctions.js"></script>
+  <script src="functions/commonFunctions.js"></script>
+  <script src="functions/tableSortingFunctons.js"></script>
+ <script src="functions/importFiles.js"></script>
+ <script src="functions/firebase.js"></script>
+ <script src="functions/firebaseFunctions.js"></script>
 
  <div id="importedContent"></div>
  
@@ -408,7 +408,7 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 	  +' <th>T.O.</th>'
 	 // +' <th>ETO</th>'
 	 // +' <th>STO</th>'
-	  +'  <th>TVI</th>'
+	 // +'  <th>TVI</th>'
 	 +' <th>Rank</th>'
 	  +' <th>Rank2</th>'
 	//  +' <th>Val</th>'
@@ -417,7 +417,7 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 	 // +' <th>Near Highs</th>'
 	  //+'  <th>Vol Spike</th>'
 	  // +'  <th>V. Spike</th>'
-	    +'  <th>Pattern</th>'
+	   // +'  <th>Pattern</th>'
 	  +' </tr> </thead> <tbody>'
 
 		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
@@ -548,8 +548,8 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 		 //+ (symbolArray[8] / 10000000).toFixed(2)
 		// +'</td><td>'
 		// + (SpurtsTO / 1000).toFixed(2)
-			 +'</td><td>'
-			+ (Number(TVI2) + Number(pChng)).toFixed(2)
+			// +'</td><td>'
+		//	+ (Number(TVI2) + Number(pChng)).toFixed(2)
 		 +'</td><td>'
 		 + Rank
 		+'</td><td>'
@@ -570,8 +570,8 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 			//  + ((( symbolArray[7]  - previous_Trading_Date_Array[7] ) / previous_Trading_Date_Array[7] )*100) .toFixed(2) // volume spike
 			// +'</td><td>'
 		  //+ ((( symbolArray[7]  - previous_Trading_Date_Array[7] ) / previous_Trading_Date_Array[7] )*100) .toFixed(2) // turnover or value spike
-			+'</td><td>'
-			+''
+		//	+'</td><td>'
+			//+''
 		//+ returnedCandlestickPatternsStr
 			+'</td></tr>'
 			
