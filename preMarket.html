@@ -99,7 +99,7 @@ body {
 
 
 <!--Content Start From Here-->
-<style>   * {   box-sizing: border-box;   } .spaceBetweenTables { border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a; }  .tableColumnForPreMarket {  float: left;   width: 24.9%;   padding: 5px;  border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a;  }   .tableRowForPreMarket:after {   content: "";   display: table;   clear: both;   }    .PreOpenMarketClassGainers{   color: #ffffff;   background: #27ae60;   }   .PreOpenMarketClassLoosers{   color: #ffffff;   background: #ea6153;   }  caption {	white-space: nowrap;  text-align: center; color: #9a9c9e; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }</style>
+<style>   * {   box-sizing: border-box;   } .spaceBetweenTables { border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a; }  .tableColumnForPreMarket {  float: left;   width: 50%;   padding: 5px;  border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a;  }   .tableRowForPreMarket:after {   content: "";   display: table;   clear: both;   }    .PreOpenMarketClassGainers{   color: #ffffff;   background: #27ae60;   }   .PreOpenMarketClassLoosers{   color: #ffffff;   background: #ea6153;   }  caption {	white-space: nowrap;  text-align: center; color: #9a9c9e; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }</style>
 
 <span id="AdvancesDeclinesContainer"></span>
 <div id="allPreOpenMarketColumnsContainer" class="tableRowForPreMarket"> </div>
@@ -374,9 +374,6 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 	+'<caption style="caption-side:top">Nifty 50 Gainers (% Change-Wise)</caption>    <thead>       <tr>               <th class="PreOpenMarketClassGainers">Symbol</th>               <th class="PreOpenMarketClassGainers">LTP</th>              <th class="PreOpenMarketClassGainers">Chng%</th>			   <th class="PreOpenMarketClassGainers">TO</th>            </tr>  </thead>'
 	+'<tbody>'
 
-	var descNiftyTablesStr = '<div class="tableColumnForPreMarket">    <div class="spaceBetweenTables">     <table id="PreMarketDescendingNifty">'
-	+'<caption style="caption-side:top">Nifty 50 Loosers (% Change-Wise)</caption>     <thead>       <tr>               <th class="PreOpenMarketClassLoosers">Symbol</th>               <th class="PreOpenMarketClassLoosers">LTP</th>              <th class="PreOpenMarketClassLoosers">Chng%</th>			   <th class="PreOpenMarketClassLoosers">TO</th>            </tr>  </thead>'
-	+'<tbody>'
 
 	for( var niftyStock=0; niftyStock < Object.keys(Nifty50List).length ; niftyStock++ )
 	//for( var niftyStock=0; niftyStock < 15 ; niftyStock++ )
@@ -397,32 +394,15 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+( ascValuesArray['metadata']['totalTurnover']  / 1000 ).toFixed(0)
 		+'</td></tr>'
 
-		
-		descNiftyTablesStr +='<tr class="item"><td>'
-		+Object.keys(DescendingNifty50List)[niftyStock]
-		+'</td><td>'
-		+descValuesArray['metadata']['iep'] //lEP
-		+'</td><td>'
-	  	 +descValuesArray['metadata']['pChange'].toFixed(2)
-		+'</td><td>'
-		+( descValuesArray['metadata']['totalTurnover'] / 1000 ).toFixed(0)
-		+'</td></tr>'
-
-
-
 	}
 	ascNiftyTablesStr +=' </tbody> </table>    </div>  </div>'
-	descNiftyTablesStr +=' </tbody> </table>    </div>  </div>'
+
 	
 
 
 	
 	var ascFnOTablesStr = '<div class="tableColumnForPreMarket">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingFnO">'
 	+'<caption style="caption-side:top">FnO Gainers (% Change-Wise)</caption>     <thead class="PreOpenMarketClassGainers">       <tr>               <th>Symbol</th>               <th>LTP</th>              <th>Chng%</th>			   <th>TO</th>            </tr>   </thead> '
-	+'<tbody>'
-
-	var descFnOTablesStr = '<div class="tableColumnForPreMarket">    <div class="spaceBetweenTables">     <table  id="PreMarketDescendingFnO">'
-	+'<caption style="caption-side:top">FnO Loosers (% Change-Wise)</caption>       <thead class="PreOpenMarketClassLoosers">     <tr>               <th>Symbol</th>               <th>LTP</th>              <th>Chng%</th>			   <th>TO</th>            </tr>    </thead>'
 	+'<tbody>'
 
 	for( var FnOStock=0; FnOStock < Object.keys(FnOList).length ; FnOStock++ )
@@ -433,8 +413,6 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 
 		var ascValuesArray=preOpenMarketObject['data'][Object.keys(AscendingFnOList)[FnOStock]]
 		var descValuesArray=preOpenMarketObject['data'][Object.keys(DescendingFnOList)[FnOStock]]
-
-
 	   
 		{
 		ascFnOTablesStr +='<tr class="item"><td>'
@@ -450,28 +428,12 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 
 
 
-		{
-		descFnOTablesStr +='<tr class="item"><td>'
-		+Object.keys(DescendingFnOList)[FnOStock]
-		+'</td><td>'
-		+descValuesArray['metadata']['iep']  //lEP
-		+'</td><td>'
-	  	 +descValuesArray['metadata']['pChange'].toFixed(2)
-		+'</td><td>'
-		+( descValuesArray['metadata']['totalTurnover'] / 1000 ).toFixed(0)
-		+'</td></tr>'
-		}
-
-
 	}
 	ascFnOTablesStr +=' </tbody> </table>    </div>  </div>'
-	descFnOTablesStr +=' </tbody> </table>    </div>  </div>'
 
 	tablesStr += ascNiftyTablesStr
 	tablesStr += ascFnOTablesStr
 
-	tablesStr += descNiftyTablesStr
-	tablesStr += descFnOTablesStr
 
 	 document.getElementById('allPreOpenMarketColumnsContainer').innerHTML = tablesStr;
 	 
