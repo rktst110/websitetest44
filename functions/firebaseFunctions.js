@@ -85,7 +85,39 @@ async function fetchSectorStockNamesCollectionData( collectionPath ) {
   }
   }
 }
-   
+
+async function fetchDeliveryDataDocData(docPath) {
+
+	var localStorageForDeliveryData = localStorage.getItem('deliveryData')
+	if( localStorageForDeliveryData!=null && JSON.parse(localStorageForDeliveryData) [docPath]!=undefined )
+	{
+		return (JSON.parse(localStorageForDeliveryData) [docPath] )
+	}
+	else
+	{
+  var docRef = db.doc(docPath);
+  //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+  //var usersRef = db.collection('May 2023')  
+	
+  // Retrieve the document from Firebase
+  return docRef.get()
+    .then(function(doc) {
+      if (doc.exists) {
+        var dataObj =  doc.data();
+		localStorage.setItem('deliveryData', JSON.stringify( {[docPath]:dataObj} ));
+        return dataObj;
+      } else {
+        console.log("Document does not exist");
+        return null;
+      }
+    })
+    .catch(function(error) {
+      console.log("Error getting document:", error);
+      return null;
+    });
+	}
+}
+
 function fetchFirebaseDocData(docPath) {
   var docRef = db.doc(docPath);
   //var usersRef = db.doc('/April 2023/26-Apr-2023/');

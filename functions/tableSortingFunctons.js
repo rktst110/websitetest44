@@ -316,7 +316,14 @@ function clickOnVolumeAutomatically()
 			th.click()
 		}
 		}
-	
+		
+		
+		if( th.innerText=='Money' )
+		{
+			th.click()
+		}
+		
+		
 	}
 	}
 }
