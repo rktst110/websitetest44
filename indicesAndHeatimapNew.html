@@ -28,51 +28,38 @@
  
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: #555;
-  color: white; /* Set the text color to white */
-}
-
 * {
   box-sizing: border-box;
 }
-.column1 {
+
+/* Create two unequal columns that floats next to each other */
+.column {
   float: left;
-  width: 29.7%;
-  padding: 2px;
-  height: 500px; 
-  margin: 2px 2px;
-  border-radius: 5px;
+  padding: 0.5px;
+  height: 500px; /* Should be removed. Only for demonstration */
 }
 
-.column2 {
-  float: left;
-  width: 69.7%;
-  padding: 2px;
-  height: 500px; 
-  margin: 2px 2px;
-  border-radius: 5px;
+.left {
+  width: 25%;
 }
 
+.right {
+  width: 75%;
+}
+
+/* Clear floats after the columns */
 .row:after {
   content: "";
   display: table;
   clear: both;
 }
 
-
-@media screen and (max-width: 600px) {
-  .column1 {
-    width: 100%;
-  }
-  .column2 {
+@media screen and (max-width: 800px) {
+  .column {
     width: 100%;
   }
 }
 </style>
-
 
  <label>Month Year:</label>
 <select id="monthYear" onchange="getFirestoreData()">
@@ -104,12 +91,12 @@ body {
 
 <!--Content Start From Here-->
 <div class="row">
-  <div class="column1" style="background-color:#aaa;">
+  <div class="column left" style="background-color:#aaa;">
   
  <div id="IndicesPerformanceChart" style="min-height: 500px; height: auto;width: 100%;"></div>
    
    </div>
-  <div class="column2" style="background-color:#bbb;">
+  <div class="column right" style="background-color:#bbb;">
 <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
   </div>
 </div>
@@ -358,6 +345,7 @@ function setSpurtsSelectorTimeValues( passedValue )
 	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSpurtsEquityData )
 }
 
+
 async function getSpurtsEquityData( passedValue )
 {
 	var tradingDate = document.getElementById('tradingDate').value
@@ -372,8 +360,8 @@ async function getSpurtsEquityData( passedValue )
 	var docPathForSpurtsPrevious = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValuePrevious
 	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
 	var spurtsDataObjPrevious = await fetchFirebaseDocData( docPathForSpurtsPrevious )
-	console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
-	console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
+	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
 	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 	
 	
@@ -385,14 +373,18 @@ async function getSpurtsEquityData( passedValue )
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
 	var equityDataObjPrevious = await fetchFirebaseDocData( docPathForEquityPrevious )
-	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
-	console.log( "equityDataObjPrevious",JSON.parse( equityDataObjPrevious['data'] ) )
+	//console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+	//console.log( "equityDataObjPrevious",JSON.parse( equityDataObjPrevious['data'] ) )
 	
-	await show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, JSON.parse( equityDataObj['data'] ), JSON.parse( equityDataObjPrevious['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( spurtsDataObjPrevious['data'] )  )
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	//console.log( "deliveryDataObj",JSON.parse( deliveryDataObj['data'] ) )
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, JSON.parse( equityDataObj['data'] ), JSON.parse( equityDataObjPrevious['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( spurtsDataObjPrevious['data'] ), JSON.parse( deliveryDataObj['data'] ) )
 }
 
 
-async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj  )
 {
 	 document.getElementById('equityDataTableContainer').innerHTML = "";
 	
@@ -406,8 +398,22 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
 	var spurtsInOIUnderlyingsPrevObject = spurtsDataObjPrevious['data']
 
+	var sumStocksValEquity = 0
+	for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
+		if( Symbol.includes('NIFTY')==false )
+		{
+		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+		var previousSymbolArray = niftyTotalMarket2MinutePreviousObject [Symbol]  
+		sumStocksValEquity += symbolArray["totalTradedValue"]
+		}
+}
 	
-console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+	var meanAllStocksVolumeEquityFnO = sumStocksValEquity / (spurtsInOIUnderlyingsObject.length)
+	
+	
+//console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
 
 		var tempObj = {};
 
@@ -423,8 +429,8 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 	 // +' <th>ETO</th>'
 	 // +' <th>STO</th>'
 	 // +'  <th>TVI</th>'
-	 +' <th>Rank</th>'
-	  +' <th>Rank2</th>'
+	 +' <th>Money</th>'
+	  +' <th>20DAV</th>'
 	//  +' <th>Val</th>'
 	//  +' <th>no.Trades</th>'
 	//  +' <th>NearH</th>'
@@ -458,6 +464,26 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 	   var volSpike = ( ( ( symbolArray['totalTradedVolume'] -  previousSymbolArray['totalTradedVolume']) / previousSymbolArray['totalTradedVolume'] ) * 100).toFixed(2)
 	
 	  var OIvsVol =  (1/(  Number(spurtsSymbolArray['latestOI'] ) /  Number(spurtsSymbolArray['volume'] ))).toFixed(2)
+	  
+	  
+	 //var LowHighAverage = (symbolArray[1] + symbolArray[2])/2
+	//var Level = ( (symbolArray[4] / LowHighAverage)  ).toFixed(2)
+	
+	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
+	//var SpurtVolvsOI = spurtsSymbolArray[4] / spurtsSymbolArray[0]
+	//var previous_Trading_Date_Obj_Value = delivery's total value
+	var previous_Trading_Date_Obj_Value = deliveryDataObj["Symbols"][Symbol]["deliveryData"][9]
+	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"]  + previous_Trading_Date_Obj_Value ) / average20DaysValue)
+	
+	var WFactorEquityVolume = ( (symbolArray["totalTradedValue"] )/ meanAllStocksVolumeEquityFnO )
+	
+	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI + WFactorEquityVolume).toFixed(2)
+	//var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	var WFactor2 =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
+	 
+	  
+	  
 		//this block of code is for sectors heatMap chart. (START)
 		//this block adds stocks in a object with few values. this code was written on 7-Jan-2023
 		/*
@@ -565,9 +591,9 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 			// +'</td><td>'
 		//	+ (Number(TVI2) + Number(pChng)).toFixed(2)
 		 +'</td><td>'
-		 + Rank
+		 + WFactor
 		+'</td><td>'
-		+ Rank2
+		+ WFactor2
 	
 		//	 +previous_Trading_Date_Array[7] // 7 VWAP
 		//	 +'</td><td>'
@@ -600,7 +626,6 @@ console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDat
 	 addEventListnerInTables()
 	 //add_Sectors_In_HeatMapSelector()
 }	//	show_volume_value_spike_Data() Function ENDS HERE
-
 
 </script>
 <!-- Spurts-Equity Code Ends Here -->
