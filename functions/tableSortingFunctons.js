@@ -323,6 +323,18 @@ function clickOnVolumeAutomatically()
 			th.click()
 		}
 		
+		if( tableId !='onlyEquityTableStr' ) 
+		{
+		//if( th.innerText.includes('T.O.') )
+		if( th.innerText=='20DAV' )
+		{
+			th.click()
+		}
+		}
+		
+		
+		
+		
 		
 	}
 	}

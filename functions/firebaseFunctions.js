@@ -118,7 +118,15 @@ async function fetchDeliveryDataDocData(docPath) {
 	}
 }
 
-function fetchFirebaseDocData(docPath) {
+function fetchFirebaseDocData_ORIGINAL(docPath) {
+	
+	var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs')
+	if( firebaseFetchedDocsLocalStorage!=null && JSON.parse(firebaseFetchedDocsLocalStorage) [docPath]!=undefined )
+	{
+		return (JSON.parse(firebaseFetchedDocsLocalStorage) [docPath] )
+	}
+	else 
+	{
   var docRef = db.doc(docPath);
   //var usersRef = db.doc('/April 2023/26-Apr-2023/');
   //var usersRef = db.collection('May 2023')  
@@ -138,7 +146,48 @@ function fetchFirebaseDocData(docPath) {
       console.log("Error getting document:", error);
       return null;
     });
+	
 }
+}
+
+function fetchFirebaseDocData(docPath) {
+  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+  if (firebaseFetchedDocs[docPath] !== undefined) {
+    return firebaseFetchedDocs[docPath];
+  } else {
+    var docRef = db.doc(docPath);
+
+    // Retrieve the document from Firebase
+    return docRef
+      .get()
+      .then(function (doc) {
+        if (doc.exists) {
+          var dataObj = doc.data();
+
+          // Store the fetched document in localStorage
+          firebaseFetchedDocs[docPath] = dataObj;
+          var entries = Object.entries(firebaseFetchedDocs);
+          if (entries.length > 50) {
+            // Remove the oldest entry if more than 50 entries are present
+            delete firebaseFetchedDocs[entries[0][0]];
+          }
+          localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
+
+          return dataObj;
+        } else {
+          console.log("Document does not exist");
+          return null;
+        }
+      })
+      .catch(function (error) {
+        console.log("Error getting document:", error);
+        return null;
+      });
+  }
+}
+
    
 function refreshOrLiveFirebaseData(passedValue)
 {
