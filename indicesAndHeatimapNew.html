@@ -39,6 +39,14 @@
   height: 500px; /* Should be removed. Only for demonstration */
 }
 
+.equityLeft {
+  width: 50%;
+}
+
+.spurtsRight {
+  width: 50%;
+}
+
 .left {
   width: 25%;
 }
@@ -93,13 +101,34 @@
 <div class="row">
   <div class="column left" style="background-color:#aaa;">
   
- <div id="IndicesPerformanceChart" style="min-height: 500px; height: auto;width: 100%;"></div>
+ <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
    
    </div>
   <div class="column right" style="background-color:#bbb;">
-<div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
+  
+   <center> HeatMap Sectors: &nbsp;<select id="heatMapSectorSelector" aria-labelledby="expiryLbl" onchange="showHeatMapChart()"> <option value="">Select</option> </select></center>  <div id="heatMapContainer" style=" height:500px; width: auto; margin: 0 auto;"></div>
+
   </div>
 </div>
+
+<br><br>
+
+
+
+
+
+<div class="row">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="spurtsDataTableContainer"></div> </div>
+  </div>
+</div>
+
+
+<!--<div class="tableRow"> <center> Spurts Time: &nbsp;<select id="spurts_time_for_both" aria-labelledby="expiryLbl" onchange="adjust_equity_spurts_timeValues()"> <option value="">Select</option> </select> &nbsp; &nbsp;  | &nbsp; &nbsp; No. of Comparison Stocks : &nbsp; <input id="noOfComparisonStocks" type="number" value="30" size="3"> <button onclick="compareEquitySpurtsStocks(\'compareEquityWithSpurts\')">Cmp EquitySpurts</button> <button onclick="compareEquitySpurtsStocks(\'compareSpurtsWithEquity\')">Cmp SpurtsEquity</button>   </center> <br> <div class="tableColumn" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Equity Time: &nbsp;<select id="only_equity_time" aria-labelledby="expiryLbl" onchange="show_only_equity_Data()"> <option value="">Select</option> </select> </center>  <div id="equityDataTableContainer"></div> </div> </div> <div class="tableColumn" style="border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Spurts Time: &nbsp;<select id="only_spurts_time" aria-labelledby="expiryLbl" onchange="show_only_Spurts_Data()"> <option value="">Select</option> </select> </center>  <div id="spurtsDataTableContainer"></div> </div> </div> -->
+
 
 <br><br><br><br><br><br>
 <!--Content Ends Here-->
@@ -335,6 +364,8 @@ chart.render();
 
 <!-- Spurts-Equity Code Starts Here -->
 <script>
+var dataObjectForHeatChart={}
+var sectorStockNamesObj = {}
 
 function setSpurtsSelectorTimeValues( passedValue )
 {
@@ -360,8 +391,8 @@ async function getSpurtsEquityData( passedValue )
 	var docPathForSpurtsPrevious = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValuePrevious
 	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
 	var spurtsDataObjPrevious = await fetchFirebaseDocData( docPathForSpurtsPrevious )
-	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
-	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
+	console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
 	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 	
 	
@@ -373,18 +404,25 @@ async function getSpurtsEquityData( passedValue )
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
 	var equityDataObjPrevious = await fetchFirebaseDocData( docPathForEquityPrevious )
-	//console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
-	//console.log( "equityDataObjPrevious",JSON.parse( equityDataObjPrevious['data'] ) )
+	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+	console.log( "equityDataObjPrevious",JSON.parse( equityDataObjPrevious['data'] ) )
 	
 	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
 	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
 	
 	//console.log( "deliveryDataObj",JSON.parse( deliveryDataObj['data'] ) )
+	
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	
 	await show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, JSON.parse( equityDataObj['data'] ), JSON.parse( equityDataObjPrevious['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( spurtsDataObjPrevious['data'] ), JSON.parse( deliveryDataObj['data'] ) )
+	await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, JSON.parse( equityDataObj['data'] ), JSON.parse( equityDataObjPrevious['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( spurtsDataObjPrevious['data'] ), JSON.parse( deliveryDataObj['data'] ) )
+	
+	addEventListnerInTables()
 }
 
-
-async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj  )
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj )
 {
 	 document.getElementById('equityDataTableContainer').innerHTML = "";
 	
@@ -482,32 +520,32 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 	//var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
 	var WFactor2 =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
 	 
-	  
+	  var rankForHeatMap = WFactor
 	  
 		//this block of code is for sectors heatMap chart. (START)
 		//this block adds stocks in a object with few values. this code was written on 7-Jan-2023
-		/*
 		{
-			dataObjectForHeatChart["selectedTime"] =selectedValue.value
+			//dataObjectForHeatChart["selectedTime"] =selectedValue.value
+			dataObjectForHeatChart["selectedTime"] =selectedValue
 		   var colorValue;
 		   var dataLabelFontColor="white";
 		   
-		if(symbolArray[6]>=0)
+		if(symbolArray["pChange"]>=0)
 	   {
-		   if( symbolArray[6]>=0 && symbolArray[6]<=0.5)
+		   if( symbolArray["pChange"]>=0 && symbolArray["pChange"]<=0.5)
 		   {
 			   colorValue = '#7cb67e' 
 			  // dataLabelFontColor="black"
 		   }
-		   else if( symbolArray[6]>0.5 && symbolArray[6]<=1)
+		   else if( symbolArray["pChange"]>0.5 && symbolArray["pChange"]<=1)
 		   {
 			   colorValue = '#6cac6e'
 		   } 
-		   else if( symbolArray[6]>1 && symbolArray[6]<=2)
+		   else if( symbolArray["pChange"]>1 && symbolArray["pChange"]<=2)
 		   {
 			    colorValue = '#5ca35e'
 		   }
-		   else if( symbolArray[6]>2)
+		   else if( symbolArray["pChange"]>2)
 		   {
 			   colorValue = '#539355'
 		   }
@@ -516,9 +554,9 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 		   dataObjectForHeatChart[Symbol] ={
 			  parent: 'Green',
 			 name: Symbol,
-			 pChange:symbolArray[6],
-			 value: Number(Rank2),
-			 //colorValue: Number(symbolArray[6])
+			 pChange:symbolArray["pChange"],
+			 value: Number(rankForHeatMap),
+			 //colorValue: Number(symbolArray["pChange"])
 			 color: colorValue,
 			 
 			 dataLabels: {
@@ -532,20 +570,20 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 	   }
 	   else
 	   {
-		   if( symbolArray[6]>=-0.5 && symbolArray[6]<0)
+		   if( symbolArray["pChange"]>=-0.5 && symbolArray["pChange"]<0)
 		   {
 			   colorValue = '#d4777a'
 			   //dataLabelFontColor="black"
 		   }
-		   else if( symbolArray[6]>-1 && symbolArray[6]<=-0.5)
+		   else if( symbolArray["pChange"]>-1 && symbolArray["pChange"]<=-0.5)
 		   {
 			   colorValue = '#ce6467'
 		   }
-		   else if( symbolArray[6]>-2 && symbolArray[6]<=-1)
+		   else if( symbolArray["pChange"]>-2 && symbolArray["pChange"]<=-1)
 		   {
 			   colorValue = '#ca575a'
 		   }
-		   else if( symbolArray[6]>-2)
+		   else if( symbolArray["pChange"]>-2)
 		   {
 			   colorValue = '#c85155'
 		   }
@@ -553,9 +591,9 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 			 dataObjectForHeatChart[Symbol] ={
 			  parent: 'Red',
 			 name: Symbol,
-			 pChange:symbolArray[6],
-			 value: Number(Rank2),
-			 //colorValue: Number(symbolArray[6])
+			 pChange:symbolArray["pChange"],
+			 value: Number(rankForHeatMap),
+			 //colorValue: Number(symbolArray["pChange"])
 			 color: colorValue,
 			 
 			 dataLabels: {
@@ -569,7 +607,8 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 	   }
 		
 		}	   	//this block of code is for sectors heatMap chart. (END)
-		  */
+		  
+		  
 		  
 		//if( openingNearHigh <=0.50 || ( symbolArray[4] >= price50PerBelowHigh && symbolArray[4] <= price50PerAboveHigh) )
 		//if( ( nearHighs <= 1 && symbolArray[4] >= price50PerBelowHigh ) || ( nearLows <=1 && symbolArray[4] <= price50PerAboveHigh ) )
@@ -623,9 +662,445 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 		onlyEquityTableStr +=' </tbody> </table>    </div>  </div>'
 		
 	document.getElementById('equityDataTableContainer').innerHTML = onlyEquityTableStr
-	 addEventListnerInTables()
-	 //add_Sectors_In_HeatMapSelector()
+	 //addEventListnerInTables()
+	 add_Sectors_In_HeatMapSelector( sectorStockNamesObj )
 }	//	show_volume_value_spike_Data() Function ENDS HERE
+
+
+
+async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj )
+{
+	 document.getElementById('spurtsDataTableContainer').innerHTML = "";
+
+	var returnedDeliverableDataObject ;
+	
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+	var onlySpurtsPreviousTime= selectedSpurtsTimeValuePrevious
+	
+	//var mainOIDataObject = {};
+	//mainOIDataObject = JSON.parse(localStorage.getItem("NSE_APIs_Data"));
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+	var spurtsInOIUnderlyingsPrevObject = spurtsDataObjPrevious
+
+//( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj, sectorStockNamesObj )
+
+	var onlyEquitySelectedValue = document.getElementById("only_equity_time");
+
+	var niftyTotalMarketObject = equityDataObj ['data']
+	var niftyTotalMarket2MinutePreviousObject = equityDataObjPrevious
+	
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+
+	//var tablesStr =  '<div class="tableColumnForSpurtsUnderlyings"><div class="spaceBetweenTables"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings (% Change-Wise)</caption><thead class="SpurtsUnderlyingsClassGainers">   <tr>      <th>Symbol</th>   <th>Underlying</th>      <th>Chng (%)</th>      <th>Volume</th>      </tr></thead><tbody>'
+	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+onlySpurtsSelectedTime.value+' | '+mainOIDataObject['Date']+'</caption><thead class="SpurtsUnderlyingsClassGainers">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>      </tr></thead><tbody>'
+	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th> <th>OI/Vol</th>        </tr></thead><tbody>'
+		
+	for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
+	//var symbol = Object.keys( spurtsInOIUnderlyingsObject )[F]
+	var symbol = spurtsInOIUnderlyingsObject[F]["symbol"]
+	//console.log( "symbol", symbol)
+	//for (var symbol in spurtsInOIUnderlyingsObject ) {
+		if( symbol.includes('NIFTY')==false ){
+		//if( symbol!='BANKNIFTY' && symbol!='NIFTY' && symbol!='FINNIFTY' ){
+		
+		
+		tablesStr +='<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ niftyTotalMarketObject[symbol]["pChange"] // equity/NiftyTotalMarket pchange
+		+'</td><td>'
+		+ niftyTotalMarketObject[symbol]["totalTradedValue"] // equity/NiftyTotalMarket totalTradedValue
+		+'</td><td>'
+		//+ spurtsInOIUnderlyingsObject[symbol][8] // underlyingValue
+		+ (spurtsInOIUnderlyingsObject[F]["total"] / spurtsInOIUnderlyingsObject[F]["latestOI"] ).toFixed(2)// underlyingValue
+		+'</td><td>'
+	 	  + spurtsInOIUnderlyingsObject[F]["avgInOI"]  //"avgInOI/perChangeInOI
+		+'</td><td>'
+		//+ spurtsInOIUnderlyingsObject[symbol][4] //volume
+		+ spurtsInOIUnderlyingsObject[F]["latestOI"] //OI
+		+'</td><td>'
+		+ spurtsInOIUnderlyingsObject[F]["volume"] //Volume
+		+'</td><td>'
+		+ (1/(spurtsInOIUnderlyingsObject[F]["latestOI"] / spurtsInOIUnderlyingsObject[F]["volume"])).toFixed(2) //OI/Volume
+		//+'</td><td>'
+		//+ returnedCandlestickPatternsStr //Candlestick Patterns
+		+'</td></tr>'
+			
+		
+	}
+	}
+	tablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('spurtsDataTableContainer').innerHTML = tablesStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+
+
+function add_Sectors_In_HeatMapSelector()
+{
+	console.log( "sectorStockNamesObj", sectorStockNamesObj)
+	
+	if( sectorStockNamesObj !=undefined)
+	{
+	if( document.getElementById("heatMapSectorSelector").getElementsByTagName('option').length <=1 )
+	{
+	document.getElementById("heatMapSectorSelector").innerHTML = "";
+	
+	var option = document.createElement("option");
+	option.value = "ALL BANKS";
+	option.text = "ALL BANKS";
+	document.getElementById("heatMapSectorSelector").add(option);
+	
+	
+	for ( var sectorName in sectorStockNamesObj ) {
+		
+		if( sectorName != 'Template' )
+		{
+		var option = document.createElement("option");
+		option.value = sectorName;
+		option.text = sectorName;
+		document.getElementById("heatMapSectorSelector").add(option);
+		}
+	}
+	document.getElementById('heatMapSectorSelector').value=document.getElementById('heatMapSectorSelector').getElementsByTagName('option')[1].value
+	}
+	
+	showHeatMapChart(sectorStockNamesObj)
+	}
+	
+} // add_Sectors_In_HeatMapSelector() ENDS HERE
+
+async function showHeatMapChart()
+{
+var allBanksStocksObj ={}
+	await setHighChartsDarkTheme()
+	var sectorDataArrayForHeatChart=[{
+      id: 'Green',
+      //name: 'Green',
+      color: "#EC2500"
+    }, {
+      id: 'Red',
+      //name: 'Red',
+      color: "#ECE100"
+    }]
+	
+	var heatMapSectorSelected = document.getElementById("heatMapSectorSelector").value
+	var sectorStockArray;
+	if( heatMapSectorSelected=='ALL BANKS' )
+	{
+		
+		for( var sector in sectorStockNamesObj )
+		{
+			if( sector.includes('BANK')==true )
+			{
+				var sectorStockArray = sectorStockNamesObj [sector]
+				for( var s=0;s<sectorStockArray.length;s++)
+				{
+					var Symbol = sectorStockArray [s]
+					allBanksStocksObj [Symbol] = 1
+				}
+				
+			}
+		}
+		
+		sectorStockArray = Object.keys(allBanksStocksObj)
+	}
+	else {
+	sectorStockArray = sectorStockNamesObj [heatMapSectorSelected] 
+	}
+	for( var s=0;s<sectorStockArray.length;s++)
+	{
+		var Symbol = sectorStockArray [s]
+		//console.log(Symbol)
+		if( dataObjectForHeatChart[Symbol] !=undefined )
+		{
+			sectorDataArrayForHeatChart.push( dataObjectForHeatChart[Symbol] )
+		}
+	}
+	//console.log("sectorDataArrayForHeatChart", sectorDataArrayForHeatChart)
+	
+	
+var H = Highcharts
+H.addEvent(H.Legend, 'afterGetAllItems', function(e) {
+  e.allItems.splice(2, 6);
+});
+
+H.chart('heatMapContainer', {
+  colorAxis: {
+      stops: [
+       
+	  [0, '#ff0000'],//red
+      [0.5, '#fff'], // white
+      [1, '#02ff00']//green
+	  
+    ],
+  },
+  legend: {
+      enabled: false
+    },
+  series: [{
+	animation: false,
+	borderWidth: 0.25,
+    //borderColor: '#fff',
+    borderColor: '#4b4b4c',
+    colorAxis: 0,
+    legendType: 'point',
+    showInLegend: false,
+    type: "treemap",
+    layoutAlgorithm: 'squarified',
+    alternateStartingDirection: true,
+    levels: [{
+      level: 1,
+      layoutAlgorithm: 'sliceAndDice',
+      dataLabels: {
+        enabled: false,
+        align: 'left',
+        verticalAlign: 'top',
+        style: {
+          fontSize: '15px',
+          fontWeight: 'bold'
+        }
+      }
+    }],
+    data: sectorDataArrayForHeatChart,
+	
+  dataLabels: {
+		enabled: true,
+                format: '{point.name} <br> {point.value}',
+			 },
+			 
+			  events: {
+                    click: function (event) {
+                        //console.log(event.point.name);
+						copyHeatMapList( heatMapSectorSelected, event.point.parent )
+                    }
+                }
+  }],
+  tooltip: {
+            //headerFormat: 'Temperature<br/>',
+            pointFormat: '{point.name} <br> pChange: {point.pChange} <br> Rank: {point.value}'
+        },
+	
+  title: {
+    //text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTime"] +' | '+ mainOIDataObject['Date'],
+    text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTime"],
+	   style: {
+                    //color: 'red',
+                    fontSize:'15px'
+                }
+  }
+});
+
+}
+
+function setHighChartsDarkTheme()
+{
+
+	Highcharts.theme = {
+    colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
+        '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+    chart: {
+        backgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+            stops: [
+                [0, '#2a2a2b'],
+                [1, '#3e3e40']
+            ]
+        },
+        style: {
+     
+        },
+        plotBorderColor: '#606063'
+    },
+    title: {
+        style: {
+            color: '#E0E0E3',
+            textTransform: 'uppercase',
+            fontSize: '20px'
+        }
+    },
+    subtitle: {
+        style: {
+            color: '#E0E0E3',
+            textTransform: 'uppercase'
+        }
+    },
+    xAxis: {
+        gridLineColor: '#707073',
+        labels: {
+            style: {
+                color: '#E0E0E3'
+            }
+        },
+        lineColor: '#707073',
+        minorGridLineColor: '#505053',
+        tickColor: '#707073',
+        title: {
+            style: {
+                color: '#A0A0A3'
+            }
+        }
+    },
+    yAxis: {
+        gridLineColor: '#707073',
+        labels: {
+            style: {
+                color: '#E0E0E3'
+            }
+        },
+        lineColor: '#707073',
+        minorGridLineColor: '#505053',
+        tickColor: '#707073',
+        tickWidth: 1,
+        title: {
+            style: {
+                color: '#A0A0A3'
+            }
+        }
+    },
+    tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        style: {
+            color: '#F0F0F0'
+        }
+    },
+    plotOptions: {
+        series: {
+            dataLabels: {
+                color: '#F0F0F3',
+                style: {
+                    fontSize: '13px'
+                }
+            },
+            marker: {
+                lineColor: '#333'
+            }
+        },
+        boxplot: {
+            fillColor: '#505053'
+        },
+        candlestick: {
+          
+        },
+        errorbar: {
+            
+        }
+    },
+    legend: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        itemStyle: {
+            color: '#E0E0E3'
+        },
+        itemHoverStyle: {
+            color: '#FFF'
+        },
+        itemHiddenStyle: {
+            color: '#606063'
+        },
+        title: {
+            style: {
+                color: '#C0C0C0'
+            }
+        }
+    },
+    credits: {
+        style: {
+            color: '#666'
+        }
+    },
+    labels: {
+        style: {
+            color: '#707073'
+        }
+    },
+    drilldown: {
+        activeAxisLabelStyle: {
+            color: '#F0F0F3'
+        },
+        activeDataLabelStyle: {
+            color: '#F0F0F3'
+        }
+    },
+    navigation: {
+        buttonOptions: {
+            symbolStroke: '#DDDDDD',
+            theme: {
+                fill: '#505053'
+            }
+        }
+    },
+    // scroll charts
+    rangeSelector: {
+        buttonTheme: {
+            fill: '#505053',
+            stroke: '#000000',
+            style: {
+              
+            },
+            states: {
+                hover: {
+                    fill: '#707073',
+                    stroke: '#000000',
+                    style: {
+                      
+                    }
+                },
+                select: {
+                    fill: '#000003',
+                    stroke: '#000000',
+                    style: {
+                        
+                    }
+                }
+            }
+        },
+        inputBoxBorderColor: '#505053',
+        inputStyle: {
+            backgroundColor: '#333',
+            color: 'silver'
+        },
+        labelStyle: {
+            color: 'silver'
+        }
+    },
+    navigator: {
+        handles: {
+            backgroundColor: '#666',
+            borderColor: '#AAA'
+        },
+        outlineColor: '#CCC',
+        maskFill: 'rgba(255,255,255,0.1)',
+        series: {
+            color: '#7798BF',
+            lineColor: '#A6C7ED'
+        },
+        xAxis: {
+            gridLineColor: '#505053'
+        }
+    },
+    scrollbar: {
+        barBackgroundColor: '#808083',
+        barBorderColor: '#808083',
+        buttonArrowColor: '#CCC',
+        buttonBackgroundColor: '#606063',
+        buttonBorderColor: '#606063',
+        rifleColor: '#FFF',
+        trackBackgroundColor: '#404043',
+        trackBorderColor: '#404043'
+    }
+};
+	// Apply the theme
+	Highcharts.setOptions(Highcharts.theme);
+
+}
+
 
 </script>
 <!-- Spurts-Equity Code Ends Here -->
