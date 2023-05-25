@@ -34,7 +34,7 @@ body {
   background-color: #555;
   color: white; /* Set the text color to white */
 }
-	
+
 * {
   box-sizing: border-box;
 }
@@ -109,7 +109,7 @@ body {
   <div class="column left" style="background-color:#aaa;">
   
  <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
-   
+   <br>
    </div>
   <div class="column right" style="background-color:#bbb;">
   
@@ -629,7 +629,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 			 +'</td><td>'
 			 + volSpike //NoMinuspChng.toFixed(2) 
 			 +'</td><td>'
-			 +(SpurtsTOEqtTO ).toFixed(2)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
 			//+'</td><td>'
 		 //+ (symbolArray[8] / 10000000).toFixed(2)
 		// +'</td><td>'
@@ -702,7 +702,8 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 
 	//var tablesStr =  '<div class="tableColumnForSpurtsUnderlyings"><div class="spaceBetweenTables"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings (% Change-Wise)</caption><thead class="SpurtsUnderlyingsClassGainers">   <tr>      <th>Symbol</th>   <th>Underlying</th>      <th>Chng (%)</th>      <th>Volume</th>      </tr></thead><tbody>'
 	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+onlySpurtsSelectedTime.value+' | '+mainOIDataObject['Date']+'</caption><thead class="SpurtsUnderlyingsClassGainers">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>      </tr></thead><tbody>'
-	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th> <th>OI/Vol</th>        </tr></thead><tbody>'
+	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th> <th>OI/Vol</th>        </tr></thead><tbody>'
+	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
 		
 	for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
 	//var symbol = Object.keys( spurtsInOIUnderlyingsObject )[F]
@@ -718,7 +719,7 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 		+'</td><td>'
 		+ niftyTotalMarketObject[symbol]["pChange"] // equity/NiftyTotalMarket pchange
 		+'</td><td>'
-		+ niftyTotalMarketObject[symbol]["totalTradedValue"] // equity/NiftyTotalMarket totalTradedValue
+		+( niftyTotalMarketObject[symbol]["totalTradedValue"] / 1000000).toFixed(0) // equity/NiftyTotalMarket totalTradedValue
 		+'</td><td>'
 		//+ spurtsInOIUnderlyingsObject[symbol][8] // underlyingValue
 		+ (spurtsInOIUnderlyingsObject[F]["total"] / spurtsInOIUnderlyingsObject[F]["latestOI"] ).toFixed(2)// underlyingValue
@@ -729,8 +730,8 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 		+ spurtsInOIUnderlyingsObject[F]["latestOI"] //OI
 		+'</td><td>'
 		+ spurtsInOIUnderlyingsObject[F]["volume"] //Volume
-		+'</td><td>'
-		+ (1/(spurtsInOIUnderlyingsObject[F]["latestOI"] / spurtsInOIUnderlyingsObject[F]["volume"])).toFixed(2) //OI/Volume
+		//+'</td><td>'
+		//+ (1/(spurtsInOIUnderlyingsObject[F]["latestOI"] / spurtsInOIUnderlyingsObject[F]["volume"])).toFixed(2) //OI/Volume
 		//+'</td><td>'
 		//+ returnedCandlestickPatternsStr //Candlestick Patterns
 		+'</td></tr>'
@@ -983,7 +984,7 @@ function setHighChartsDarkTheme()
             dataLabels: {
                 color: '#F0F0F3',
                 style: {
-                    fontSize: '13px'
+                    fontSize: '12px'
                 }
             },
             marker: {

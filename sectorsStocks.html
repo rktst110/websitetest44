@@ -1,0 +1,449 @@
+
+<!-- Importing Firebase SDK Starts Here-->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+ <!-- Importing Firebase SDK Ends Here-->
+ 
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Starts Here-->
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
+ 
+
+  <script src="functions/commonFunctions.js"></script>
+  <script src="functions/tableSortingFunctons.js"></script>
+ <script src="functions/importFiles.js"></script>
+ <script src="functions/firebase.js"></script>
+ <script src="functions/firebaseFunctions.js"></script>
+
+ <div id="importedContent"></div>
+ 
+ <title>Sector's Stocks</title>
+ 
+ 
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+
+
+.column {
+  float: left;
+  width: 24.8%;
+  padding: 1px;
+  height: 300px;
+  margin: 1px 1px/* Should be removed. Only for demonstration */
+}
+
+@media screen and (max-width: 800px) {
+  .column {
+    width: 100%;
+  }
+}
+</style>
+
+
+ <label>Month Year:</label>
+<select id="monthYear" onchange="getFirestoreData()">
+</select>
+
+ <label> | Trading Date:</label>
+<select id="tradingDate" onchange="setCommonSelectors()">
+</select>
+
+
+ <label> | Common TimeValues:</label>
+<select id="commonTimeValues" onchange="saveSelectedValues();fetchDataForAllSegments()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+<button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
+&nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
+
+<hr>
+
+ <label> Equity TimeValues:</label>
+<select id="equityTimeValues" onchange="getSectorsStocksData()">
+</select>
+<select id="marketType">
+<option>ALL</option>
+<option>FnO</option>
+</select>
+
+<br><br>
+
+<!--Content Start From Here-->
+<div class="spaceBetweenTables">  	<div id="sectorsStocksDataTableContainer"></div> </div>
+<!--Content Ends Here-->
+
+
+<script>
+function fetchDataForAllSegments()
+{
+setEquitySelectorTimeValues( "syncWithCommonTime" );
+//setSpurtsSelectorTimeValues( "syncWithCommonTime" );
+}
+</script>
+
+
+<!-- Indices Code Starts Here -->
+<script>
+var sectorStockNamesObj;
+function setEquitySelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedMarketTypeValue = document.getElementById('marketType').value
+	
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market'][selectedMarketTypeValue]
+	var selectElementRef = document.getElementById("equityTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSectorsStocksData )
+}
+
+async function getSectorsStocksData( passedValue )
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedTimeValue = document.getElementById('equityTimeValues').value
+	var selectedMarketTypeValue = document.getElementById('marketType').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/'+selectedMarketTypeValue+'/'+selectedTimeValue+'/'+selectedTimeValue
+	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
+	
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var equityDataObj = await fetchFirebaseDocData( docPath )
+	//console.log( "Equity Data Obj", JSON.parse( equityDataObj['data'] ))
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	
+	showEquitySectorsStocksData ( JSON.parse( equityDataObj['data'] ), selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
+
+}
+
+async function showIndicesPerformanceChart ( returnedDataObj )
+{
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	//var selectedValue = document.getElementById("indices_performance_time").value;
+		
+	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
+	var indicesPerformanceObject = returnedDataObj ['data']
+		
+	var dataPointsArray=[]
+	var dataPointsArrayAdvances=[]
+	var dataPointsArrayDeclines=[]
+	var dataPointsArrayUnchanged=[]
+	var dataPointsArrayPChangeAddition=[]
+	
+	var tempObj={}
+	for (var symbol in indicesPerformanceObject) {
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY PSU BANK' && symbol !='NIFTY PVT BANK' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+			
+		{
+		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+		}
+	}
+	
+// tempObj is sorted by this code
+//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
+Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
+var temp={}
+if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=symbol.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=symbol
+}
+	
+		//temp["y"]=tempObj[symbol]; 
+		temp["y"]= Math.abs( tempObj[symbol] ); 
+		if(tempObj[symbol]<0) 
+		{
+			temp["color"]="#cd5652"
+		}
+		else if(tempObj[symbol]>0) 
+		{
+			temp["color"]="#3a7dd4"
+		}
+		else if(tempObj[symbol]==0) 
+		{
+			temp["color"]="black"
+		}
+		
+		dataPointsArray.push(temp)
+	});
+	
+/*
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][9]; 
+		temp["color"]="#089981"
+			
+		dataPointsArrayAdvances.push(temp)
+		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
+	});
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][10]; 
+		temp["color"]="#cd5652"
+		
+	
+		
+		dataPointsArrayDeclines.push(temp)
+		
+	});	
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][11]; 
+	
+		temp["color"]="#cbba4d"
+		
+		
+		dataPointsArrayUnchanged.push(temp)
+	});
+	
+	*/
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+	animationEnabled: false,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
+			//verticalAlign: "top",
+
+			 //horizontalAlign: "right",
+	
+			 //fontSize: 15,
+			 fontSize: 13,
+			//dockInsidePlotArea: true
+			dockInsidePlotArea: false
+	}],
+	
+	toolTip: {
+			//fontSize: 19,
+			fontSize: 15,
+	},
+	axisY: {
+		//title: "Growth Rate (in %)",
+		//includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.1,
+		//labelFontSize: 18,
+		labelFontSize: 11, // bottom size for change%
+	},
+	axisX: {
+		interval: 1,
+		//title: "Countries"
+		includeZero: true,
+		 //labelFontSize: 17,
+		 labelFontSize: 11, // vertical axis size for text
+		 //labelFontWeight: "bold",
+	},
+	dataPointWidth: 9,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		//click: onClick,
+		//type: "column",
+		type: "bar",
+		yValueFormatString: "#,##0.0#\"%\"",
+		dataPoints: dataPointsArray
+	}]
+});
+
+
+console.log("dataPointsArray",dataPointsArray)
+chart.render();
+//chart2.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+
+async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, deliveryDataObj )
+{
+	 document.getElementById('sectorsStocksDataTableContainer').innerHTML = "";
+
+	var selectedValue = selectedTimeValue;
+
+	var niftyTotalMarketObject = equityDataObj['data']
+	
+	
+		var tempObj = {};
+
+		if( sectorStockNamesObj !=undefined )
+		{
+			for (var sector in sectorStockNamesObj ) {
+				var sectorName = sector.replace(/ /g,'_') 
+				if( sectorName!='Template' )
+				{
+					for (var s = 0; s < sectorStockNamesObj[sector].length; s++) {
+						var Symbol = sectorStockNamesObj[sector][s].replace(/&amp;/g,'&')
+						var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+						if ( symbolArray != undefined) // if sector name does not exist then create empty object with sector name
+						{
+						if (tempObj[sectorName] == undefined) // if sector name does not exist then create empty object with sector name
+						{
+							tempObj[sectorName] = {}
+
+							if (tempObj[sectorName][Symbol] == undefined) // if symbol does not exist in sector then create empty object with stock name in sector
+							{
+								tempObj[sectorName][Symbol] = {}
+								tempObj[sectorName][Symbol] = symbolArray
+							}
+							else	// if symbol exist in sector then add new data
+							{
+								tempObj[sectorName][Symbol] = symbolArray
+							}
+						}
+						else // if sector name exist then run this block
+						{
+							if (tempObj[sectorName][Symbol] == undefined)  // if symbol does not exist in sector then create empty object with stock name in sector
+							{
+								tempObj[sectorName][Symbol] = {}
+								tempObj[sectorName][Symbol] = symbolArray
+							}
+							else // if symbol exist in sector then add new data
+							{
+								tempObj[sectorName][Symbol] = symbolArray
+							}
+
+						}
+					}
+				}
+
+				}
+			}
+		}
+	
+		//console.log( "Sector stocks in Total Equity Market", tempObj )
+	
+	var tablesStr=''
+	//for (var sector in niftyTotalMarketObject) {
+	for (var sector in Object.fromEntries(Object.entries(tempObj).sort())) {
+		
+		
+		//if(sector != 'NIFTY_50' )
+		{
+			//console.log(sector.replace(/NIFTY_/g,''))	
+			
+		if(sector == 'NIFTY_50' )
+		{
+			tablesStr += '<div class="column">    <div class="spaceBetweenTablesSpurtsEquity">     <table id="'
+		+sector
+		+'">            <caption style="caption-side:top">'
+	 +sector
+	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
+	 +' (% Change-Wise)</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+       +'<tbody>'
+		}
+		else
+		{
+		tablesStr += '<div class="column">    <div class="spaceBetweenTablesSpurtsEquity">     <table id="'
+		+sector.replace(/NIFTY_/g,'')
+		+'">            <caption style="caption-side:top">'
+	 +sector.replace(/NIFTY_/g,'')
+	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
+	 +' (% Change-Wise)</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+       +'<tbody>'
+		}
+	   
+	   	   
+		for( var Symbol in tempObj[sector] )
+		{
+	
+	   var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+	
+		if( symbolArray!=undefined ){
+	
+
+	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
+
+		
+			//if( symbolArray[4]>=60 )
+			{
+			 tablesStr +='<tr class="item"><td>'
+			 +Symbol
+			 +'</td><td>'
+			+symbolArray["pChange"] //pchange
+			 +'</td><td>'
+			 +symbolArray["lastPrice"] 
+			 //+(symbolArray["totalTradedValue"] / 100000).toFixed(0) //totalTradedVolume
+			  +'</td><td>'
+			+twentyDAV
+			 +'</td></tr>'
+			}
+		}
+		}
+	 tablesStr +=' </tbody> </table>    </div>  </div>'
+	}
+	
+	}
+
+	 document.getElementById('sectorsStocksDataTableContainer').innerHTML = tablesStr;
+	 
+addEventListnerInTables()
+}	//	show_stock_options_Data() Function ENDS HERE
+
+
+</script>
+<!-- Indices Code Ends Here -->
+
+
+<script>
+// Example usage: generate month and year from April 2023 till now
+generateMonthYearFromDate( new Date("April 2023") );
+</script>
