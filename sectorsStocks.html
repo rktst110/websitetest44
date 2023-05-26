@@ -96,7 +96,7 @@ thead {
     position: fixed;
     height: 500px;
      width: 28%;
-	  
+	  top:78;
 	 
 }
   }
@@ -375,7 +375,7 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 	data: [{
 		//indexLabel: "{y}",
 		//indexLabelFontSize: 18,
-		//click: onClick,
+		click: onClick,
 		//type: "column",
 		type: "bar",
 		indexLabelPlacement: "auto",
@@ -393,6 +393,109 @@ chart.render();
 //chart2.render();
 
 } // showIndicesPerformanceChart ENDS HERE
+
+
+
+
+function onClick(e) {
+
+		var label=e.dataPoint.label
+		//if( mainOIDataObject['sector_stockNames'] !=undefined )
+		{
+			if( label=='NIFTY 50' )
+			{
+				document.getElementById("NIFTY_50").scrollIntoView();
+				search_and_highlight_sector("NIFTY_50")
+			}
+			else if( label=='NIFTY BANK' )
+			{
+				document.getElementById("BANK").scrollIntoView();
+				search_and_highlight_sector("BANK")
+			}
+			else{
+				 search_and_highlight_sector(label.replace(/ /g,'_'))
+				document.getElementById(label.replace(/ /g,'_')).scrollIntoView();
+			}
+		}
+		//else
+		{
+		if( label=='CONSR DURBL' )
+		{
+			document.getElementById("CONSUMER_DURABLES").scrollIntoView();
+			 search_and_highlight_sector("CONSUMER_DURABLES")
+		}
+		else if( label=='OIL AND GAS' )
+		{
+				document.getElementById("OIL_GAS").scrollIntoView();
+			 search_and_highlight_sector("OIL_GAS")
+		}
+		
+		else if( label=='FIN SERVICE' )
+			{
+				document.getElementById("FINANCIAL_SERVICES").scrollIntoView();
+			 search_and_highlight_sector("FINANCIAL_SERVICES")
+		}
+			
+		else if( label=='NIFTY BANK' )
+			{
+				document.getElementById("BANK").scrollIntoView();
+			 search_and_highlight_sector("BANK")
+		}
+		
+		else if( label=='PSU BANK' )
+			{
+				document.getElementById("PSU_BANK").scrollIntoView();
+			 search_and_highlight_sector("PSU_BANK")
+		}
+		else if( label=='PVT BANK' )
+			{
+				document.getElementById("PRIVATE_BANK").scrollIntoView();
+			 search_and_highlight_sector("PRIVATE_BANK")
+		}
+			
+			
+		else if( label=='NIFTY 50' )
+		{
+			document.getElementById("NIFTY_50").scrollIntoView();
+			 search_and_highlight_sector("NIFTY_50")
+		}
+	else
+		{
+			 search_and_highlight_sector(label)
+			document.getElementById(label).scrollIntoView();
+			
+		}
+		
+}
+		
+	
+		
+	}
+
+
+var myelement = document.createElement("script");
+myelement.setAttribute("src", "https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js");
+document.head.appendChild(myelement);
+
+var tempSectorStoreValue=''
+function search_and_highlight_sector(searchStr)
+{
+	if(tempSectorStoreValue!='' && tempSectorStoreValue!=searchStr)
+	{
+		//  $(window).scrollTop($("*:contains("+tempSectorStoreValue+")").parent('table').offset().top);
+$("caption:contains("+tempSectorStoreValue+")" ).css( "color", "white" );
+	}
+
+		//var str='hello'
+ // $(window).scrollTop($("*:contains("+searchStr+")").parent('table').offset().top);
+$("caption:contains("+searchStr+")" ).css( "color", "yellow" );
+	
+	
+tempSectorStoreValue=searchStr
+
+}
+
+
 
 </script>
 <!-- Indices Code Ends Here -->
@@ -573,7 +676,7 @@ addEventListnerInTables()
 
 
 <style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:10%;	right:2px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('indicesTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
 <!-- <div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
 
 
