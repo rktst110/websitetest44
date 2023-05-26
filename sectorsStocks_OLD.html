@@ -22,14 +22,12 @@
  <script src="functions/firebaseFunctions.js"></script>
 
  <div id="importedContent"></div>
-  
-  
-  <title>Indices + Sectors</title>
-
-
+ 
+ <title>Sector's Stocks</title>
+ 
+ 
 
 <style>
-
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -37,37 +35,13 @@ body {
   color: white; /* Set the text color to white */
 }
 
-thead {
-  position: sticky;
-  top: 0;
-}
 
-* {
-  box-sizing: border-box;
-}
-
-/* Create two unequal columns that floats next to each other */
 .column {
   float: left;
-  padding: 0px;
-  height: 550px;
-  
-}
-
-.left {
-  width: 28%;
-    margin: 0px 0px 10px;
-  }
-
-.right {
-  width: 72%;
-}
-
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
+  width: 24.8%;
+  padding: 1px;
+  height: 305px;
+  margin: 1px 1px/* Should be removed. Only for demonstration */
 }
 
 @media screen and (max-width: 800px) {
@@ -75,41 +49,7 @@ thead {
     width: 100%;
   }
 }
-
-.column2 {
-  float: left;
-  width: 46%;
-  padding: 0px;
-  height: 550px;
-  margin: 0px 15px 15px;
-}
-
-@media screen and (max-width: 800px) {
-  .column2 {
-    width: 100%;
-	margin: 0px 0px 15px;
-	 }
-  }
-  
-  @media screen and (min-width: 800px) {
-    .sticky{
-    position: fixed;
-    height: 500px;
-     width: 28%;
-	  
-	 
-}
-  }
-  @media screen and (max-width: 300px) {
-  .sticky{
-   height: 500px;
-   width: 28%;
-
-}
-  }
-  
 </style>
-
 
 
  <label>Month Year:</label>
@@ -131,12 +71,6 @@ thead {
 
 <hr>
 
-
- <label> Indices TimeValues:</label>
-<select id="indicesTimeValues" onchange="getIndicesData()">
-</select>
-
-&nbsp; | &nbsp;&nbsp;
  <label> Equity TimeValues:</label>
 <select id="equityTimeValues" onchange="getSectorsStocksData()">
 </select>
@@ -147,61 +81,56 @@ thead {
 
 <br><br>
 
-
-
 <!--Content Start From Here-->
-<div class="row ">
-  <div class="column left">
-<div class="sticky"  style="height: 550px;">
-<div id="IndicesPerformanceChart" style="min-height: 550px; height: auto;width: 100%;"></div>
-</div> 
-
- 
-     </div>
-	 
-	 <!--75% Starts Here-->
-  <div class="column right">
 <div class="spaceBetweenTables">  	<div id="sectorsStocksDataTableContainer"></div> </div>
-	
-  </div>
-  <!--75% Starts Here-->
-</div>
 <!--Content Ends Here-->
 
 
 <script>
 function fetchDataForAllSegments()
 {
-setIndicesSelectorTimeValues( "syncWithCommonTime" );
 setEquitySelectorTimeValues( "syncWithCommonTime" );
 //setSpurtsSelectorTimeValues( "syncWithCommonTime" );
 }
 </script>
 
 
-
 <!-- Indices Code Starts Here -->
 <script>
-
-function setIndicesSelectorTimeValues( passedValue )
+var sectorStockNamesObj;
+function setEquitySelectorTimeValues( passedValue )
 {
 	var tradingDate = document.getElementById('tradingDate').value
-	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
-	var selectElementRef = document.getElementById("indicesTimeValues");
+	var selectedMarketTypeValue = document.getElementById('marketType').value
 	
-	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market'][selectedMarketTypeValue]
+	var selectElementRef = document.getElementById("equityTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSectorsStocksData )
 }
 
-async function getIndicesData( passedValue )
+async function getSectorsStocksData( passedValue )
 {
 	var selectedMonthYear = document.getElementById('monthYear').value
 	var selectedTradingDate = document.getElementById('tradingDate').value
-	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	var selectedTimeValue = document.getElementById('equityTimeValues').value
+	var selectedMarketTypeValue = document.getElementById('marketType').value
 	
-	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/'+selectedMarketTypeValue+'/'+selectedTimeValue+'/'+selectedTimeValue
+	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
+	
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
-	var dataObj = await fetchFirebaseDocData( docPath )
-	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	var equityDataObj = await fetchFirebaseDocData( docPath )
+	//console.log( "Equity Data Obj", JSON.parse( equityDataObj['data'] ))
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	
+	showEquitySectorsStocksData ( JSON.parse( equityDataObj['data'] ), selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
 
 }
 
@@ -324,7 +253,7 @@ else{
 	*/
 // this section is for plotting indices chart for simple perchange change of single column bar
 var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
-	animationEnabled: true,
+	animationEnabled: false,
 	theme: "dark2", // "light1", "light2", "dark1", "dark2"
 	title: {
 		//text: "GDP Growth Rate - 2016"
@@ -351,11 +280,9 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 		//title: "Growth Rate (in %)",
 		//includeZero: true,
 		//suffix: "%",
-		gridThickness: 0.03,
+		gridThickness: 0.1,
 		//labelFontSize: 18,
-		labelFontSize: 0, // bottom size for change%
-		 tickLength: 0,
-		 
+		labelFontSize: 11, // bottom size for change%
 	},
 	axisX: {
 		interval: 1,
@@ -364,26 +291,16 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 		 //labelFontSize: 17,
 		 labelFontSize: 11, // vertical axis size for text
 		 //labelFontWeight: "bold",
-		  lineThickness: 0.5,
-         lineColor: "#ccc",
-		 tickColor: "#555",
-		 tickLength: 0,
-		
-		 
 	},
-	dataPointWidth: 12,
+	dataPointWidth: 9,
 	data: [{
 		//indexLabel: "{y}",
 		//indexLabelFontSize: 18,
 		//click: onClick,
 		//type: "column",
 		type: "bar",
-		indexLabelPlacement: "auto",
-			indexLabel: "{y}",
-			indexLabelFontSize: 11,
-			indexLabelFontColor: "#ddd",
 		yValueFormatString: "#,##0.0#\"%\"",
-		dataPoints:dataPointsArray
+		dataPoints: dataPointsArray
 	}]
 });
 
@@ -394,53 +311,6 @@ chart.render();
 
 } // showIndicesPerformanceChart ENDS HERE
 
-</script>
-<!-- Indices Code Ends Here -->
-
-
-
-<!-- Sectors Stocks Code Starts Here -->
-
-<style>* {   box-sizing: border-box;   } .spaceBetweenTablesSpurtsEquity { border: 2px solid #4b4d4e;min-height:550px;height: 550px;overflow-y: scroll;background-color: #32373a; }  .tableColumnForSpurtsUnderlyings {  float: left;   width: 24.9%;   padding: 5px;  border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a;  }   .tableRowForSpurtsUnderlyings:after {   content: "";   display: table;   clear: both;   }    .tableRowClass {   color: #ffffff;   background: #27ae60;   }   .PreOpenMarketClassLoosers{   color: #ffffff;   background: #ea6153;   }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }</style>
-
-
-<script>
-var sectorStockNamesObj;
-function setEquitySelectorTimeValues( passedValue )
-{
-	var tradingDate = document.getElementById('tradingDate').value
-	var selectedMarketTypeValue = document.getElementById('marketType').value
-	
-	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market'][selectedMarketTypeValue]
-	var selectElementRef = document.getElementById("equityTimeValues");
-	
-	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSectorsStocksData )
-}
-
-async function getSectorsStocksData( passedValue )
-{
-	var selectedMonthYear = document.getElementById('monthYear').value
-	var selectedTradingDate = document.getElementById('tradingDate').value
-	var selectedTimeValue = document.getElementById('equityTimeValues').value
-	var selectedMarketTypeValue = document.getElementById('marketType').value
-	
-	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/'+selectedMarketTypeValue+'/'+selectedTimeValue+'/'+selectedTimeValue
-	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
-	
-	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
-	var equityDataObj = await fetchFirebaseDocData( docPath )
-	//console.log( "Equity Data Obj", JSON.parse( equityDataObj['data'] ))
-	
-	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
-	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
-	
-	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
-	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
-	
-	
-	showEquitySectorsStocksData ( JSON.parse( equityDataObj['data'] ), selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
-
-}
 
 async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, deliveryDataObj )
 {
@@ -511,22 +381,22 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, de
 			
 		if(sector == 'NIFTY_50' )
 		{
-			tablesStr += '<div class="column2">    <div class="spaceBetweenTablesSpurtsEquity">     <table id="'
+			tablesStr += '<div class="column">    <div class="spaceBetweenTablesSpurtsEquity">     <table id="'
 		+sector
 		+'">            <caption style="caption-side:top">'
 	 +sector
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' (% Change-Wise)</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
        +'<tbody>'
 		}
 		else
 		{
-		tablesStr += '<div class="column2">    <div class="spaceBetweenTablesSpurtsEquity">     <table id="'
+		tablesStr += '<div class="column">    <div class="spaceBetweenTablesSpurtsEquity">     <table id="'
 		+sector.replace(/NIFTY_/g,'')
 		+'">            <caption style="caption-side:top">'
 	 +sector.replace(/NIFTY_/g,'')
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' (% Change-Wise)</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
        +'<tbody>'
 		}
 	   
@@ -568,13 +438,9 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, de
 addEventListnerInTables()
 }	//	show_stock_options_Data() Function ENDS HERE
 
+
 </script>
-<!-- Sectors Stocks Code Ends Here -->
-
-
-<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:10%;	right:2px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
-<!-- <div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
+<!-- Indices Code Ends Here -->
 
 
 <script>
