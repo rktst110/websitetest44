@@ -42,7 +42,9 @@ thead {
   top: 0;
 }
 
-
+* {
+  box-sizing: border-box;
+}
 
 /* Create two unequal columns that floats next to each other */
 .column {
@@ -94,7 +96,7 @@ thead {
     position: fixed;
     height: 500px;
      width: 28%;
-	top: 15px;
+	  top:78;
 	 
 }
   }
@@ -102,7 +104,7 @@ thead {
   .sticky{
    height: 500px;
    width: 28%;
- 
+
 }
   }
   
@@ -150,7 +152,7 @@ thead {
 <!--Content Start From Here-->
 <div class="row ">
   <div class="column left">
-<div class="" id="stick"  style="height: 550px;">
+<div class="sticky"  style="height: 550px;">
 <div id="IndicesPerformanceChart" style="min-height: 550px; height: auto;width: 100%;"></div>
 </div> 
 
@@ -164,21 +166,6 @@ thead {
   </div>
   <!--75% Starts Here-->
 </div>
-
-<script>
-window.onscroll = function() {myFunction()};
-
-var stick = document.getElementById("stick");
-var sticky = stick.offsetTop;
-
-function myFunction() {
-  if (window.pageYOffset > sticky) {
-    stick.classList.add("sticky");
-  } else {
-    stick.classList.remove("sticky");
-  }
-}
-</script>
 <!--Content Ends Here-->
 
 
@@ -558,10 +545,10 @@ async function getSectorsStocksData( passedValue )
 
 }
 
-
+var deliveryDataObj2;
 async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, deliveryDataObj )
 {
-
+deliveryDataObj2 = deliveryDataObj
 	 document.getElementById('sectorsStocksDataTableContainer').innerHTML = "";
 
 	var selectedValue = selectedTimeValue;
@@ -570,7 +557,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, de
 	
 	
 		var tempObj = {};
-		
+		sectorStockNamesObj["TOTAL_MARKET"] = Object.keys( niftyTotalMarketObject )
 		if( sectorStockNamesObj !=undefined )
 		{
 			for (var sector in sectorStockNamesObj ) {
@@ -651,12 +638,13 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, de
 	   	   
 		for( var Symbol in tempObj[sector] )
 		{
-
+		if(Symbol !='NIFTY TOTAL MARKET' && deliveryDataObj["Symbols"][Symbol]!=undefined )
+		{
 	   var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
 	
 		if( symbolArray!=undefined ){
 	
-
+console.log(Symbol)
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
 
@@ -676,7 +664,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, de
 			}
 		}
 		}
-		
+		}
 	 tablesStr +=' </tbody> </table>    </div>  </div>'
 	}
 	

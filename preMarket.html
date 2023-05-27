@@ -25,54 +25,59 @@
  
  <title>Pre Market</title>
  
- 
 
 <style>
+
+thead {
+  position: sticky;
+  top: 0;
+}
+
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #555;
-  color: white; /* Set the text color to white */
+  color: white; 
+   text-align: center;
+  }
+  
+   
+ .column {
+  float: left;
+  padding: 0.5px;
+  height: 518px;
+  width: 42%;
+  margin-top:20px;
 }
 
-* {
-  box-sizing: border-box;
-}
-.column1 {
-  float: left;
-  width: 29.7%;
-  padding: 2px;
-  height: 500px; 
-  margin: 2px 2px;
-  border-radius: 5px;
+.Left {
+  width: 42%;
+  margin-left:6.5%;
 }
 
-.column2 {
-  float: left;
-  width: 69.7%;
-  padding: 2px;
-  height: 500px; 
-  margin: 2px 2px;
-  border-radius: 5px;
+.Right {
+  width: 42%;
+  margin-left:2.5%;
+  margin-bottom:15px;
 }
 
 .row:after {
   content: "";
   display: table;
   clear: both;
+  text-align: center;
 }
 
-
-@media screen and (max-width: 600px) {
-  .column1 {
-    width: 100%;
-  }
-  .column2 {
-    width: 100%;
+@media screen and (max-width: 800px) {
+  .column {
+    width: 98%;
+	font-size: 15px;
+	margin-left:1%;
+	margin-right:1%;
+  margin-bottom:12px;
   }
 }
 </style>
-
 
  <label>Month Year:</label>
 <select id="monthYear" onchange="getFirestoreData()">
@@ -99,10 +104,10 @@ body {
 
 
 <!--Content Start From Here-->
-<style>   * {   box-sizing: border-box;   } .spaceBetweenTables { border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a; }  .tableColumnForPreMarket {  float: left;    padding: 5px;  border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a;  }   .tableRowForPreMarket:after {   content: "";   display: table;   clear: both;   }    .PreOpenMarketClassGainers{   color: #ffffff;   background: #27ae60;   }   .PreOpenMarketClassLoosers{   color: #ffffff;   background: #ea6153;   }  caption {	white-space: nowrap;  text-align: center; color: #9a9c9e; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }</style>
+<style>    .spaceBetweenTables { border: 2px solid #4b4d4e;height: 518px;overflow-y: scroll;background-color: #32373a; }     .greenHeaderClass{   color: #ffffff;   background: #27ae60;   }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	</style>
 
-<span id="AdvancesDeclinesContainer"></span>
-<div id="allPreOpenMarketColumnsContainer" class="tableRowForPreMarket"> </div>
+ &nbsp;&nbsp;| &nbsp; <span id="AdvancesDeclinesContainer"></span>
+<div id="allPreOpenMarketColumnsContainer" class=""> </div>
 <br><br><br><br>
 <!--Content Ends Here-->
 
@@ -115,7 +120,7 @@ setPreMarketSelectorTimeValues();
 </script>
 
 
-<!-- Indices Code Starts Here -->
+<!-- Pre Market Code Starts Here -->
 <script>
 
 function setPreMarketSelectorTimeValues( passedValue )
@@ -125,6 +130,9 @@ function setPreMarketSelectorTimeValues( passedValue )
 	var selectElementRef = document.getElementById("preMarketTimeValues");
 	
 	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getPreMarketData )
+	
+	selectElementRef.value = selectElementRef.options[selectElementRef.options.length - 1].value;
+	getPreMarketData()
 }
 
 async function getPreMarketData( passedValue )
@@ -141,298 +149,95 @@ async function getPreMarketData( passedValue )
 	var sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
 	//console.log("sectorStockNamesObj", sectorStockNamesObj)
 	
-	show_pre_open_market_Data ( JSON.parse( dataObj['data'] ), sectorStockNamesObj, selectedTradingDate, selectedTimeValue )
+	
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	
+	show_pre_open_market_Data ( JSON.parse( dataObj['data'] ), sectorStockNamesObj, selectedTradingDate, selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
 	
 	
 }
 
-async function showIndicesPerformanceChart ( returnedDataObj )
-{
-	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
-	//var selectedValue = document.getElementById("indices_performance_time").value;
-
-	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
-	var indicesPerformanceObject = returnedDataObj ['data']
-		
-	var dataPointsArray=[]
-	var dataPointsArrayAdvances=[]
-	var dataPointsArrayDeclines=[]
-	var dataPointsArrayUnchanged=[]
-	var dataPointsArrayPChangeAddition=[]
-	
-	var tempObj={}
-	for (var symbol in indicesPerformanceObject) {
-		//if(symbol !='INDIA VIX' && symbol !='NIFTY PSU BANK' && symbol !='NIFTY PVT BANK' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-			
-		{
-		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
-		}
-	}
-	
-// tempObj is sorted by this code
-//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
-Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
-var temp={}
-if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
-//if(symbol !='NIFTY BANK')
-{
-	temp["label"]=symbol.replace(/NIFTY /g,'')
-}
-else{
-	temp["label"]=symbol
-}
-	
-		//temp["y"]=tempObj[symbol]; 
-		temp["y"]= Math.abs( tempObj[symbol] ); 
-		if(tempObj[symbol]<0) 
-		{
-			temp["color"]="#cd5652"
-		}
-		else if(tempObj[symbol]>0) 
-		{
-			temp["color"]="#3a7dd4"
-		}
-		else if(tempObj[symbol]==0) 
-		{
-			temp["color"]="black"
-		}
-		
-		dataPointsArray.push(temp)
-	});
-	
-/*
-Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
-var temp={}
-var sectorName = symbol.replace(/_/g,' ')
-if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
-//if(symbol !='NIFTY BANK')
-{
-	temp["label"]=sectorName.replace(/NIFTY /g,'')
-}
-else{
-	temp["label"]=sectorName
-}
-	
-		temp["y"]=indicesPerformanceObject[symbol][9]; 
-		temp["color"]="#089981"
-			
-		dataPointsArrayAdvances.push(temp)
-		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
-	});
-	
-Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
-var temp={}
-var sectorName = symbol.replace(/_/g,' ')
-if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
-//if(symbol !='NIFTY BANK')
-{
-	temp["label"]=sectorName.replace(/NIFTY /g,'')
-}
-else{
-	temp["label"]=sectorName
-}
-	
-		temp["y"]=indicesPerformanceObject[symbol][10]; 
-		temp["color"]="#cd5652"
-		
-	
-		
-		dataPointsArrayDeclines.push(temp)
-		
-	});	
-	
-Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
-var temp={}
-var sectorName = symbol.replace(/_/g,' ')
-if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
-//if(symbol !='NIFTY BANK')
-{
-	temp["label"]=sectorName.replace(/NIFTY /g,'')
-}
-else{
-	temp["label"]=sectorName
-}
-	
-		temp["y"]=indicesPerformanceObject[symbol][11]; 
-	
-		temp["color"]="#cbba4d"
-		
-		
-		dataPointsArrayUnchanged.push(temp)
-	});
-	
-	*/
-// this section is for plotting indices chart for simple perchange change of single column bar
-var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
-	animationEnabled: false,
-	theme: "dark2", // "light1", "light2", "dark1", "dark2"
-	title: {
-		//text: "GDP Growth Rate - 2016"
-	},
-	subtitles: [{
-			//text: "Subtitle 1"
-		  },{
-			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
-			//verticalAlign: "top",
-
-			 //horizontalAlign: "right",
-	
-			 //fontSize: 15,
-			 fontSize: 13,
-			//dockInsidePlotArea: true
-			dockInsidePlotArea: false
-	}],
-	
-	toolTip: {
-			//fontSize: 19,
-			fontSize: 15,
-	},
-	axisY: {
-		//title: "Growth Rate (in %)",
-		//includeZero: true,
-		//suffix: "%",
-		gridThickness: 0.1,
-		//labelFontSize: 18,
-		labelFontSize: 11, // bottom size for change%
-	},
-	axisX: {
-		interval: 1,
-		//title: "Countries"
-		includeZero: true,
-		 //labelFontSize: 17,
-		 labelFontSize: 11, // vertical axis size for text
-		 //labelFontWeight: "bold",
-	},
-	dataPointWidth: 9,
-	data: [{
-		//indexLabel: "{y}",
-		//indexLabelFontSize: 18,
-		//click: onClick,
-		//type: "column",
-		type: "bar",
-		yValueFormatString: "#,##0.0#\"%\"",
-		dataPoints: dataPointsArray
-	}]
-});
-
-
-console.log("dataPointsArray",dataPointsArray)
-chart.render();
-//chart2.render();
-
-} // showIndicesPerformanceChart ENDS HERE
-
-async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selectedTradingDate, selectedTimeValue)
+async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selectedTradingDate, selectedTimeValue, deliveryDataObj)
 {
 	 document.getElementById('allPreOpenMarketColumnsContainer').innerHTML = "";
-
-	var selectedValue = selectedTimeValue;
 
 	var preOpenMarketObject = dataObj
 
 	var AdvancesDeclinesUnchanged=preOpenMarketObject['AdvancesDeclinesUnchanged']
-	document.getElementById('AdvancesDeclinesContainer').innerHTML =  '<span style="color:#bfffbf">Advances: '+preOpenMarketObject['advances']+'</span><span style="color:#ffb8b8"> &nbsp;&nbsp; Declines: '+preOpenMarketObject['declines']+'</span><span style="color:white"> &nbsp;&nbsp; Unchanged: '+preOpenMarketObject['unchanged']+'</span> &nbsp; | &nbsp; '+selectedTradingDate
+	document.getElementById('AdvancesDeclinesContainer').innerHTML =  '<span style="color:#bfffbf">Advances: '+preOpenMarketObject['advances']+'</span><span style="color:#ffb8b8"> &nbsp;&nbsp; Declines: '+preOpenMarketObject['declines']+'</span><span style="color:white"> &nbsp;&nbsp; Unchanged: '+preOpenMarketObject['unchanged']+'</span> &nbsp; | &nbsp; '+selectedTradingDate+' | '+selectedTimeValue
 
-	var FnOList={}
-	var Nifty50List={}
-	
-	//var sectorStockNamesObj = sectorStockNamesObj
-	if( sectorStockNamesObj !=undefined )
-	{
-		var FnOSymbols = Object.keys(preOpenMarketObject['data'])
-		var Nifty50Symbols = sectorStockNamesObj['NIFTY_50']
-		for (var s = 0; s < FnOSymbols.length; s++) {
-			var Symbol = FnOSymbols[s]
-			var SymbolArray = preOpenMarketObject['data'][Symbol]
-			//console.log(Symbol)
-			if( SymbolArray!=undefined )
-			{
-				FnOList[Symbol]= SymbolArray['metadata']['pChange']
-			}
-			
-		}
-		
-		for (var s = 0; s < Nifty50Symbols.length; s++) {
-			var Symbol = Nifty50Symbols[s]
-			var SymbolArray = preOpenMarketObject['data'][Symbol]
-			if( SymbolArray!=undefined )
-			{
-				Nifty50List[Symbol]= SymbolArray['metadata']['pChange']
-			}
-			
-		}
-	}
-	
 	
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 
 	var tablesStr=''
 
-	var ascNiftyTablesStr = '<div class="tableColumnForPreMarket">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingNifty">'
-	+'<caption style="caption-side:top">Nifty 50 Gainers (% Change-Wise)</caption>    <thead>       <tr>               <th class="PreOpenMarketClassGainers">Symbol</th>               <th class="PreOpenMarketClassGainers">LTP</th>              <th class="PreOpenMarketClassGainers">Chng%</th>			   <th class="PreOpenMarketClassGainers">TO</th>            </tr>  </thead>'
+	var NiftyTablesStr = '<div class="column Left">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingNifty">'
+	+'<caption style="caption-side:top">Nifty 50 | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>    <thead class="greenHeaderClass">       <tr>               <th class="">Symbol</th>              <th class="">Chng%</th>               <th class="">LTP</th>			   <th class="">TO</th>    	<th>20DAV</th>        </tr>  </thead>'
 	+'<tbody>'
 
 
-	for( var niftyStock=0; niftyStock < Object.keys(Nifty50List).length ; niftyStock++ )
-	//for( var niftyStock=0; niftyStock < 15 ; niftyStock++ )
+	for( var s=0; s < sectorStockNamesObj['NIFTY_50'].length ; s++ )
 	{
-		var AscendingNifty50List = Object.fromEntries( Object.entries(Nifty50List).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
-		var DescendingNifty50List = Object.fromEntries( Object.entries(Nifty50List).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+		var Symbol = sectorStockNamesObj['NIFTY_50'][s]
+		var stockValuesObj =preOpenMarketObject['data'] [ Symbol ]
 
-		var ascValuesArray=preOpenMarketObject['data'][Object.keys(AscendingNifty50List)[niftyStock]]
-		var descValuesArray=preOpenMarketObject['data'][Object.keys(DescendingNifty50List)[niftyStock]]
+		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
 
-		ascNiftyTablesStr +='<tr class="item"><td>'
-		+Object.keys(AscendingNifty50List)[niftyStock]
+		
+		NiftyTablesStr +='<tr class="item"><td>'
+		+ Symbol
 		+'</td><td>'
-		+ascValuesArray['metadata']['iep'] //lEP
+		+stockValuesObj['metadata']['pChange'] .toFixed(2)
 		+'</td><td>'
-	 	  +ascValuesArray['metadata']['pChange'] .toFixed(2)
+		+ stockValuesObj['metadata']['iep'] //lEP
 		+'</td><td>'
-		+( ascValuesArray['metadata']['totalTurnover']  / 1000 ).toFixed(0)
+		+( stockValuesObj['metadata']['totalTurnover']  /  1000 ).toFixed(0)
+		+'</td><td>'
+		+ twentyDAV
 		+'</td></tr>'
 
 	}
-	ascNiftyTablesStr +=' </tbody> </table>    </div>  </div>'
+	NiftyTablesStr +=' </tbody> </table>    </div>  </div>'
 
 	
 
-
 	
-	var ascFnOTablesStr = '<div class="tableColumnForPreMarket">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingFnO">'
-	+'<caption style="caption-side:top">FnO Gainers (% Change-Wise)</caption>     <thead class="PreOpenMarketClassGainers">       <tr>               <th>Symbol</th>               <th>LTP</th>              <th>Chng%</th>			   <th>TO</th>            </tr>   </thead> '
+	var FnOTablesStr = '<div class="column Right">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingFnO">'
+	+'<caption style="caption-side:top">FnO | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>     <thead class="greenHeaderClass">       <tr>               <th>Symbol</th>              <th>Chng%</th>               <th>LTP</th>			   <th>TO</th>   <th>20DAV</th>            </tr>   </thead> '
 	+'<tbody>'
 
-	for( var FnOStock=0; FnOStock < Object.keys(FnOList).length ; FnOStock++ )
-	//for( var FnOStock=0; FnOStock < 15 ; FnOStock++ )
+	for( var Symbol in preOpenMarketObject['data'] )
 	{
-		var AscendingFnOList = Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
-		var DescendingFnOList = Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+		var stockValuesObj =preOpenMarketObject['data'] [ Symbol ]
+		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
 
-		var ascValuesArray=preOpenMarketObject['data'][Object.keys(AscendingFnOList)[FnOStock]]
-		var descValuesArray=preOpenMarketObject['data'][Object.keys(DescendingFnOList)[FnOStock]]
 	   
-		{
-		ascFnOTablesStr +='<tr class="item"><td>'
-		+Object.keys(AscendingFnOList)[FnOStock]
+		
+		FnOTablesStr +='<tr class="item"><td>'
+		+ Symbol
 		+'</td><td>'
-		+ascValuesArray['metadata']['iep'] //lEP
+		+stockValuesObj['metadata']['pChange'].toFixed(2)
 		+'</td><td>'
-	 	  +ascValuesArray['metadata']['pChange'].toFixed(2)
+		+stockValuesObj['metadata']['iep'] //lEP
 		+'</td><td>'
-		+(ascValuesArray['metadata']['totalTurnover'] / 1000 ).toFixed(0)
+		+(stockValuesObj['metadata']['totalTurnover'] / 1000 ).toFixed(0)
+		+'</td><td>'
+		+ twentyDAV
 		+'</td></tr>'
-		}
+		
 
 
 
 	}
-	ascFnOTablesStr +=' </tbody> </table>    </div>  </div>'
+	FnOTablesStr +=' </tbody> </table>    </div>  </div>'
 
-	tablesStr += ascNiftyTablesStr
-	tablesStr += ascFnOTablesStr
+	tablesStr += NiftyTablesStr
+	tablesStr += FnOTablesStr
 
 
 	 document.getElementById('allPreOpenMarketColumnsContainer').innerHTML = tablesStr;
@@ -442,7 +247,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 }	//	show_pre_open_market_Data() Function ENDS HERE
 
 </script>
-<!-- Indices Code Ends Here -->
+<!-- Pre Market  Code Ends Here -->
 
 
 <script>

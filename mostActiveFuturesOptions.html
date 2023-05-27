@@ -23,52 +23,60 @@
 
  <div id="importedContent"></div>
  
- <title>Page Title</title>
+ <title>Futures & Options</title>
  
  
 
 <style>
+
+
+thead {
+  position: sticky;
+  top: 0;
+}
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #555;
-  color: white; /* Set the text color to white */
+  color: white; 
+   text-align: center;
+  }
+  
+
+ .column {
+  float: left;
+  padding: 0.5px;
+  height: 520px;
+  width: 42%;
+  margin-top:20px;
+  background-color:#aaa;
 }
 
-* {
-  box-sizing: border-box;
-}
-.column1 {
-  float: left;
-  width: 29.7%;
-  padding: 2px;
-  height: 500px; 
-  margin: 2px 2px;
-  border-radius: 5px;
+.Left {
+  width: 42%;
+  margin-left:6.5%;
 }
 
-.column2 {
-  float: left;
-  width: 69.7%;
-  padding: 2px;
-  height: 500px; 
-  margin: 2px 2px;
-  border-radius: 5px;
+.Right {
+  width: 42%;
+  margin-left:2.5%;
+  margin-bottom:15px;
 }
 
 .row:after {
   content: "";
   display: table;
   clear: both;
+  text-align: center;
 }
 
-
-@media screen and (max-width: 600px) {
-  .column1 {
-    width: 100%;
-  }
-  .column2 {
-    width: 100%;
+@media screen and (max-width: 800px) {
+  .column {
+    width: 98%;
+	font-size: 15px;
+	margin-left:1%;
+	margin-right:1%;
+  margin-bottom:12px;
   }
 }
 </style>
@@ -96,10 +104,112 @@ body {
 
 
 <!--Content Start From Here-->
-<style>   * {   box-sizing: border-box;   }   .tableColumnFor3 {  float: left;   padding: 5px;   }   .tableRowFor3:after {   content: "";   display: table;   clear: both;   }   .StockOptionsClass{   color: #ffffff;   background: #3a7dd4;   }  .StockFuturesClass{   color: #ffffff;   background: #3a7dd4;   }   .MostActiveUnderlyingClass{   color: #ffffff;   background: #3a7dd4; 	} 	 .MostActiveFutureContractsClass{   color: #ffffff;   background: #3a7dd4; 	}	caption {	white-space: nowrap;  text-align: center; color: #9a9c9e; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }</style>
 
- <div class="tableRowFor3"> <div class="tableColumnFor3" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRowFor3"> <center> Stock Options Time: &nbsp;<select id="stockOptionsTimeValues" aria-labelledby="expiryLbl" onchange="getStockOptionsData()"> <option value="">Select</option> </select> </center> </div> <div class="tableRowFor3"> <div class="" style="border: 2px solid #4b4d4e;height: 385px;overflow-y: scroll;background-color: #32373a;"> <table id="stockOptionsTable"> <caption style="caption-side:top">Stock Options (Volume-Wise)</caption> <thead> <tr> <th class="StockOptionsClass">Symbol (Type)</th> <th class="StockOptionsClass">Strike Price</th> <th class="StockOptionsClass">LTP</th> <th class="StockOptionsClass">Volume</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="tableColumnFor3" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRowFor3"> <center> Stock Futures Time: &nbsp;<select id="stockFuturesTimeValues" aria-labelledby="expiryLbl" onchange="getStockFuturesData()"> <option value="">Select</option> </select> </center> </div> <div class="tableRowFor3"> <div class="" style="border: 2px solid #4b4d4e;height: 385px;overflow-y: scroll;background-color: #32373a;"> <table id="stockFuturesTable"> <caption style="caption-side:top">Stock Futures (Volume-Wise)</caption> <thead> <tr> <th class="StockFuturesClass">Symbol</th> <th class="StockFuturesClass">LTP</th> <th class="StockFuturesClass">Change(%)</th> <th class="StockFuturesClass">Volume</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="tableColumnFor3" style="border: 2px solid #4b4d4e;"> <div class="tableRowFor3"> <center> Most Active Underlying Time: &nbsp;<select id="mostActiveUnderlyingTimeValues" aria-labelledby="expiryLbl" onchange="getMostActiveUnderlyingData()"> <option value="">Select</option> </select> </center> </div> <div class="tableRowFor3"> <div class="" style="border: 2px solid #4b4d4e;height: 385px;overflow-y: scroll;background-color: #32373a;"> <table id="mostActiveUnderlyingTable"> <caption style="caption-side:top">Most Active Underlying (Value-Wise)</caption> <thead> <tr> <th class="MostActiveUnderlyingClass">Symbol</th> <th class="MostActiveUnderlyingClass">Underlying</th> <th class="MostActiveUnderlyingClass">Total Volume</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="tableColumnFor3" style="border: 2px solid #4b4d4e;"> <div class="tableRowFor3"> <center> Most Active Future Contracts Time: &nbsp;<select id="mostActiveFutureContractsTimeValues" aria-labelledby="expiryLbl" onchange="getMostActiveFutureContractsData()"> <option value="">Select</option> </select> </center> </div> <div class="tableRowFor3"> <div class="" style="border: 2px solid #4b4d4e;height: 385px;overflow-y: scroll;background-color: #32373a;"> <table id="mostActiveFutureContractsTable"> <caption style="caption-side:top">Most Active Future Contracts (Volume-Wise)</caption> <thead> <tr> <th class="MostActiveFutureContractsClass">Symbol</th> <th class="MostActiveFutureContractsClass">LTP</th> <th class="MostActiveFutureContractsClass">Change(%)</th> <th class="MostActiveFutureContractsClass">Volume</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> 
+<style>    .spaceBetweenTables { border: 2px solid #4b4d4e;height: 518px;overflow-y: scroll;background-color: #32373a; }     .greenHeaderClass{   color: #ffffff;   background: #27ae60;   } .blueHeaderClass{   color: #ffffff;   background: #3a7dd4;    }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	</style>
 
+<div class="row">
+  <div class="column Left">
+  
+        <center>
+         Stock Options Time: &nbsp;
+         <select id="stockOptionsTimeValues" aria-labelledby="expiryLbl" onchange="getStockOptionsData()">
+            <option value="">Select</option>
+         </select>
+		 <br>
+		 <div class="spaceBetweenTables"> 
+		   <table id="stockOptionsTable">
+            <caption style="caption-side:top">Stock Options (Volume-Wise)</caption>
+            <thead class="blueHeaderClass">
+               <tr>
+                  <th>Symbol (Type)</th>
+                  <th>Strike Price</th>
+                  <th>LTP</th>
+                  <th>Volume</th>
+               </tr>
+            </thead>
+            <tbody></tbody>
+         </table>
+		 </div>
+      </center>
+	  
+  </div>
+  <div class="column Right">
+      <center>
+         Stock Futures Time: &nbsp;
+         <select id="stockFuturesTimeValues" aria-labelledby="expiryLbl" onchange="getStockFuturesData()">
+            <option value="">Select</option>
+         </select>
+     
+	  <br>
+	   <div class="spaceBetweenTables"> 
+	  <table id="stockFuturesTable">
+            <caption style="caption-side:top">Stock Futures (Volume-Wise)</caption>
+            <thead class="blueHeaderClass">
+               <tr>
+                  <th>Symbol</th>
+                  <th>LTP</th>
+                  <th>Change(%)</th>
+                  <th>Volume</th>
+               </tr>
+            </thead>
+            <tbody></tbody>
+         </table>
+		 </div>
+		  </center>
+  </div>
+  
+  <div class="column Left">
+    <center>
+         Most Active Underlying Time: &nbsp;
+         <select id="mostActiveUnderlyingTimeValues" aria-labelledby="expiryLbl" onchange="getMostActiveUnderlyingData()">
+            <option value="">Select</option>
+         </select>
+		 	  <br>
+	   <div class="spaceBetweenTables"> 
+	   <table id="mostActiveUnderlyingTable">
+            <caption style="caption-side:top">Most Active Underlying (Value-Wise)</caption>
+            <thead class="blueHeaderClass">
+               <tr>
+                  <th>Symbol</th>
+                  <th>Underlying</th>
+                  <th>Total Volume</th>
+               </tr>
+            </thead>
+            <tbody></tbody>
+         </table>
+	   </div>
+		 
+      </center>
+	  
+  </div>
+  
+  <div class="column Right">
+       <center>
+         Most Active Future Contracts Time: &nbsp;
+         <select id="mostActiveFutureContractsTimeValues" aria-labelledby="expiryLbl" onchange="getMostActiveFutureContractsData()">
+            <option value="">Select</option>
+         </select>
+		 
+		  <br>
+	   <div class="spaceBetweenTables"> 
+	    <table id="mostActiveFutureContractsTable">
+            <caption style="caption-side:top">Most Active Future Contracts (Volume-Wise)</caption>
+            <thead class="blueHeaderClass">
+               <tr>
+                  <th>Symbol</th>
+                  <th>LTP</th>
+                  <th>Change(%)</th>
+                  <th>Volume</th>
+               </tr>
+            </thead>
+            <tbody></tbody>
+         </table>
+		 </div>
+      </center>
+  </div>
+</div>
+
+<br><br><br>
 <!--Content Ends Here-->
 
 
@@ -139,24 +249,18 @@ async function getStockOptionsData()
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
 	//console.log("dataObj",JSON.parse( dataObj['data'] ) )
-	show_stock_options_Data( JSON.parse( dataObj['data'] )  )
+	show_stock_options_Data( JSON.parse( dataObj['data'] ), selectedTradingDate, selectedTimeValue )
 	addEventListnerInTables()
 }
 
-async function show_stock_options_Data( dataObj )
+async function show_stock_options_Data( dataObj, selectedTradingDate, selectedTimeValue )
 {
-//var tableStr = '<table id="stockOptionsTable"> <caption style="caption-side:top">Stock Options (Volume-Wise)</caption> <thead> <tr> <th class="StockOptionsClass">Symbol (Type)</th> <th class="StockOptionsClass">Strike Price</th> <th class="StockOptionsClass">LTP</th> <th class="StockOptionsClass">Volume</th> </tr> </thead> <tbody></tbody> </table>'
+
 	 var stockOptionsTable =document.getElementById('stockOptionsTable')
 
 	stockOptionsTable.getElementsByTagName('tbody')[0].innerHTML = "";
+	stockOptionsTable.getElementsByTagName('caption')[0].innerHTML = 'Stock Options | ' + selectedTradingDate +' | '+ selectedTimeValue;
 
-	var selectedValue = document.getElementById("stockOptionsTimeValues").value;
-	
-	//await getData("currentDay")
-	//var mainOIDataObject = {};
-	//mainOIDataObject = JSON.parse(localStorage.getItem('NSE_APIs_Data'));
-	//mainOIDataObject = generatedDataInObject;
-	
 	var stockOptionsObject = dataObj['data']
 
 			
@@ -232,33 +336,24 @@ async function getStockFuturesData()
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
 	//console.log("dataObj",JSON.parse( dataObj['data'] ) )
-	show_stock_futures_Data( JSON.parse( dataObj['data'] )  )
+	show_stock_futures_Data( JSON.parse( dataObj['data'] ), selectedTradingDate, selectedTimeValue  )
 	addEventListnerInTables()
 }
 
-async function show_stock_futures_Data( dataObj )
+async function show_stock_futures_Data( dataObj, selectedTradingDate, selectedTimeValue )
 {
 	 var stockFuturesTable =document.getElementById('stockFuturesTable')
 
 	stockFuturesTable.getElementsByTagName('tbody')[0].innerHTML = "";
+	stockFuturesTable.getElementsByTagName('caption')[0].innerHTML = 'Stock Futures | ' + selectedTradingDate +' | '+ selectedTimeValue;
 
-	var selectedValue = document.getElementById("stockFuturesTimeValues").value;
-	
-	//await getData("currentDay")
-	//var mainOIDataObject = {};
-	//mainOIDataObject = JSON.parse(localStorage.getItem('NSE_APIs_Data'));
-	//mainOIDataObject = generatedDataInObject;
-	
 	var StockFuturesObject = dataObj['data']
 
 				
 	for (var i=0;i<StockFuturesObject.length;i++) {
 	var symbol = StockFuturesObject[i]['underlying']
-	//for (var symbol in stockOptionsObject) {
 		var symbolArray = StockFuturesObject[i]
-		
-	//for (var symbol in StockFuturesObject) {
-		//var symbolArray=StockFuturesObject[symbol]
+
 		 var tbody = stockFuturesTable.getElementsByTagName('tbody')[0]
 		 
 		var tr = document.createElement("tr");
@@ -314,33 +409,24 @@ async function getMostActiveUnderlyingData()
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
 	//console.log("dataObj",JSON.parse( dataObj['data'] ) )
-	show_most_active_underlying_Data( JSON.parse( dataObj['data'] )  )
+	show_most_active_underlying_Data( JSON.parse( dataObj['data'] ), selectedTradingDate, selectedTimeValue  )
 	addEventListnerInTables()
 }
 
-async function show_most_active_underlying_Data( dataObj )
+async function show_most_active_underlying_Data( dataObj, selectedTradingDate, selectedTimeValue )
 {
 	 var mostActiveUnderlyingTable =document.getElementById('mostActiveUnderlyingTable')
 
 	mostActiveUnderlyingTable.getElementsByTagName('tbody')[0].innerHTML = "";
+	mostActiveUnderlyingTable.getElementsByTagName('caption')[0].innerHTML = 'Most Active Underlying | ' + selectedTradingDate +' | '+ selectedTimeValue;
 
-	var selectedValue = document.getElementById("mostActiveUnderlyingTimeValues").value;
-	
-	//await getData("currentDay")
-	//var mainOIDataObject = {};
-	//mainOIDataObject = JSON.parse(localStorage.getItem('NSE_APIs_Data'));
-	//mainOIDataObject = generatedDataInObject;
-	
 	var mostActiveUnderlyingObject = dataObj['data']
 
 				
 	for (var i=0;i<mostActiveUnderlyingObject.length;i++) {
 	var symbol = mostActiveUnderlyingObject[i]['symbol']
-	//for (var symbol in stockOptionsObject) {
 		var symbolArray = mostActiveUnderlyingObject[i]
-		
-	//for (var symbol in mostActiveUnderlyingObject) {
-		//var symbolArray=mostActiveUnderlyingObject[symbol]
+
 		 var tbody = mostActiveUnderlyingTable.getElementsByTagName('tbody')[0]
 		 
 		var tr = document.createElement("tr");
@@ -393,31 +479,24 @@ async function getMostActiveFutureContractsData()
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
 	//console.log("dataObj",JSON.parse( dataObj['data'] ) )
-	show_most_Active_Future_Contracts_Data( JSON.parse( dataObj['data'] )  )
+	show_most_Active_Future_Contracts_Data( JSON.parse( dataObj['data'] ), selectedTradingDate, selectedTimeValue  )
 	addEventListnerInTables()
 }
 
-async function show_most_Active_Future_Contracts_Data( dataObj )
+async function show_most_Active_Future_Contracts_Data( dataObj, selectedTradingDate, selectedTimeValue )
 {
 	 var mostActiveFutureContractsTable =document.getElementById('mostActiveFutureContractsTable')
 
 	mostActiveFutureContractsTable.getElementsByTagName('tbody')[0].innerHTML = "";
-
-	var selectedValue = document.getElementById("mostActiveFutureContractsTimeValues").value;
-	
+	mostActiveFutureContractsTable.getElementsByTagName('caption')[0].innerHTML = 'Most Active Future Contracts | ' + selectedTradingDate +' | '+ selectedTimeValue;
 
 	var mostActiveFutureContractsObject = dataObj [ "volume" ] ['data']
-
 		
-				
 	for (var i=0;i<mostActiveFutureContractsObject.length;i++) {
 	var symbol = mostActiveFutureContractsObject[i]['identifier']
-	//for (var symbol in stockOptionsObject) {
+
 		var symbolArray = mostActiveFutureContractsObject[i]
 		
-		
-	//for (var symbol in mostActiveFutureContractsObject) {
-		//var symbolArray=mostActiveFutureContractsObject[symbol]
 		 var tbody = mostActiveFutureContractsTable.getElementsByTagName('tbody')[0]
 		 
 		 var symbolName=symbol
