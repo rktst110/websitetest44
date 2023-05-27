@@ -150,7 +150,7 @@ function fetchFirebaseDocData_ORIGINAL(docPath) {
 }
 }
 
-function fetchFirebaseDocData(docPath) {
+function fetchFirebaseDocData_Previous_27May2023(docPath) {
   var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
   var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
 
@@ -188,7 +188,59 @@ function fetchFirebaseDocData(docPath) {
   }
 }
 
-   
+function fetchFirebaseDocData(docPath) {
+  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+  if (firebaseFetchedDocs[docPath] !== undefined) {
+    return firebaseFetchedDocs[docPath];
+  } else {
+    var docRef = db.doc(docPath);
+
+    // Retrieve the document from Firebase
+    return docRef
+      .get()
+      .then(function (doc) {
+        if (doc.exists) {
+          var dataObj = doc.data();
+
+          // Store the fetched document in localStorage
+          firebaseFetchedDocs[docPath] = dataObj;
+
+          // Attempt to update localStorage and handle quota exceeded error
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+              localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
+              break; // Successfully stored the new entry
+            } catch (e) {
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              currentAttempt++;
+            }
+          }
+
+          if (currentAttempt === maxAttempts) {
+            console.log("Unable to store the new entry due to quota limitations.");
+          }
+
+          return dataObj;
+        } else {
+          console.log("Document does not exist");
+          return null;
+        }
+      })
+      .catch(function (error) {
+        console.log("Error getting document:", error);
+        return null;
+      });
+  }
+}
+
+
 function refreshOrLiveFirebaseData(passedValue)
 {
 	//console.log(passedValue)

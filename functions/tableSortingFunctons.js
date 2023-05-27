@@ -330,6 +330,14 @@ function clickOnVolumeAutomatically()
 		{
 			th.click()
 		}
+		}	
+		
+		if( window.location.href.toLocaleLowerCase().includes('premarket')==true ) 
+		{
+		if( th.innerText=='TO' )
+		{
+			th.click()
+		}
 		}
 		
 		
