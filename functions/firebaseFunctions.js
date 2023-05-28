@@ -114,6 +114,7 @@ function getFirestoreData( passedValue, passedObj )
              localStorage.setItem( 'firestoreIndexObj', JSON.stringify(firestoreIndexObj) )
               break; // Successfully stored the new entry
             } catch (e) {
+				document.getElementById('messages').innerHTML = e;
               // Remove oldest entry
               var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
               delete firebaseFetchedDocs[oldestEntryKey];
