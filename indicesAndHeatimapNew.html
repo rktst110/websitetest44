@@ -351,7 +351,7 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 	data: [{
 		//indexLabel: "{y}",
 		//indexLabelFontSize: 18,
-		//click: onClick,
+		click: onClick,
 		//type: "column",
 		type: "bar",
 		indexLabelPlacement: "auto",
@@ -369,6 +369,34 @@ chart.render();
 //chart2.render();
 
 } // showIndicesPerformanceChart ENDS HERE
+
+
+
+
+function onClick(e) {
+
+		var label=e.dataPoint.label
+		var labelToScroll;
+		{
+			if( label=='NIFTY 50' || label=='NIFTY BANK')
+			{
+				labelToScroll = label.replace(/ /g, '_')
+				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
+				showHeatMapChart();
+				document.getElementById("heatMapSectorSelector").scrollIntoView();
+			}
+			else
+			{
+				labelToScroll = 'NIFTY_'+label.replace(/ /g, '_')
+				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
+				showHeatMapChart();
+				document.getElementById("heatMapSectorSelector").scrollIntoView();
+			}
+		}
+
+		
+}
+
 
 </script>
 <!-- Indices Code Ends Here -->
