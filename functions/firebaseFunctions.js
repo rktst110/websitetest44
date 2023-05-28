@@ -4,7 +4,7 @@
 
 	var dataTemp ;
 var returnedDataObj;
-function getFirestoreData( passedValue, passedObj )
+function getFirestoreData_Previous_28May2023( passedValue, passedObj )
 {
 
 	const selectElement = document.getElementById("tradingDate");
@@ -47,6 +47,81 @@ function getFirestoreData( passedValue, passedObj )
 	
         });
 		localStorage.setItem( 'firestoreIndexObj', JSON.stringify(firestoreIndexObj) )
+	refreshOrLiveFirebaseData(passedValue)
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+	  }
+	  
+
+	  
+	}
+
+function getFirestoreData( passedValue, passedObj )
+{
+	  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+
+	const selectElement = document.getElementById("tradingDate");
+	 selectElement.innerHTML = '<option>Select</option>'
+	 if( passedObj !=undefined && passedObj !="" )
+	 {
+		for( var tradingDate in passedObj )
+		{
+		const optionElement = document.createElement("option");
+		optionElement.text = tradingDate;
+		selectElement.add(optionElement);
+		}
+	 	
+	 }
+	 else
+	 {
+	var monthYearCollection = document.getElementById('monthYear').value
+
+    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+    //var usersRef = db.collection('May 2023')  
+    var usersRef = db.collection(monthYearCollection)  
+	firestoreIndexObj = {};
+	
+    // Retrieve all documents in the 'users' collection
+    usersRef.get()
+      .then(function(querySnapshot) {
+      dataTemp = querySnapshot 
+      //console.log( querySnapshot );
+	  
+
+	  
+        querySnapshot.forEach(function(doc) {
+
+          //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
+          //console.log(doc.id, " => ", doc.data());
+		  firestoreIndexObj [doc.id] = doc.data()
+		  const optionElement = document.createElement("option");
+    optionElement.text = doc.id;
+    selectElement.add(optionElement);
+	
+        });
+		
+		
+          // Attempt to update localStorage and handle quota exceeded error
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+             localStorage.setItem( 'firestoreIndexObj', JSON.stringify(firestoreIndexObj) )
+              break; // Successfully stored the new entry
+            } catch (e) {
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              currentAttempt++;
+            }
+          }
+		  
+		
 	refreshOrLiveFirebaseData(passedValue)
       })
       .catch(function(error) {
