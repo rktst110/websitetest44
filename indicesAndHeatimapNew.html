@@ -364,7 +364,7 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 });
 
 
-console.log("dataPointsArray",dataPointsArray)
+//console.log("dataPointsArray",dataPointsArray)
 chart.render();
 //chart2.render();
 
@@ -383,6 +383,7 @@ chart.render();
 <script>
 var dataObjectForHeatChart={}
 var sectorStockNamesObj = {}
+var allBanksStocksObj ={}
 
 function setSpurtsSelectorTimeValues( passedValue )
 {
@@ -408,8 +409,8 @@ async function getSpurtsEquityData( passedValue )
 	var docPathForSpurtsPrevious = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValuePrevious
 	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
 	var spurtsDataObjPrevious = await fetchFirebaseDocData( docPathForSpurtsPrevious )
-	console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
-	console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
+	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
 	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 	
 	
@@ -421,8 +422,8 @@ async function getSpurtsEquityData( passedValue )
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
 	var equityDataObjPrevious = await fetchFirebaseDocData( docPathForEquityPrevious )
-	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
-	console.log( "equityDataObjPrevious",JSON.parse( equityDataObjPrevious['data'] ) )
+	//console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+	//console.log( "equityDataObjPrevious",JSON.parse( equityDataObjPrevious['data'] ) )
 	
 	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
 	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
@@ -760,7 +761,7 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 
 function add_Sectors_In_HeatMapSelector( )
 {
-	console.log( "sectorStockNamesObj", sectorStockNamesObj)
+	//console.log( "sectorStockNamesObj", sectorStockNamesObj)
 	
 	if( sectorStockNamesObj !=undefined)
 	{
@@ -795,7 +796,6 @@ function add_Sectors_In_HeatMapSelector( )
 
 async function showHeatMapChart( )
 {
-var allBanksStocksObj ={}
 	await setHighChartsDarkTheme()
 	var sectorDataArrayForHeatChart=[{
       id: 'Green',
@@ -1115,6 +1115,42 @@ function setHighChartsDarkTheme()
 	// Apply the theme
 	Highcharts.setOptions(Highcharts.theme);
 
+}
+
+
+function copyHeatMapList( heatMapSectorSelected, greenOrRed )
+{
+	var symbolObject ={}
+	var sectorStockArray;
+	if( heatMapSectorSelected=='ALL BANKS' )
+	{
+		sectorStockArray = Object.keys(allBanksStocksObj)
+	}
+	else {
+	sectorStockArray = sectorStockNamesObj[heatMapSectorSelected]
+	}
+	
+	for( var s=0;s<sectorStockArray.length;s++)
+	{
+		var Symbol = sectorStockArray [s]
+		//console.log(Symbol)
+		if( dataObjectForHeatChart[Symbol] !=undefined )
+		{
+			if( dataObjectForHeatChart[Symbol]["parent"]==greenOrRed )
+				symbolObject[Symbol] = dataObjectForHeatChart[Symbol]["value"] //symbol's rank
+		}
+	}
+	
+	var stockNames=''
+	stockNames= ( 'NSE:'+dataObjectForHeatChart["selectedTime"] +'_'+ heatMapSectorSelected+',' ).replace(/ /g,'_')
+	
+	Object.keys(symbolObject).sort((a,b) => symbolObject[b]-symbolObject[a]).forEach((symbol) => {    	//  descending sort
+		stockNames +='NSE:'+symbol.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +','
+	});
+
+	
+	
+	navigator.clipboard.writeText(stockNames);
 }
 
 
