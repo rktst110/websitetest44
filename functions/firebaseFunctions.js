@@ -105,7 +105,7 @@ function getFirestoreData( passedValue, passedObj )
         });
 		
 		
-          // Attempt to update localStorage and handle quota exceeded error
+         // Attempt to update localStorage and handle quota exceeded error (Starts Here)
           var maxAttempts = Object.keys(firebaseFetchedDocs).length;
           var currentAttempt = 0;
 
@@ -121,6 +121,7 @@ function getFirestoreData( passedValue, passedObj )
               currentAttempt++;
             }
           }
+		  // Attempt to update localStorage and handle quota exceeded error (Ends Here)
 		  
 		
 	refreshOrLiveFirebaseData(passedValue)
@@ -134,8 +135,7 @@ function getFirestoreData( passedValue, passedObj )
 	  
 	}
 
-
-async function fetchSectorStockNamesCollectionData( collectionPath ) {
+async function fetchSectorStockNamesCollectionData_Previous_28May2023( collectionPath ) {
 
 	var localStorageForSectorStockNames = localStorage.getItem('sectorStockNames')
 	if( localStorageForSectorStockNames!=null && JSON.parse(localStorageForSectorStockNames) [collectionPath]!=undefined )
@@ -162,7 +162,55 @@ async function fetchSectorStockNamesCollectionData( collectionPath ) {
   }
 }
 
-async function fetchDeliveryDataDocData(docPath) {
+async function fetchSectorStockNamesCollectionData( collectionPath ) {
+
+	  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+
+	var localStorageForSectorStockNames = localStorage.getItem('sectorStockNames')
+	if( localStorageForSectorStockNames!=null && JSON.parse(localStorageForSectorStockNames) [collectionPath]!=undefined )
+	{
+		return (JSON.parse(localStorageForSectorStockNames) [collectionPath] )
+	}
+	else {
+  var collectionRef = db.collection(collectionPath);
+  var sectorStockNamesObj = {};
+
+  try {
+    const querySnapshot = await collectionRef.get();
+    querySnapshot.forEach(function(doc) {
+      sectorStockNamesObj[doc.id] = JSON.parse(doc.data()['data'])['Symbols'] ;
+    });
+	
+  
+          // Attempt to update localStorage and handle quota exceeded error (Starts Here)
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+               localStorage.setItem('sectorStockNames', JSON.stringify( {[collectionPath]:sectorStockNamesObj} ));
+              break; // Successfully stored the new entry
+            } catch (e) {
+				document.getElementById('messages').innerHTML = e;
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              currentAttempt++;
+            }
+          }
+		// Attempt to update localStorage and handle quota exceeded error (Ends Here)
+	
+    return sectorStockNamesObj;
+  } catch (error) {
+    console.log("Error getting documents: ", error);
+    return null;
+  }
+  }
+}
+
+async function fetchDeliveryDataDocData_Previous_28May2023(docPath) {
 
 	var localStorageForDeliveryData = localStorage.getItem('deliveryData')
 	if( localStorageForDeliveryData!=null && JSON.parse(localStorageForDeliveryData) [docPath]!=undefined )
@@ -181,6 +229,61 @@ async function fetchDeliveryDataDocData(docPath) {
       if (doc.exists) {
         var dataObj =  doc.data();
 		localStorage.setItem('deliveryData', JSON.stringify( {[docPath]:dataObj} ));
+        return dataObj;
+      } else {
+        console.log("Document does not exist");
+        return null;
+      }
+    })
+    .catch(function(error) {
+      console.log("Error getting document:", error);
+      return null;
+    });
+	}
+}
+
+async function fetchDeliveryDataDocData(docPath) {
+
+	  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+
+	var localStorageForDeliveryData = localStorage.getItem('deliveryData')
+	if( localStorageForDeliveryData!=null && JSON.parse(localStorageForDeliveryData) [docPath]!=undefined )
+	{
+		return (JSON.parse(localStorageForDeliveryData) [docPath] )
+	}
+	else
+	{
+  var docRef = db.doc(docPath);
+  //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+  //var usersRef = db.collection('May 2023')  
+	
+  // Retrieve the document from Firebase
+  return docRef.get()
+    .then(function(doc) {
+      if (doc.exists) {
+        var dataObj =  doc.data();
+
+		
+          // Attempt to update localStorage and handle quota exceeded error (Starts Here)
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+               	localStorage.setItem('deliveryData', JSON.stringify( {[docPath]:dataObj} ));
+              break; // Successfully stored the new entry
+            } catch (e) {
+				document.getElementById('messages').innerHTML = e;
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              currentAttempt++;
+            }
+          }
+		  // Attempt to update localStorage and handle quota exceeded error (Ends Here)
+		
         return dataObj;
       } else {
         console.log("Document does not exist");
