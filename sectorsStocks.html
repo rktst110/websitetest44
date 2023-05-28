@@ -554,12 +554,12 @@ async function getSectorsStocksData( passedValue )
 	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
 	
 	
-	showEquitySectorsStocksData ( JSON.parse( equityDataObj['data'] ), selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
+	showEquitySectorsStocksData ( JSON.parse( equityDataObj['data'] ), selectedTradingDate, selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
 
 }
 
 
-async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, deliveryDataObj )
+async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, selectedTimeValue, deliveryDataObj )
 {
 
 	 document.getElementById('sectorsStocksDataTableContainer').innerHTML = "";
@@ -634,7 +634,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, de
 		+'">            <caption style="caption-side:top">'
 	 +sector
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
        +'<tbody>'
 		}
 		else
@@ -644,7 +644,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTimeValue, de
 		+'">            <caption style="caption-side:top">'
 	 +sector.replace(/NIFTY_/g,'')
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
        +'<tbody>'
 		}
 	   
