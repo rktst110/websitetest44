@@ -116,7 +116,6 @@ thead {
   margin: 0px 6px 15px;
 }
 
-
   
 @media screen and (max-width: 800px) {
   .DonutClass {
@@ -501,8 +500,8 @@ function onClick(e) {
 		}
 	else
 		{
-			 search_and_highlight_sector(label)
-			document.getElementById(label).scrollIntoView();
+				 search_and_highlight_sector(label.replace(/ /g,'_'))
+				document.getElementById(label.replace(/ /g,'_')).scrollIntoView();
 			
 		}
 		
