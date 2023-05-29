@@ -482,21 +482,6 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
 	var spurtsInOIUnderlyingsPrevObject = spurtsDataObjPrevious['data']
 
-	var sumStocksValEquity = 0
-	for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
-		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
-		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
-		if( Symbol.includes('NIFTY')==false )
-		{
-		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
-		var previousSymbolArray = niftyTotalMarket2MinutePreviousObject [Symbol]  
-		sumStocksValEquity += symbolArray["totalTradedValue"]
-		}
-}
-	
-	var meanAllStocksVolumeEquityFnO = sumStocksValEquity / (spurtsInOIUnderlyingsObject.length)
-	
-	
 //console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
 
 		var tempObj = {};
@@ -504,24 +489,11 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 	
 	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Equity Stocks | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Symbol</th>'
-	//  +'<th>Open</th>'
-	  //+' <th>LTP</th>'
-	//  +' <th>PrevC.</th>'
 	  +' <th>Chng(%)</th>'
 	   +' <th>VolSpike</th>'
 	  +' <th>T.O.</th>'
-	 // +' <th>ETO</th>'
-	 // +' <th>STO</th>'
-	 // +'  <th>TVI</th>'
 	 +' <th>Money</th>'
 	  +' <th>20DAV</th>'
-	//  +' <th>Val</th>'
-	//  +' <th>no.Trades</th>'
-	//  +' <th>NearH</th>'
-	 // +' <th>Near Highs</th>'
-	  //+'  <th>Vol Spike</th>'
-	  // +'  <th>V. Spike</th>'
-	   // +'  <th>Pattern</th>'
 	  +' </tr> </thead> <tbody>'
 
 		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
@@ -534,35 +506,12 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 		
         var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
 		var previousSpurtsSymbolArray = spurtsInOIUnderlyingsPrevObject [S]  
-
-	   var NoMinuspChng = Math.abs(symbolArray['pChange'] - previousSymbolArray['pChange'])
-	   var pChng = Math.abs(symbolArray['pChange'])
-	   var SpurtsTO = Number(spurtsSymbolArray['total'] )
-	   var SpurtsTOEqtTO = Number(spurtsSymbolArray['total'] ) + Number(symbolArray['totalTradedValue'] / 100000 )
-	   var SpurtsVolOI = (  Number(spurtsSymbolArray['latestOI'] )+  Number(spurtsSymbolArray['volume'] ))
-	   var TVI = ( Number(SpurtsTO) /  Number(SpurtsVolOI )).toFixed(2)
-	   var TVI2 = ( Number(SpurtsTOEqtTO) /  Number(SpurtsVolOI )).toFixed(2)
-	   
-	   var Rank =  (  Number(TVI) +  Number(NoMinuspChng)).toFixed(2)
-	   var Rank2 =  (  Number(TVI2) +  Number(NoMinuspChng)).toFixed(2)
 	   var volSpike = ( ( ( symbolArray['totalTradedVolume'] -  previousSymbolArray['totalTradedVolume']) / previousSymbolArray['totalTradedVolume'] ) * 100).toFixed(2)
 	
-	  var OIvsVol =  (1/(  Number(spurtsSymbolArray['latestOI'] ) /  Number(spurtsSymbolArray['volume'] ))).toFixed(2)
-	  
-	  
-	 //var LowHighAverage = (symbolArray[1] + symbolArray[2])/2
-	//var Level = ( (symbolArray[4] / LowHighAverage)  ).toFixed(2)
-	
 	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
-	//var SpurtVolvsOI = spurtsSymbolArray[4] / spurtsSymbolArray[0]
-	//var previous_Trading_Date_Obj_Value = delivery's total value
-	var previous_Trading_Date_Obj_Value = deliveryDataObj["Symbols"][Symbol]["deliveryData"][9]
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
-	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"]  + previous_Trading_Date_Obj_Value ) / average20DaysValue)
+	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
 	
-	var WFactorEquityVolume = ( (symbolArray["totalTradedValue"] )/ meanAllStocksVolumeEquityFnO )
-	
-	//var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI + WFactorEquityVolume).toFixed(2)
 	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
 	 
@@ -666,36 +615,11 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 			 + volSpike //NoMinuspChng.toFixed(2) 
 			 +'</td><td>'
 			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
-			//+'</td><td>'
-		 //+ (symbolArray[8] / 10000000).toFixed(2)
-		// +'</td><td>'
-		// + (SpurtsTO / 1000).toFixed(2)
-			// +'</td><td>'
-		//	+ (Number(TVI2) + Number(pChng)).toFixed(2)
 		 +'</td><td>'
 		 + WFactor
 		+'</td><td>'
 		+ twentyDAV
-	
-		//	 +previous_Trading_Date_Array[7] // 7 VWAP
-		//	 +'</td><td>'
-		//	 + previous_Trading_Date_Array[8] // 8 total_traded_quantity
-		//	 +'</td><td>'
-		//	 +  previous_Trading_Date_Array[9]  // 9 value / turnover / total_traded_value
-		//	 +'</td><td>'
-		//	  +  previous_Trading_Date_Array[10]  // 10 no_of_trades
-		//	 +'</td><td>'
-		//	  + ( nearHighs + ltpNearHighPercentage ).toFixed(2) // difference between 2 previous highs
-			// +'</td><td>'
-			//  + (  Math.abs( 1 - (1 / (nearHighs) ) )  + (1 / Math.abs( 1 - (1 / (ltpNearHighPercentage) ) ))  + Math.abs( 1 - (1 / (symbolArray[8]/100000000) ) ) ).toFixed(2) // difference between 2 previous highs
-		//	 +'</td><td>'
-			//  + ((( symbolArray[7]  - previous_Trading_Date_Array[7] ) / previous_Trading_Date_Array[7] )*100) .toFixed(2) // volume spike
-			// +'</td><td>'
-		  //+ ((( symbolArray[7]  - previous_Trading_Date_Array[7] ) / previous_Trading_Date_Array[7] )*100) .toFixed(2) // turnover or value spike
-		//	+'</td><td>'
-			//+''
-		//+ returnedCandlestickPatternsStr
-			+'</td></tr>'
+		+'</td></tr>'
 			
 		
 		}
