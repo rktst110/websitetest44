@@ -88,7 +88,7 @@ thead {
 	margin: 0px 0px 15px;
 	 }
   }
-  
+
   @media screen and (min-width: 800px) {
     .sticky{
     position: fixed;
@@ -105,6 +105,26 @@ thead {
  
 }
   }
+  
+  
+  
+.DonutClass {
+  float: left;
+  width: 23.5%;
+  padding: 0px;
+  height: 250px;
+  margin: 0px 6px 15px;
+}
+
+  
+@media screen and (max-width: 800px) {
+  .DonutClass {
+    height: 250px;
+    width: 48%;
+	margin: 0px 6px 15px;
+	 }
+  }
+  
   
 </style>
 
@@ -159,6 +179,12 @@ thead {
 	 
 	 <!--75% Starts Here-->
   <div class="column right">
+ 
+<div class="DonutClass" id="NiftyBankDonutChartContainer"></div>
+<div class="DonutClass" id="Nifty50DonutChartContainer"></div> 
+<div class="DonutClass" id="FnODonutChartContainer"></div>
+<div class="DonutClass" id="NiftyTotalMarketDonutChartContainer"></div>
+
 <div class="spaceBetweenTables">  	<div id="sectorsStocksDataTableContainer"></div> </div>
 	
   </div>
@@ -555,7 +581,7 @@ async function getSectorsStocksData( passedValue )
 	
 	
 	showEquitySectorsStocksData ( JSON.parse( equityDataObj['data'] ), selectedTradingDate, selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
-
+show_market_strength_charts_Data( JSON.parse( equityDataObj['data'] ), selectedTradingDate, selectedTimeValue )
 }
 
 
@@ -690,6 +716,189 @@ addEventListnerInTables()
 </script>
 <!-- Sectors Stocks Code Ends Here -->
 
+<!-- Market Strength Code Starts Here -->
+
+<script>
+
+async function show_market_strength_charts_Data( equityDataObj, selectedTradingDate, selectedTimeValue )
+{
+	 //document.getElementById('allMarketStrengthChartsContainer').innerHTML = "";
+
+	var selectedValue = selectedTimeValue;
+	
+	var niftyTotalMarketObject = equityDataObj['data']
+
+	var FnO_AdvancesDeclinesUnchangedArr = [0,0,0]
+	var NIFTY_50_AdvancesDeclinesUnchangedArr = [0,0,0]
+	var NIFTY_Bank_AdvancesDeclinesUnchangedArr = [0,0,0]
+	var NIFTY_Total_Market_AdvancesDeclinesUnchangedArr = [ equityDataObj["advances"], equityDataObj["declines"], equityDataObj["unchanged"]  ]
+	
+	if( sectorStockNamesObj['FnO']!=undefined )
+	{
+	var symbolsArray = sectorStockNamesObj['FnO']
+	for(var i=0;i<symbolsArray.length;i++)
+	{
+	var stockName = symbolsArray[i]
+	var pChange = niftyTotalMarketObject[stockName]["pChange"]	
+	if( pChange !=undefined)
+		{
+			if(pChange > 0)
+				FnO_AdvancesDeclinesUnchangedArr[0] = FnO_AdvancesDeclinesUnchangedArr[0] + 1
+			else if(pChange < 0)
+				FnO_AdvancesDeclinesUnchangedArr[1] = FnO_AdvancesDeclinesUnchangedArr[1] + 1
+			else
+				FnO_AdvancesDeclinesUnchangedArr[2] = FnO_AdvancesDeclinesUnchangedArr[2] + 1
+	}
+		
+	}
+	}
+	
+	
+	if( sectorStockNamesObj['NIFTY_50']!=undefined )
+	{
+	var symbolsArray = sectorStockNamesObj['NIFTY_50']
+	for(var i=0;i<symbolsArray.length;i++)
+	{
+	var stockName = symbolsArray[i]
+	var pChange = niftyTotalMarketObject[stockName]["pChange"]	
+	if( pChange !=undefined)
+		{	
+		if(pChange > 0)
+				NIFTY_50_AdvancesDeclinesUnchangedArr[0] = NIFTY_50_AdvancesDeclinesUnchangedArr[0] + 1
+			else if(pChange < 0)
+				NIFTY_50_AdvancesDeclinesUnchangedArr[1] = NIFTY_50_AdvancesDeclinesUnchangedArr[1] + 1
+			else
+				NIFTY_50_AdvancesDeclinesUnchangedArr[2] = NIFTY_50_AdvancesDeclinesUnchangedArr[2] + 1
+			
+	}
+		
+	}
+	}
+	
+	
+	if( sectorStockNamesObj['NIFTY_BANK']!=undefined )
+	{
+	var symbolsArray = sectorStockNamesObj['NIFTY_BANK']
+	for(var i=0;i<symbolsArray.length;i++)
+	{
+	var stockName = symbolsArray[i]
+	var pChange = niftyTotalMarketObject[stockName]["pChange"]	
+	if( pChange !=undefined)
+		{	
+	if(pChange > 0)
+				NIFTY_Bank_AdvancesDeclinesUnchangedArr[0] = NIFTY_Bank_AdvancesDeclinesUnchangedArr[0] + 1
+			else if(pChange < 0)
+				NIFTY_Bank_AdvancesDeclinesUnchangedArr[1] = NIFTY_Bank_AdvancesDeclinesUnchangedArr[1] + 1
+			else
+				NIFTY_Bank_AdvancesDeclinesUnchangedArr[2] = NIFTY_Bank_AdvancesDeclinesUnchangedArr[2] + 1
+			
+	}
+		
+	}
+	}
+	
+	 MarketStrengthDonutCharts( 'Nifty50DonutChartContainer', 'Nifty 50', NIFTY_50_AdvancesDeclinesUnchangedArr )
+	 MarketStrengthDonutCharts( 'NiftyBankDonutChartContainer', 'Nifty Bank', NIFTY_Bank_AdvancesDeclinesUnchangedArr )
+	 MarketStrengthDonutCharts( 'FnODonutChartContainer', 'FnO', FnO_AdvancesDeclinesUnchangedArr )
+	 MarketStrengthDonutCharts( 'NiftyTotalMarketDonutChartContainer', 'Nifty Total Market', NIFTY_Total_Market_AdvancesDeclinesUnchangedArr )
+	
+}	//	show_stock_options_Data() Function ENDS HERE
+
+
+function MarketStrengthDonutCharts( marketType, chartHeading, dataArray ) {
+	// this function catches Array from showDataInTOTALOI() function and it then fetch required values from Array
+	//based on fetched values, it renders the data on  	donutChartContainer		chart 
+	// it then call this PriceTime(dataArray) function for printing the values in     MyPriceDiv    div and 		price	div
+	//showDataSupportRegistance(dataArray) : it hen call this function and renders Support & Registance in		supportRegistanceChart		chart
+	//showOIBuildupData()
+	//it then sends/passes the catched Array to  DonutChart(dataArray) function.
+
+	var Advances = dataArray[0]
+	var Declines = dataArray[1]
+	var Unchanged = dataArray[2]
+	
+		// PEColor = "#990000" //red CE
+		// PEColor = "#089981" //green CE
+		var chart ;
+	if( Unchanged >0 )
+	{
+		
+	chart = new CanvasJS.Chart(marketType, {
+		//green "#99cc00"
+		//red   "#e60000"
+
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		title: {
+			text: chartHeading,
+			horizontalAlign: "center",
+			fontSize: 18,
+		},
+		data: [{
+			indexLabelPlacement: "inside",
+
+			type: "doughnut",
+			startAngle: 90,
+			//innerRadius: 60,
+			indexLabelFontSize: 15,
+			indexLabelFontColor: "white",
+			//indexLabel: "{label} {y}",
+			indexLabel: "{y}",
+			toolTipContent: "<b>{label}:</b> {y}",
+			
+			dataPoints: [
+				{ y: Advances, label: "Advances", color: "#089981", }, //Advances == green
+				{ y: Declines, label: "Declines", color: "#990000", }, // Declines == red
+				{ y: Unchanged, label: "Unchanged", color: '#cbba4d', }, //Unchanged == blue
+				]
+
+		}]
+	});
+	
+	}
+	else
+	{
+		
+	chart = new CanvasJS.Chart(marketType, {
+		//green "#99cc00"
+		//red   "#e60000"
+
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		title: {
+			text: chartHeading,
+			horizontalAlign: "center",
+			fontSize: 18,
+		},
+		data: [{
+			indexLabelPlacement: "inside",
+
+			type: "doughnut",
+			startAngle: 90,
+			//innerRadius: 60,
+			indexLabelFontSize: 15,
+			indexLabelFontColor: "white",
+			indexLabel: "{y}",
+			toolTipContent: "<b>{label}:</b> {y}",
+			
+			dataPoints: [
+				{ y: Advances, label: "Advances", color: "#089981", }, //Advances == green
+				{ y: Declines, label: "Declines", color: "#990000", }, // Declines == red
+				]
+
+		}]
+	});
+		
+	}
+	
+	
+	chart.render();
+
+}
+
+
+</script>
+<!-- Market Strength Code Ends Here -->
 
 <style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:10%;	right:2px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
 <div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('indicesTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
