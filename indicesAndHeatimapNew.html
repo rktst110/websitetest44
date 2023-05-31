@@ -197,9 +197,8 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 	
 	var tempObj={}
 	for (var symbol in indicesPerformanceObject) {
-		//if(symbol !='INDIA VIX' && symbol !='NIFTY PSU BANK' && symbol !='NIFTY PVT BANK' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-			
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
 		{
 		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
 		}
@@ -431,12 +430,10 @@ async function getSpurtsEquityData( passedValue )
 	
 	var selectedSpurtsTimeRef = document.getElementById('spurtsTimeValues')
 	var selectedSpurtsTimeValue = selectedSpurtsTimeRef.value
-	var selectedSpurtsTimeValuePrevious = selectedSpurtsTimeRef.options[selectedSpurtsTimeRef.selectedIndex - 1].value
-	
+
 	var docPathForSpurts = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValue
-	var docPathForSpurtsPrevious = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValuePrevious
 	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
-	var spurtsDataObjPrevious = await fetchFirebaseDocData( docPathForSpurtsPrevious )
+	
 	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
 	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
 	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
@@ -446,13 +443,10 @@ async function getSpurtsEquityData( passedValue )
 	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedSpurtsTimeValue )
 	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
 	
-	var docPathForEquityPrevious = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[1]+'/'+equitySyncedTimeValue[1]
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
-	var equityDataObjPrevious = await fetchFirebaseDocData( docPathForEquityPrevious )
-	//console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
-	//console.log( "equityDataObjPrevious",JSON.parse( equityDataObjPrevious['data'] ) )
-	
+	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+
 	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
 	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
 	
@@ -462,13 +456,13 @@ async function getSpurtsEquityData( passedValue )
 	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
 	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
 	
-	await show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( equityDataObjPrevious['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( spurtsDataObjPrevious['data'] ), JSON.parse( deliveryDataObj['data'] ) )
-	await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( equityDataObjPrevious['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( spurtsDataObjPrevious['data'] ), JSON.parse( deliveryDataObj['data'] ) )
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
 	
 	addEventListnerInTables()
 }
 
-async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, selectedTradingDate, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj )
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
 {
 	 document.getElementById('equityDataTableContainer').innerHTML = "";
 	
@@ -476,21 +470,17 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
 	
 	var niftyTotalMarketObject = equityDataObj['data']
-	var niftyTotalMarket2MinutePreviousObject = equityDataObjPrevious['data']
-	
-
 	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
-	var spurtsInOIUnderlyingsPrevObject = spurtsDataObjPrevious['data']
 
 //console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
 
 		var tempObj = {};
 
 	
-	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Equity Stocks | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
+	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Intraday Hike | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Symbol</th>'
-	  +' <th>Chng(%)</th>'
-	   +' <th>VolSpike</th>'
+	  +' <th>Chg%</th>'
+	   +' <th>LTP</th>'
 	  +' <th>T.O.</th>'
 	 +' <th>Money</th>'
 	  +' <th>20DAV</th>'
@@ -502,11 +492,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 		if( Symbol.includes('NIFTY')==false )
 		{
 		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
-		var previousSymbolArray = niftyTotalMarket2MinutePreviousObject [Symbol]  
-		
         var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
-		var previousSpurtsSymbolArray = spurtsInOIUnderlyingsPrevObject [S]  
-	   var volSpike = ( ( ( symbolArray['totalTradedVolume'] -  previousSymbolArray['totalTradedVolume']) / previousSymbolArray['totalTradedVolume'] ) * 100).toFixed(2)
 	
 	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
@@ -612,7 +598,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 			 +'</td><td>'
 			+ symbolArray['pChange']  //pchange
 			 +'</td><td>'
-			 + volSpike //NoMinuspChng.toFixed(2) 
+			 +symbolArray['lastPrice']  //lastPrice
 			 +'</td><td>'
 			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
 		 +'</td><td>'
@@ -633,47 +619,26 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedSpurtsTim
 	 add_Sectors_In_HeatMapSelector( )
 }	//	show_volume_value_spike_Data() Function ENDS HERE
 
-
-
-async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, selectedTradingDate, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj )
+async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
 {
 	 document.getElementById('spurtsDataTableContainer').innerHTML = "";
 
-	var returnedDeliverableDataObject ;
-	
 	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
-	var onlySpurtsPreviousTime= selectedSpurtsTimeValuePrevious
-	
-	//var mainOIDataObject = {};
-	//mainOIDataObject = JSON.parse(localStorage.getItem("NSE_APIs_Data"));
 	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
-	var spurtsInOIUnderlyingsPrevObject = spurtsDataObjPrevious
-
-//( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj, sectorStockNamesObj )
-
-	var onlyEquitySelectedValue = document.getElementById("only_equity_time");
-
 	var niftyTotalMarketObject = equityDataObj ['data']
-	var niftyTotalMarket2MinutePreviousObject = equityDataObjPrevious
-	
+
 
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 
-	//var tablesStr =  '<div class="tableColumnForSpurtsUnderlyings"><div class="spaceBetweenTables"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings (% Change-Wise)</caption><thead class="SpurtsUnderlyingsClassGainers">   <tr>      <th>Symbol</th>   <th>Underlying</th>      <th>Chng (%)</th>      <th>Volume</th>      </tr></thead><tbody>'
-	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+onlySpurtsSelectedTime.value+' | '+mainOIDataObject['Date']+'</caption><thead class="SpurtsUnderlyingsClassGainers">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>      </tr></thead><tbody>'
-	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th> <th>OI/Vol</th>        </tr></thead><tbody>'
-	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">Spurts In OI Underlyings | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
+	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
 		
 	for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
-	//var symbol = Object.keys( spurtsInOIUnderlyingsObject )[F]
+
 	var symbol = spurtsInOIUnderlyingsObject[F]["symbol"]
-	//console.log( "symbol", symbol)
-	//for (var symbol in spurtsInOIUnderlyingsObject ) {
+	
 		if( symbol.includes('NIFTY')==false ){
-		//if( symbol!='BANKNIFTY' && symbol!='NIFTY' && symbol!='FINNIFTY' ){
-		
-		
+
 		tablesStr +='<tr class="item"><td>'
 		+ symbol
 		+'</td><td>'
@@ -1113,8 +1078,8 @@ function copyHeatMapList( heatMapSectorSelected, greenOrRed )
 
 
 <!-- Floating Buttons Code Starts Here -->
-<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:10%;	right:2px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
 <!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
 <!-- Floating Buttons Code Ends Here -->
 

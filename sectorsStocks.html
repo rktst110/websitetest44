@@ -260,9 +260,8 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 	
 	var tempObj={}
 	for (var symbol in indicesPerformanceObject) {
-		//if(symbol !='INDIA VIX' && symbol !='NIFTY PSU BANK' && symbol !='NIFTY PVT BANK' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-			
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
 		{
 		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
 		}
@@ -900,8 +899,8 @@ function MarketStrengthDonutCharts( marketType, chartHeading, dataArray ) {
 </script>
 <!-- Market Strength Code Ends Here -->
 
-<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:10%;	right:2px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('indicesTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	     <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
 <!-- <div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
 
 
