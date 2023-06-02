@@ -317,11 +317,14 @@ function clickOnVolumeAutomatically()
 		}
 		}
 		
-		
+			
+		if( window.location.href.toLocaleLowerCase().includes('indicesandintradayhike')==false ) 
+		{
 		if( th.innerText=='Money' )
 		{
 			th.click()
 		}
+	}
 		
 		if( tableId !='onlyEquityTableStr' && window.location.href.toLocaleLowerCase().includes('momentumspike')==false ) 
 		{
@@ -346,6 +349,11 @@ function clickOnVolumeAutomatically()
 		{
 			th.click()
 		}
+		}
+			
+		if( th.innerText=='TDVA' )
+		{
+			th.click()
 		}
 		
 		
