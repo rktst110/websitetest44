@@ -5,7 +5,7 @@
  
 document.head.appendChild(document.createElement('style')).innerHTML = `table, th, td, caption, th span,  th i  {color: white; }   table { width: 100%; } `;
 document.head.appendChild(document.createElement('style')).innerHTML = `table tr td:nth-child(1) {  width: 120px; background-color: #5c58dd; border-radius: 15px; /* Green */border: none;  color: #f0f0f0; font-weight: ;  text-align: center;  text-decoration: none;  display: inline-block;  font-size: 15.5px; padding: 2.7px 4px; margin: 2px 1px; }`;
-document.head.appendChild(document.createElement('style')).innerHTML = `* {   box-sizing: border-box;   } .spaceBetweenTablesSpurtsEquity { border: 2px solid #4b4d4e;min-height:500px;height: 500px;overflow-y: scroll;background-color: #32373a; }  .tableColumnForSpurtsUnderlyings {  float: left;   width: 24.9%;   padding: 5px;  border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a;  }   .tableRowForSpurtsUnderlyings:after {   content: "";   display: table;   clear: both;   }    .tableRowClass {   color: #ffffff;   background: #27ae60;   }   .PreOpenMarketClassLoosers{   color: #ffffff;   background: #ea6153;   }  caption {	white-space: nowrap;  text-align: center; color: #9a9c9e; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }`;
+document.head.appendChild(document.createElement('style')).innerHTML = `* {   box-sizing: border-box;   } .spaceBetweenTablesSpurtsEquity { border: 2px solid #4b4d4e;min-height:500px;height: 500px;overflow-y: scroll;background-color: #32373a; }  .tableColumnForSpurtsUnderlyings {  float: left;   width: 24.9%;   padding: 5px;  border: 2px solid #4b4d4e;height: 320px;overflow-y: scroll;background-color: #32373a;  }   .tableRowForSpurtsUnderlyings:after {   content: "";   display: table;   clear: both;   }    .tableRowClass {   color: #ffffff;   background: #27ae60;   }   .PreOpenMarketClassLoosers{   color: #ffffff;   background: #ea6153;   }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	div::-webkit-scrollbar {  width: 2px;}				div::-webkit-scrollbar-track {  background: #f1f1f1; }			div::-webkit-scrollbar-thumb {  background: #888; } 		div::-webkit-scrollbar-thumb:hover {  background: #555; }`;
 
 //document.body.innerHTML +='<style> table, th, td, caption, th span,  th i  {color: white; }   table { width: 100%; }  </style>'
 //document.body.innerHTML +='<style> table tr td:nth-child(1) {  width: 120px; background-color: #5c58dd; border-radius: 15px; /* Green */border: none;  color: #f0f0f0; font-weight: ;  text-align: center;  text-decoration: none;  display: inline-block;  font-size: 15.5px; padding: 2.7px 4px; margin: 2px 1px; }</style>'
@@ -323,7 +323,7 @@ function clickOnVolumeAutomatically()
 			th.click()
 		}
 		
-		if( tableId !='onlyEquityTableStr' ) 
+		if( tableId !='onlyEquityTableStr' && window.location.href.toLocaleLowerCase().includes('momentumspike')==false ) 
 		{
 		//if( th.innerText.includes('T.O.') )
 		if( th.innerText=='20DAV' )
@@ -340,6 +340,13 @@ function clickOnVolumeAutomatically()
 		}
 		}
 		
+		if( window.location.href.toLocaleLowerCase().includes('momentumspike')==true ) 
+		{
+		if( th.innerText=='Spike' )
+		{
+			th.click()
+		}
+		}
 		
 		
 		
