@@ -1,0 +1,506 @@
+
+<!-- Importing Firebase SDK Starts Here-->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+ <!-- Importing Firebase SDK Ends Here-->
+ 
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Starts Here-->
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
+ 
+
+  <script src="functions/commonFunctions.js"></script>
+  <script src="functions/tableSortingFunctons.js"></script>
+ <script src="functions/importFiles.js"></script>
+ <script src="functions/firebase.js"></script>
+ <script src="functions/firebaseFunctions.js"></script>
+
+ <div id="importedContent"></div>
+ 
+ <title>Indices + Intraday Hike</title>
+ 
+ 
+
+<style>
+
+thead {
+  position: sticky;
+  top: 0;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Create two unequal columns that floats next to each other */
+.column {
+  float: left;
+  padding: 0.5px;
+  height: 520px; /* Should be removed. Only for demonstration */
+}
+
+.equityLeft {
+  width: 50%;
+}
+
+.spurtsRight {
+  width: 50%;
+}
+
+.left {
+  width: 25%;
+}
+
+.right {
+  width: 75%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+@media screen and (max-width: 800px) {
+  .column {
+    width: 100%;
+  }
+}
+</style>
+
+ <label>Month Year:</label>
+<select id="monthYear" onchange="getFirestoreData()">
+</select>
+
+ <label> | Trading Date:</label>
+<select id="tradingDate" onchange="setCommonSelectors()">
+</select>
+
+
+ <label> | Common TimeValues:</label>
+<select id="commonTimeValues" onchange="saveSelectedValues();fetchDataForAllSegments()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+<button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
+&nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
+
+<hr>
+
+ <label> Indices TimeValues:</label>
+<select id="indicesTimeValues" onchange="getIndicesData()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+ <label> Spurts TimeValues:</label>
+<select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
+</select>
+
+<!--Content Start From Here-->
+<div class="row">
+  <div class="column left" style="background-color:#aaa;">
+  
+ <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
+   <br>
+   </div>
+  <div class="column right" style="background-color:#bbb;">
+  
+   <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
+
+  </div>
+</div>
+
+<br><br>
+
+<!--<div class="tableRow"> <center> Spurts Time: &nbsp;<select id="spurts_time_for_both" aria-labelledby="expiryLbl" onchange="adjust_equity_spurts_timeValues()"> <option value="">Select</option> </select> &nbsp; &nbsp;  | &nbsp; &nbsp; No. of Comparison Stocks : &nbsp; <input id="noOfComparisonStocks" type="number" value="30" size="3"> <button onclick="compareEquitySpurtsStocks(\'compareEquityWithSpurts\')">Cmp EquitySpurts</button> <button onclick="compareEquitySpurtsStocks(\'compareSpurtsWithEquity\')">Cmp SpurtsEquity</button>   </center> <br> <div class="tableColumn" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Equity Time: &nbsp;<select id="only_equity_time" aria-labelledby="expiryLbl" onchange="show_only_equity_Data()"> <option value="">Select</option> </select> </center>  <div id="equityDataTableContainer"></div> </div> </div> <div class="tableColumn" style="border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Spurts Time: &nbsp;<select id="only_spurts_time" aria-labelledby="expiryLbl" onchange="show_only_Spurts_Data()"> <option value="">Select</option> </select> </center>  <div id="spurtsDataTableContainer"></div> </div> </div> -->
+
+
+<br><br><br><br><br><br>
+<!--Content Ends Here-->
+
+
+<script>
+function fetchDataForAllSegments()
+{
+setIndicesSelectorTimeValues( "syncWithCommonTime" );
+setSpurtsSelectorTimeValues( "syncWithCommonTime" )
+}
+</script>
+
+
+<!-- Indices Code Starts Here -->
+<script>
+
+function setIndicesSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+	var selectElementRef = document.getElementById("indicesTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+}
+
+async function getIndicesData( passedValue )
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+
+}
+
+async function showIndicesPerformanceChart ( returnedDataObj )
+{
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	//var selectedValue = document.getElementById("indices_performance_time").value;
+		
+	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
+	var indicesPerformanceObject = returnedDataObj ['data']
+		
+	var dataPointsArray=[]
+	var dataPointsArrayAdvances=[]
+	var dataPointsArrayDeclines=[]
+	var dataPointsArrayUnchanged=[]
+	var dataPointsArrayPChangeAddition=[]
+	
+	var tempObj={}
+	for (var symbol in indicesPerformanceObject) {
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+		{
+		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+		}
+	}
+	
+// tempObj is sorted by this code
+//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
+Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
+var temp={}
+if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=symbol.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=symbol
+}
+	
+		//temp["y"]=tempObj[symbol]; 
+		temp["y"]= Math.abs( tempObj[symbol] ); 
+		if(tempObj[symbol]<0) 
+		{
+			temp["color"]="#cd5652"
+		}
+		else if(tempObj[symbol]>0) 
+		{
+			temp["color"]="#3a7dd4"
+		}
+		else if(tempObj[symbol]==0) 
+		{
+			temp["color"]="black"
+		}
+		
+		dataPointsArray.push(temp)
+	});
+	
+/*
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][9]; 
+		temp["color"]="#089981"
+			
+		dataPointsArrayAdvances.push(temp)
+		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
+	});
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][10]; 
+		temp["color"]="#cd5652"
+		
+	
+		
+		dataPointsArrayDeclines.push(temp)
+		
+	});	
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][11]; 
+	
+		temp["color"]="#cbba4d"
+		
+		
+		dataPointsArrayUnchanged.push(temp)
+	});
+	
+	*/
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+	animationEnabled: true,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
+			//verticalAlign: "top",
+
+			 //horizontalAlign: "right",
+	
+			 //fontSize: 15,
+			 fontSize: 13,
+			//dockInsidePlotArea: true
+			dockInsidePlotArea: false
+	}],
+	
+	toolTip: {
+			//fontSize: 19,
+			fontSize: 15,
+	},
+	axisY: {
+		//title: "Growth Rate (in %)",
+		//includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.03,
+		//labelFontSize: 18,
+		labelFontSize: 0, // bottom size for change%
+		 tickLength: 0,
+		 
+	},
+	axisX: {
+		interval: 1,
+		//title: "Countries"
+		includeZero: true,
+		 //labelFontSize: 17,
+		 labelFontSize: 11, // vertical axis size for text
+		 //labelFontWeight: "bold",
+		  lineThickness: 0.5,
+         lineColor: "#ccc",
+		 tickColor: "#555",
+		 tickLength: 0,
+		
+		 
+	},
+	dataPointWidth: 12,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		//click: onClick,
+		//type: "column",
+		type: "bar",
+		indexLabelPlacement: "auto",
+			indexLabel: "{y}",
+			indexLabelFontSize: 11,
+			indexLabelFontColor: "#ddd",
+		yValueFormatString: "#,##0.0#\"%\"",
+		dataPoints:dataPointsArray
+	}]
+});
+
+
+//console.log("dataPointsArray",dataPointsArray)
+chart.render();
+//chart2.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+
+
+
+</script>
+<!-- Indices Code Ends Here -->
+
+
+
+<!-- Spurts-Equity Code Starts Here -->
+
+<style>    .spaceBetweenTables { border: 2px solid #4b4d4e;height: 518px;overflow-y: scroll;background-color: #32373a; }     .greenHeaderClass{   color: #ffffff;   background: #27ae60;   } .blueHeaderClass{   color: #ffffff;   background: #3a7dd4;    }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	</style>
+
+
+<script>
+var dataObjectForHeatChart={}
+var sectorStockNamesObj = {}
+var allBanksStocksObj ={}
+
+function setSpurtsSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['spurts_in_open_interest_by_underlyings']
+	var selectElementRef = document.getElementById("spurtsTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSpurtsEquityData )
+}
+
+
+async function getSpurtsEquityData( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	
+	var selectedSpurtsTimeRef = document.getElementById('spurtsTimeValues')
+	var selectedSpurtsTimeValue = selectedSpurtsTimeRef.value
+
+	var docPathForSpurts = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValue
+	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
+	
+	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
+	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	
+	
+	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
+	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedSpurtsTimeValue )
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	
+	//console.log( "docPathForEquity", docPathForEquity )
+	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
+	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	//console.log( "deliveryDataObj",JSON.parse( deliveryDataObj['data'] ) )
+	
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	
+	
+	addEventListnerInTables()
+}
+
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
+{
+	 document.getElementById('equityDataTableContainer').innerHTML = "";
+	
+	var selectedValue = selectedSpurtsTimeValue
+	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
+	
+	var niftyTotalMarketObject = equityDataObj['data']
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+
+//console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+
+		var tempObj = {};
+
+	
+	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Intraday Hike | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
+	  +'<th>Symbol</th>'
+	  +' <th>Chg%</th>'
+	   +' <th>LTP</th>'
+	   +' <th>TDVA</th>'
+	  +' <th>Money</th>'
+	   +' </tr> </thead> <tbody>'
+
+		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
+		if( Symbol.includes('NIFTY')==false )
+		{
+		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+	
+	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
+	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
+	
+	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
+	 
+	  var rankForHeatMap = WFactor
+	  		  
+		{
+			onlyEquityTableStr +='<tr class="item"><td>'
+			 +Symbol
+			 +'</td><td>'
+			+ symbolArray['pChange']  //pchange
+			 +'</td><td>'
+			 +symbolArray['lastPrice']  //lastPrice
+			 +'</td><td>'
+			+ twentyDAV 
+		+'</td><td>'
+		+ WFactor
+		+'</td></tr>'
+			
+		
+		}
+	}
+		} //for Loop ENDS HERE
+		
+		onlyEquityTableStr +=' </tbody> </table>    </div>  </div>'
+		
+	document.getElementById('equityDataTableContainer').innerHTML = onlyEquityTableStr
+	 //addEventListnerInTables()
+
+}	//	show_volume_value_spike_Data() Function ENDS HERE
+
+</script>
+<!-- Spurts-Equity Code Ends Here -->
+
+
+
+
+<!-- Floating Buttons Code Starts Here -->
+<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
+<!-- Floating Buttons Code Ends Here -->
+
+
+<script>
+generateMonthYearFromDate( new Date("April 2023") );
+</script>
