@@ -20,10 +20,10 @@ body {
   .column {
   float: none;
   width: 20%;
-  padding: 10px;
-    margin: 10px 10px;
+  padding: 8px;
+    margin: 8px 8px;
   text-align: center;
-  font-size: 18px;
+  font-size: 17px;
   text-transform: uppercase;
   font-weight: 500;
    background-color: #008CBA;
@@ -38,10 +38,23 @@ body {
 }
 
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 900px) {
   .column {
-    width: 28%;
-	font-size: 15px;
+    width: 42%;
+	height: 50px;
+	font-size: 12px;
+	padding: 1px;
+    margin: 5px 5px;
+	
+  }
+}
+
+@media screen and (max-width: 300px) {
+  .column {
+    width: 50%;
+	font-size: 12px;
+	padding: 2px;
+    margin: 5px 5px;
   }
 }
 </style>
@@ -62,6 +75,7 @@ body {
  	<a href="momentumSpikeChart.html"><button class="column">Spikes (Chart)</button></a>
  	<a href="momentumSpikeTables.html"><button class="column">Spikes (Table)</button></a>
   <a href="indicesAndIntradayHike.html"><button class="column">Intraday Hike</button></a>
+  <a href="optionChain.html"><button class="column">OI Tracker</button></a>
 
   </div>
 </center>

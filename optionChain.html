@@ -1,0 +1,1720 @@
+
+<!-- Importing Firebase SDK Starts Here-->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+ <!-- Importing Firebase SDK Ends Here-->
+ 
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Starts Here-->
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
+ 
+
+  <script src="functions/commonFunctions.js"></script>
+  <script src="functions/tableSortingFunctons.js"></script>
+ <script src="functions/importFiles.js"></script>
+ <script src="functions/firebase.js"></script>
+ <script src="functions/firebaseFunctions.js"></script>
+
+ <div id="importedContent"></div>
+ 
+ <title>Option Chain</title>
+ 
+ 
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+
+* {
+  box-sizing: border-box;
+}
+.column1 {
+  float: left;
+  width: 29.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.column2 {
+  float: left;
+  width: 69.7%;
+  padding: 2px;
+  height: 500px; 
+  margin: 2px 2px;
+  border-radius: 5px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+@media screen and (max-width: 600px) {
+  .column1 {
+    width: 100%;
+  }
+  .column2 {
+    width: 100%;
+  }
+}
+</style>
+
+
+ <label>Month Year:</label>
+<select id="monthYear" onchange="getFirestoreData()">
+</select>
+
+ <label> | Trading Date:</label>
+<select id="tradingDate" onchange="setCommonSelectors()">
+</select>
+
+
+ <label> | Common TimeValues:</label>
+<select id="commonTimeValues" onchange="saveSelectedValues();fetchDataForAllSegments()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+<button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
+&nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
+
+<hr>
+
+ <label> Symbol:</label>
+<select id="optionChainSymbol" onchange="setExpires()">
+</select>
+&nbsp; | &nbsp;&nbsp;
+ <label> Expiry:</label>
+<select id="expiryDate">
+</select>
+&nbsp; | &nbsp;&nbsp;
+ <label> Option Chain TimeValues:</label>
+<select id="optionChainTimeValues" onchange="showPipsInSlider()">
+</select>
+
+<!--Content Start From Here-->
+   <style>
+        #sliderContainer {
+            display: inline-block;
+            vertical-align: middle;
+            padding: 10px;
+			 width: 100%;
+        }
+
+
+        #slider {
+            width: 100%;
+        }
+
+  
+        button {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+    </style>
+	
+	 <style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; 
+   text-align: center;
+  }
+  
+   
+ .column {
+  float: left;
+  padding: 0.5px;
+  height: 700px;
+  width: 47.5%;
+  margin-top:5px;
+}
+
+.Left {
+  width: 47.5%;
+  margin-left:1.5%;
+}
+
+.Right {
+  width: 47.5%;
+  margin-right:1.5%;
+  margin-left:1.5%;
+  margin-bottom:15px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+  
+}
+
+ .Side {
+  float: left;
+  padding: 0.5px;
+  height: 345px;
+  width: 49.5%;
+  
+}
+
+.First {
+  width: 49.5%;
+  margin-left:0.3%;
+  margin-bottom:2px;
+}
+
+.Second {
+  width: 49.5%;
+  margin-right:0.1%;
+  margin-left:0.3%;
+  margin-bottom:2px;
+  
+}
+
+.Bar1 {
+  float: left;
+  padding: 0.5px;
+  height: 35px;
+  width: 100%;
+  margin-top:20px;
+}
+
+.sliderbar {
+  width: 92%;
+  height: 35px;
+  margin-left:1%;
+}
+
+.sliderBtn {
+  width: 6.5%;
+  height: 35px;
+  margin-left:0.2%;
+}
+
+.SmallBoxes{
+height: 345px;
+}
+
+.SliderGO{
+font-size: 18px;
+margin-left:-10px ;
+margin-top: 1.5px;
+}
+
+
+@media screen and (max-width: 700px) {
+  .column {
+    width: 98%;
+	font-size: 15px;
+	margin-left:1.5%;
+	margin-right:1.5%;
+  margin-bottom:12px;
+  }
+  
+  .Side {
+  float: left;
+  padding: 0.5px;
+  height: 270px;
+  width: 49.5%;
+  margin-bottom:2px;  
+}
+
+.SmallBoxes{
+height: 270px;
+}
+
+.SliderGO{
+font-size: 16px;
+width: 50%;
+}
+
+.sliderBtn {
+  width: 100%;
+  margin-top:50px;
+  }
+  
+  .sliderbar {
+  width: 100%;
+  height: 35px;
+  margin-left:0%;
+}
+
+}
+</style>
+ 
+<center>
+  
+  <div class="row">
+  <div class="Bar1 sliderbar" style="background-color:;">
+    <div id="sliderContainer">
+            <div id="slider"></div>
+        </div>
+  </div>
+  <div class="Bar1 sliderBtn" style="background-color:;">
+    <button class="SliderGO"onclick="fetchSlidersBuildupData()">GO</button>
+  </div>
+          
+  </div>
+  <br><br>
+  
+<div class="row">
+  <div class="column Left" style="background-color:#aaa;">
+<div id="optionChainChart" style="height: 700px;"></div>
+  </div>
+  <div class="column Right" style="background-color:#bbb;">
+  
+  <div class="row">
+  <div class="First Side" style="background-color:#555;">
+ <div id="OIBuildupChart" class="SmallBoxes"></div> 
+  </div>
+   <div class="Second Side" style="background-color:#555;">
+  <div id="barChartOICHANGE" class="SmallBoxes"></div> 
+  </div>
+  </div>
+  
+  <div class="row">
+  <div class="First Side" style="background-color:#555;">
+ <div id="donutChartContainer" class="SmallBoxes"></div> 
+  </div>
+   <div class="Second Side" style="background-color:#555;">
+ <div id="barChartOITOTAL" class="SmallBoxes"></div>
+  </div>
+  </div>
+    
+  </div>
+  
+  <div class="column Left" style="background-color:#bbb;">
+    <h2>Box 3</h2>
+  </div>
+  
+  <div class="column Right" style="background-color:#bbb;">
+    <h2>Box 4</h2>
+  </div>
+</div>
+<br><br>
+
+</center>
+
+
+	
+<!--<div><div id="sliderContainer" style="padding:10px;"><div id="slider"></div></div><span> sffd<button>GO</button></span></div>-->
+<div class="charRow"> <div class="charColumn" >  </div> <div class="charColumn"> <div class="charRow"> <div class="charColumn"></div> <div class="charColumn"> </div> </div> <div class="charRow"> <div class="charColumn"></div> <div class="charColumn"> </div> </div> </div> </div>
+
+<!--Content Ends Here-->
+
+
+<script>
+function fetchDataForAllSegments()
+{
+ setOptionChainSymbolsSelector( )
+//setIndicesSelectorTimeValues( "syncWithCommonTime" );
+//setSpurtsSelectorTimeValues( "syncWithCommonTime" );
+}
+</script>
+
+
+
+
+
+<!-- Slider's Scripts STARTS from HERE -->
+
+  <!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/3.0.7/flatpickr.min.css"> -->
+ <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/10.1.0/nouislider.min.css">
+  <!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.min.css"> -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/3.0.7/flatpickr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/10.1.0/nouislider.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+  
+<!--  Slider's Scripts ENDS HERE -->
+
+ <style>
+    #slider {
+    height: 10px;
+}
+
+#slider .noUi-connect {
+    background: #c0392b;
+}
+
+#slider .noUi-handle {
+    height: 18px;
+    width: 18px;
+    top: -5px;
+    right: -9px; /* half the width */
+    border-radius: 9px;
+}
+    </style>
+	
+<!-- Option Chain Code Starts Here -->
+<script>
+function setOptionChainSymbolsSelector( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var optionChainObj = firestoreIndexObj[ tradingDate ]['Index']['option_chain_data']
+	var selectElementRef = document.getElementById("optionChainSymbol");
+	
+	selectElementRef.innerHTML = '<option>Select</option>'
+	for(var symbol in optionChainObj )
+	{
+	 var optionElement = document.createElement("option");
+    optionElement.text = symbol;
+    selectElementRef.add(optionElement);
+	}
+	//handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+}
+
+function setExpires()
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedSymbol = document.getElementById("optionChainSymbol").value;
+	var optionChainExpiriesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['expiryDates']
+	var optionChainTimeValuesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['timeValues']
+	var selectElementRef = document.getElementById("expiryDate");
+	
+	selectElementRef.innerHTML = ''
+	for( var i=0;i<optionChainExpiriesArray.length;i++ )
+	{
+	 var optionElement = document.createElement("option");
+    optionElement.text = optionChainExpiriesArray[i];
+    selectElementRef.add(optionElement);
+	}
+	
+	var selectElementRef = document.getElementById("optionChainTimeValues");
+	
+	selectElementRef.innerHTML = '<option>Select</option>'
+	for( var i=0;i<optionChainTimeValuesArray.length;i++ )
+	{
+	 var optionElement = document.createElement("option");
+    optionElement.text = optionChainTimeValuesArray[i];
+    selectElementRef.add(optionElement);
+	}
+	//handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+	
+		
+
+}
+
+
+
+//direct code Starts from here
+async function showPipsInSlider_ORIGINAL() {
+
+
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedSymbol = document.getElementById("optionChainSymbol").value;
+	var optionChainTimeValuesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['timeValues']
+
+
+	var selectedValue;
+
+	var selectedTime = document.getElementById("optionChainTimeValues").value;
+
+
+	var theSelect = document.getElementById('optionChainTimeValues');
+	var pre15StempsTime = theSelect.options[theSelect.options.selectedIndex - 7];
+
+	if (pre15StempsTime != undefined) {
+		if (pre15StempsTime.value != '')
+			pre15StempsTime = pre15StempsTime.value
+		else
+			pre15StempsTime = theSelect.options[theSelect.options.length - theSelect.options.length + 1].value;
+	}
+	else
+		pre15StempsTime = theSelect.options[theSelect.options.length - theSelect.options.length + 1].value;
+
+
+
+
+
+
+	//document.getElementsByClassName("section")[0].setAttribute("style", "background-color:black;");
+	//document.getElementById('slider').innerHTML = ""
+	document.getElementById('slider').innerHTML = ""
+	var percentage = 0
+
+
+	var initialSlider = [timeToMinutes(pre15StempsTime), timeToMinutes(selectedTime)]
+	var range2 = {}
+
+	var keysLength = optionChainTimeValuesArray.length
+	var previous_key = timeToMinutes("09:15:00");
+	var current = 0;
+	var difference = 0;
+	//range['min']= [555,3],
+
+	var division = 100 / keysLength
+
+	//range2['min']= [555,1]
+	var index = 0
+
+	var timeValues = ""
+
+	for (var i=0;i<optionChainTimeValuesArray.length;i++ ) {
+	 var key = optionChainTimeValuesArray[i]
+	//for (var key in SpecificStocks) {
+
+		if (timeValues.includes(key) == false) //if block for showing pips on slider for specific Time values
+		{
+			if (timeValues.includes(key.split(':')[0] + ":") == false)
+				//timeValues += key+"#"+timeToMinutes(key)+","
+				timeValues += key.split(':')[0] + ":" + key.split(':')[1] + "#" + timeToMinutes(key) + ","
+		}
+
+		index++;
+		var arr = []
+		//current=key.split(':')[0]+key.split(':')[1]
+		current = timeToMinutes(key)
+
+
+
+		difference = current - previous_key
+		//if(difference==0)
+		//difference=1
+		////console.log(current+" - "+previous_key+" = "+difference)
+		//console.log(key + ", " + difference)
+
+
+		percentage += division
+		arr.push(previous_key)
+		arr.push(difference)
+
+		if (index == 1 || difference == 0) {
+		}
+		else if (index == 2) {
+			//range2['min']= [555,difference]
+			range2['min'] = arr
+		}
+		else if (index == keysLength) {
+			range2['max'] = [current]
+			//timeValues += key+"#"+timeToMinutes(key)+","
+			timeValues += key.split(':')[0] + ":" + key.split(':')[1] + "#" + timeToMinutes(key) + ","
+		}
+
+		else {
+			range2[percentage + "%"] = arr
+		}
+
+
+		previous_key = current
+		//Object.keys(SpecificStocks).length
+
+	}
+	//range2['max']= [930]
+
+
+
+	new Vue({
+		el: '#app',
+		data() {
+			return {};
+
+
+		},
+		mounted() {
+			flatpickr(".date", {
+				minDate: 'today'
+			});
+
+
+			flatpickr(".time", {
+				enableTime: true,
+				noCalendar: true,
+				minuteIncrement: 15,
+				dateFormat: "h:i K",
+				mode: "range"
+			});
+
+
+			var slider = document.getElementById('slider');
+			noUiSlider.create(slider, {
+				start: initialSlider,
+				connect: true,
+				step: 3,
+				tooltips: [true, true],
+
+				range: range2,
+
+				pips: {
+					mode: 'steps',
+					density: 4,
+					//values: [0, 720, 1439],
+					filter: function (value, type) {
+						// //console.log(type, value, value % 60);
+						// document.getElementById('temp').innerHTML += value+': '+ (value % 240) +',  '+(value % 60)+', '+(value % (60 * 4) === 0 ? 1 : value % 60 === 0 ? 2 : 0)+'<br>';
+
+						if (timeValues.includes(value))
+							//if(value==555 || value==930)
+							return 1
+						else
+							return value % (60 * 4) === 0 ? 1 : value % 60 === 0 ? 1 : 0;
+					},
+					//density: 2,
+					format: {
+						to: function (value) {
+							if (timeValues.includes(value)) {
+								//if (value % (60) === 0 || value==555  || value==930) {
+								// return moment().startOf('day').add(value, 'minutes').format('hh:mm A');
+								return moment().startOf('day').add(value, 'minutes').format('hh:mm');
+							}
+							return '';
+						},
+						from: function (value) {
+							return value;
+						}
+					}
+				},
+
+
+				format: {
+					to: function (value) {
+						//return value + ',-';
+						//return moment().startOf('day').add(value, 'minutes').format('hh:mm A');
+						return moment().startOf('day').add(value, 'minutes').format('hh:mm');
+					},
+					from: function (value) {
+						return value;
+					}
+				}
+			});
+
+
+		}
+	});
+
+	
+	//document.getElementById('slider').setAttribute('onclick','fetchSlidersBuildupData()')
+	//document.getElementsByClassName('noUi-handle noUi-handle-lower')[0].setAttribute('onmouseup','fetchSlidersBuildupData()')
+	//document.getElementsByClassName('noUi-handle noUi-handle-upper')[0].setAttribute('onmouseup','fetchSlidersBuildupData()')
+
+	document.getElementById('slider').setAttribute('onclick', 'showData("flexibleSlider")')
+	document.getElementsByClassName('noUi-handle noUi-handle-lower')[0].setAttribute('onmouseup', 'showData("flexibleSlider")')
+	document.getElementsByClassName('noUi-handle noUi-handle-upper')[0].setAttribute('onmouseup', 'showData("flexibleSlider")')
+
+
+} //showSliderData() ends here
+
+var sliderValuesForTimeValuesObj ={}
+
+function convert24HTimeInto12HTime(timeValue) {
+  var timeArray = timeValue.split(":");
+  var hours = parseInt(timeArray[0]);
+  
+  // Adjust the hours if necessary
+  if (hours > 12) {
+    hours -= 12;
+  }
+  
+  var convertedTime = ("0" + hours).slice(-2) + ":" + timeArray[1];
+  return convertedTime;
+}
+
+
+async function showPipsInSlider() {
+
+
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedSymbol = document.getElementById("optionChainSymbol").value;
+	var optionChainTimeValuesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['timeValues']
+
+	var selectedValue;
+
+	var selectedTime = document.getElementById("optionChainTimeValues").value;
+
+
+	var theSelect = document.getElementById('optionChainTimeValues');
+	//var pre15StempsTime = theSelect.options[theSelect.options.selectedIndex - 7];
+	var pre15StempsTime = theSelect.options[theSelect.options.selectedIndex - 14];
+
+	if (pre15StempsTime != undefined) {
+		if (pre15StempsTime.value != '')
+			pre15StempsTime = pre15StempsTime.value
+		else
+			pre15StempsTime = theSelect.options[theSelect.options.length - theSelect.options.length + 1].value;
+	}
+	else
+		pre15StempsTime = theSelect.options[theSelect.options.length - theSelect.options.length + 1].value;
+
+
+
+
+
+
+	//document.getElementsByClassName("section")[0].setAttribute("style", "background-color:black;");
+	//document.getElementById('slider').innerHTML = ""
+	document.getElementById('sliderContainer').innerHTML = '<div id="slider"></div>'
+	var percentage = 0
+
+
+	var initialSlider = [timeToMinutes(pre15StempsTime), timeToMinutes(selectedTime)]
+	var range2 = {}
+
+	var keysLength = optionChainTimeValuesArray.length
+	var previous_key = timeToMinutes("09:15:00");
+	var current = 0;
+	var difference = 0;
+	//range['min']= [555,3],
+
+	var division = 100 / keysLength
+
+	//range2['min']= [555,1]
+	var index = 0
+
+	var timeValues = ""
+
+	for (var i=0;i<optionChainTimeValuesArray.length;i++ ) {
+	 var key = optionChainTimeValuesArray[i]
+	//for (var key in SpecificStocks) {
+
+		if (timeValues.includes(key) == false) //if block for showing pips on slider for specific Time values
+		{
+			if (timeValues.includes(key.split(':')[0] + ":") == false)
+				//timeValues += key+"#"+timeToMinutes(key)+","
+				timeValues += key.split(':')[0] + ":" + key.split(':')[1] + "#" + timeToMinutes(key) + ","
+		}
+
+		index++;
+		var arr = []
+		//current=key.split(':')[0]+key.split(':')[1]
+		current = timeToMinutes(key)
+
+
+
+		difference = current - previous_key
+		//if(difference==0)
+		//difference=1
+		////console.log(current+" - "+previous_key+" = "+difference)
+		//console.log(key + ", " + difference)
+
+
+		percentage += division
+		arr.push(previous_key)
+		arr.push(difference)
+
+		if (index == 1 || difference == 0) {
+		}
+		else if (index == 2) {
+			//range2['min']= [555,difference]
+			range2['min'] = arr
+		}
+		else if (index == keysLength) {
+			range2['max'] = [current]
+			//timeValues += key+"#"+timeToMinutes(key)+","
+			timeValues += key.split(':')[0] + ":" + key.split(':')[1] + "#" + timeToMinutes(key) + ","
+		}
+
+		else {
+			range2[percentage + "%"] = arr
+		}
+
+		//sliderValuesForTimeValuesObj[ previous_key ] = key
+		//sliderValuesForTimeValuesObj[ key.split(':')[0] + ":" + key.split(':')[1] ] = key
+		sliderValuesForTimeValuesObj[ convert24HTimeInto12HTime(key) ] = key
+	
+		previous_key = current
+		//Object.keys(SpecificStocks).length
+
+	}
+	//range2['max']= [930]
+
+
+
+		
+
+
+			var slider = document.getElementById('slider');
+			noUiSlider.create(slider, {
+				start: initialSlider,
+				connect: true,
+				step: 3,
+				tooltips: [true, true],
+
+				range: range2,
+
+				pips: {
+					mode: 'steps',
+					density: 4,
+					//values: [0, 720, 1439],
+					filter: function (value, type) {
+						// //console.log(type, value, value % 60);
+						// document.getElementById('temp').innerHTML += value+': '+ (value % 240) +',  '+(value % 60)+', '+(value % (60 * 4) === 0 ? 1 : value % 60 === 0 ? 2 : 0)+'<br>';
+
+						if (timeValues.includes(value))
+							//if(value==555 || value==930)
+							return 1
+						else
+							return value % (60 * 4) === 0 ? 1 : value % 60 === 0 ? 1 : 0;
+					},
+					//density: 2,
+					format: {
+						to: function (value) {
+							if (timeValues.includes(value)) {
+								//if (value % (60) === 0 || value==555  || value==930) {
+								// return moment().startOf('day').add(value, 'minutes').format('hh:mm A');
+								return moment().startOf('day').add(value, 'minutes').format('hh:mm');
+							}
+							return '';
+						},
+						from: function (value) {
+							return value;
+						}
+					}
+				},
+
+
+				format: {
+					to: function (value) {
+						//return value + ',-';
+						//return moment().startOf('day').add(value, 'minutes').format('hh:mm A');
+						return moment().startOf('day').add(value, 'minutes').format('hh:mm');
+					},
+					from: function (value) {
+						return value;
+					}
+				}
+			});
+
+
+
+	
+	//document.getElementById('slider').setAttribute('onclick','fetchSlidersBuildupData()')
+	//document.getElementsByClassName('noUi-handle noUi-handle-lower')[0].setAttribute('onmouseup','fetchSlidersBuildupData()')
+	//document.getElementsByClassName('noUi-handle noUi-handle-upper')[0].setAttribute('onmouseup','fetchSlidersBuildupData()')
+
+	//document.getElementById('slider').setAttribute('onclick', 'showData("flexibleSlider")')
+	//document.getElementsByClassName('noUi-handle noUi-handle-lower')[0].setAttribute('onmouseup', 'showData("flexibleSlider")')
+	//document.getElementsByClassName('noUi-handle noUi-handle-upper')[0].setAttribute('onmouseup', 'showData("flexibleSlider")')
+
+
+} //showSliderData() ends here
+
+async function fetchSlidersBuildupData() {
+	//console.log(slider.noUiSlider.get())
+	var fromTime = sliderValuesForTimeValuesObj[ slider.noUiSlider.get()[0] ];
+	var toTime = sliderValuesForTimeValuesObj[ slider.noUiSlider.get()[1] ];
+	console.log( "fromTime",fromTime,"toTime",toTime )
+	var currentTime;
+
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedSymbol = document.getElementById("optionChainSymbol").value;
+	var selectedExpiry = document.getElementById("expiryDate").value;
+
+
+	var docPathFromTime = '/'+selectedMonthYear+'/'+selectedTradingDate+'/option_chain_data/'+selectedSymbol+'/'+fromTime+'/'+fromTime
+	var docPathToTime = '/'+selectedMonthYear+'/'+selectedTradingDate+'/option_chain_data/'+selectedSymbol+'/'+toTime+'/'+toTime
+	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
+	
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+
+	var dataObjFromTime =  JSON.parse( (await fetchFirebaseDocData( docPathFromTime ) ) ['data'] )
+	var dataObjToTime = JSON.parse( (await fetchFirebaseDocData( docPathToTime ) ) ['data'] )
+	
+	console.log("dataObjFromTime",dataObjFromTime)
+	console.log("dataObjToTime",dataObjToTime)
+	
+	calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selectedSymbol )
+}
+
+function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selectedSymbol )
+{
+	var currentDataObj = dataObjFromTime[ selectedExpiry ]
+	var previousDataObj = dataObjToTime[ selectedExpiry ]
+
+	//console.log("")
+	var previousTime;
+	var changeInCall = 0;
+	var changeInPut = 0;
+	var changeinOIObj={};
+	var lastTimesSpotPrice;
+	
+	{
+				var currentSelectedTimeData = currentDataObj["totalCEPE"] // getting overall totalCEPE array
+				var previousSelectedTimeData = previousDataObj["totalCEPE"]
+
+				changeInCall += currentSelectedTimeData["intradayOICEChange"] - previousSelectedTimeData["intradayOICEChange"]    // totalOICEChange/IntradayOICEChange
+				changeInPut += currentSelectedTimeData["intradayOIPEChange"] - previousSelectedTimeData["intradayOIPEChange"]  // totalOICEChange/IntradayOICEChange 
+			}
+
+
+	
+	
+			for( var strikePrice in currentDataObj ) // getting all strike prices key==timeValue
+			{ //SpecificStocks[key] 
+				
+				if( strikePrice != "SpotPrice" && strikePrice != "totalCEPE"  && strikePrice != "expiryDate" )
+				{
+					
+					if( changeinOIObj [strikePrice]==undefined )
+					{
+						changeinOIObj [strikePrice] = {
+							"CE" : currentDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"], //"changeinOpenInterest"
+							"PE" : currentDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] // "changeinOpenInterest"
+						}
+					}
+					else
+					{
+						
+						changeinOIObj [strikePrice] ["CE"] =currentDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"] -changeinOIObj [strikePrice] ["CE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+						changeinOIObj [strikePrice] ["PE"] =currentDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] -changeinOIObj [strikePrice] ["PE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+
+						//changeinOIObj [strikePrice] ["CE"] =SpecificStocks[key] [ strikePrice ] [ "CE" ] [1] + changeinOIObj [strikePrice] ["CE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+						//changeinOIObj [strikePrice] ["PE"] =SpecificStocks[key] [ strikePrice ] [ "PE" ] [1] + changeinOIObj [strikePrice] ["PE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+
+					}
+					//console.log(changeinOIObj [strikePrice] ["CE"])
+				}
+			
+			}
+			
+			
+			for( var strikePrice in previousDataObj ) // getting all strike prices key==timeValue
+			{ //SpecificStocks[key] 
+				
+				if( strikePrice != "SpotPrice" && strikePrice != "totalCEPE"  && strikePrice != "expiryDate" )
+				{
+					
+					if( changeinOIObj [strikePrice]==undefined )
+					{
+						changeinOIObj [strikePrice] = {
+							"CE" : previousDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"], //"changeinOpenInterest"
+							"PE" : previousDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] // "changeinOpenInterest"
+						}
+					}
+					else
+					{
+						
+						changeinOIObj [strikePrice] ["CE"] =previousDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"] -changeinOIObj [strikePrice] ["CE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+						changeinOIObj [strikePrice] ["PE"] =previousDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] -changeinOIObj [strikePrice] ["PE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+
+						//changeinOIObj [strikePrice] ["CE"] =SpecificStocks[key] [ strikePrice ] [ "CE" ] [1] + changeinOIObj [strikePrice] ["CE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+						//changeinOIObj [strikePrice] ["PE"] =SpecificStocks[key] [ strikePrice ] [ "PE" ] [1] + changeinOIObj [strikePrice] ["PE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+
+					}
+					//console.log(changeinOIObj [strikePrice] ["CE"])
+				}
+			
+			}
+			
+			
+			lastTimesSpotPrice = currentDataObj ["SpotPrice"]
+	
+
+
+	console.log("changeInCall",changeInCall)
+	console.log("changeInPut",changeInPut)
+	console.log("lastTimesSpotPrice",lastTimesSpotPrice)
+	console.log("changeinOIObj",changeinOIObj)
+
+
+	showOIBuildupData(changeInCall, changeInPut)  //send fetched data to showOIBuildupData function for showing it on chart
+
+	showOptionChainChart( changeinOIObj, lastTimesSpotPrice, selectedSymbol )
+	
+
+		showDataInOIChange( currentDataObj["totalCEPE"] )
+		showDataInTOTALOI( currentDataObj["totalCEPE"] )
+		DonutChart( currentDataObj["totalCEPE"] )
+			
+}
+
+
+
+function showOIBuildupData(sliderCE, sliderPE) {
+	//if this function is called without parameters then
+	// it first gets selected index/symbol and time from current situation and then it fetches //mohan
+	//console.log(sliderCE, sliderPE)
+	var selectedValue, selectedTime, previousTime;
+	var changeInCall, changeInPut;
+	var bullishOrBearish;
+
+	var division;
+
+	if (sliderCE != undefined || sliderPE != undefined) //if sent fetched data is not empty then do run this block
+	{
+		changeInCall = sliderCE
+		changeInPut = sliderPE
+
+		//console.log("sliderCE " + changeInCall)
+		//console.log("sliderPE " + changeInPut)
+
+
+		if (sliderCE < 0) {
+			var temp = 1
+			division = (sliderPE / temp).toFixed(2)
+
+		}
+		else if (sliderPE < 0) {
+			var temp = 1
+			division = (sliderCE / temp).toFixed(2)
+		}
+		//else if (Call_OI_Change_total > PUT_OI_Change_total && (Call_OI_Change_total / PUT_OI_Change_total) >= 2)
+		else if (sliderCE > sliderPE) {
+			division = (sliderCE / sliderPE).toFixed(2)
+		}
+
+		//else if (PUT_OI_Change_total > Call_OI_Change_total && (PUT_OI_Change_total / Call_OI_Change_total) >= 2)
+		else if (sliderPE > sliderCE) {
+			division = (sliderPE / sliderCE).toFixed(2)
+
+		}
+
+
+	}
+
+
+
+
+	//green "#99cc00"
+	//red   "#e60000"
+
+	if (changeInCall < 0)
+		CEColor = "#089981" //green CE
+	else
+		CEColor = "#990000" //red CE
+
+	if (changeInPut < 0)
+		PEColor = "#990000" //red CE
+	else
+		PEColor = "#089981" //green CE
+
+	if (changeInCall > changeInPut)
+		bullishOrBearish = "Bearish"
+	else if (changeInPut > changeInCall)
+		bullishOrBearish = "Bullish"
+	else
+		bullishOrBearish = ""
+
+
+
+	var chart = new CanvasJS.Chart("OIBuildupChart", {
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		title: {
+			text: "OI Buildup: " + bullishOrBearish + " (" + division + "x)",
+			fontSize: 18,
+		},
+		axisY: {
+			includeZero: true,
+			gridThickness: 0.2
+			//title: "Reserves(MMbbl)"
+		},
+		data: [{
+			indexLabel: "{y}",
+			type: "column",
+			showInLegend: false,
+			indexLabelFontSize: 15,
+			//legendMarkerColor: "grey",
+			//legendText: "MMbbl = one million barrels",
+			dataPoints: [
+				{ color: "red", y: changeInCall, label: "CE", color: CEColor },
+				{ color: "green", y: changeInPut, label: "PE", color: PEColor }
+
+
+			]
+		}]
+	});
+	chart.render();
+
+	//DonutChart(Call_OI_Change_total,PUT_OI_Change_total)
+
+}
+
+
+function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbol ) {
+	// this function catches Array from DonutChart() function and it then fetch required values from Array
+	//based on fetched values, it renders the data in		supportRegistanceChart		chart
+
+	var arrObjCE=[];
+	var arrObjPE=[];
+	var tempObj={}
+	
+	var fromTime = slider.noUiSlider.get()[0];
+	var toTime = slider.noUiSlider.get()[1];
+	
+	
+		var strikesPrices = Object.keys( changeinOIObj )
+		strikesPrices = strikesPrices.filter(v => v !== 'SpotPrice')
+		strikesPrices = strikesPrices.filter(v => v !== 'totalCEPE')
+
+		var findClosest = (arr,num) => {
+		  if(arr == null){
+			return
+		  }
+		  return arr.indexOf(arr.reduce((prev,current) => Math.abs(current - num)<Math.abs(prev - num) ? current : prev));
+		}
+
+
+		var spotPrice = lastTimesSpotPrice
+		var indexOfATM=findClosest(strikesPrices,spotPrice)
+		//console.log(findClosest(array,num));
+	
+		var intervalDifference = Number(strikesPrices[indexOfATM]) - Number(strikesPrices[indexOfATM-1])
+		
+		var maxinumStrikeNum=12
+		var belowATM, aboveATM;
+		if( (indexOfATM-maxinumStrikeNum)<=0 )
+		{
+			belowATM=0
+		}
+		else{
+			belowATM = indexOfATM-maxinumStrikeNum
+		}
+		
+		if( (indexOfATM+maxinumStrikeNum) >= strikesPrices.length )
+		{
+			aboveATM=strikesPrices.length
+		}
+		else{
+			aboveATM = indexOfATM+maxinumStrikeNum
+		}
+		
+		/*
+		if( (indexOfATM-maxinumStrikeNum) >= 0 && (indexOfATM+maxinumStrikeNum) <= strikesPrices.length ) 
+		{
+			belowATM = indexOfATM-maxinumStrikeNum
+			aboveATM = indexOfATM+maxinumStrikeNum
+		}
+		*/
+		//console.log( belowATM, aboveATM )
+
+		//console.log( belowATM, aboveATM )
+		//for( var strikePrice in currentSelectedTimeData )
+		for( var arrIndex=belowATM; arrIndex < aboveATM; arrIndex++ )
+		{
+			var strikePrice = strikesPrices [arrIndex]
+			if( strikePrice != "SpotPrice" && strikePrice != "totalCEPE" )
+			{
+				/*
+				tempObj= { y: currentSelectedTimeData [ strikePrice ] [ "CE" ] [1], x: strikePrice  }
+				arrObjCE.push(tempObj)
+				
+				tempObj= { y: currentSelectedTimeData [ strikePrice ] [ "PE" ] [1], x: strikePrice  }
+				arrObjPE.push(tempObj)
+				*/
+				
+				tempObj= {  x: Number(strikePrice), y: changeinOIObj [ strikePrice ] [ "CE" ]  }
+				arrObjCE.push(tempObj)
+				
+				tempObj= {  x: Number(strikePrice), y: changeinOIObj [ strikePrice ] [ "PE" ] }
+				arrObjPE.push(tempObj)
+			}
+		}
+		
+		//console.log( changeinOIObj, lastTimesSpotPrice, indexOfATM, intervalDifference ) 
+		//console.log( arrObjCE, arrObjPE )
+
+	var chart = new CanvasJS.Chart("optionChainChart", {
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		backgroundColor: "black",
+		title: {
+			 //text: "Using labelAlign property of stripline"
+		},
+		subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text: selectedSymbol+' | '+ fromTime+' - '+toTime,
+			verticalAlign: "bottom",
+			 horizontalAlign: "right",
+			 fontSize: 15,
+			dockInsidePlotArea: true
+		  }],
+		axisX:{
+			 labelFontSize: 14,
+			interval: intervalDifference,
+			gridThickness: 0,
+			tickColor: "black",
+			includeZero: true,
+			
+			stripLines:[
+			{
+				value: spotPrice,
+				label: spotPrice,
+				labelPlacement: "inside",//"inside", "outside"
+				labelAlign: "near",//"center", "near", "far"
+				thickness: 2,
+				showOnTop: true,
+				labelFontColor:"black",
+				labelBackgroundColor: "white",
+				labelFontSize:15,
+				//labelFontWeight:"bold",
+				color : "yellow"
+			}
+			],
+
+		},
+		axisY:{
+	
+			title: "",
+			tickLength: 0,
+			  lineThickness:0,
+			  margin:0,
+			  labelFormatter: function(e) {
+				 return "";
+			  },
+			interval: 0,
+			gridThickness: 0,
+			tickColor: "black",
+			includeZero: true,
+		},
+		// dataPointWidth: 15,
+		data: [
+		{
+			indexLabel: "{y}",
+			indexLabelFontSize:14,
+			
+			type: "bar",            
+			color: "#cc5f5f",
+			dataPoints: arrObjCE // CE
+		},
+          {
+			indexLabel: "{y}",
+			indexLabelFontSize: 14,
+			
+			type: "bar",            
+			color: "#1e9b87",
+			dataPoints: arrObjPE //PE
+		}
+		]        
+	});
+	chart.render();
+
+}
+
+
+
+function showDataInOIChange(dataArray) {
+	// this function catches Array from showData() function and it then fetch required values from Array
+	//based on fetched values, it renders the data on  	barChartOICHANGE		chart 
+	//it then sends/passes the catched Array to showDataInTOTALOI(dataArray) function.
+
+	//green "#99cc00"
+	//red   "#e60000"
+
+	var Call_OI_Change_total = dataArray["intradayOICEChange"] // 4 totalOICEChange/IntradayOICEChange
+	var PUT_OI_Change_total = dataArray["intradayOIPEChange"] // 5 totalOIPEChange/IntradayOIPEChange
+
+
+	if (Call_OI_Change_total < 0)
+		CEColor = "#089981" //green CE
+	else
+		CEColor = "#990000" //red CE
+
+	if (PUT_OI_Change_total < 0)
+		PEColor = "#990000" //red CE
+	else
+		PEColor = "#089981" //green CE
+
+
+
+	var division;
+
+	if (Call_OI_Change_total < 0) {
+		var temp = 1
+		division = (PUT_OI_Change_total / temp).toFixed(2)
+
+	}
+	else if (PUT_OI_Change_total < 0) {
+		var temp = 1
+		division = (Call_OI_Change_total / temp).toFixed(2)
+	}
+	//else if (Call_OI_Change_total > PUT_OI_Change_total && (Call_OI_Change_total / PUT_OI_Change_total) >= 2)
+	else if (Call_OI_Change_total > PUT_OI_Change_total) {
+		division = (Call_OI_Change_total / PUT_OI_Change_total).toFixed(2)
+	}
+
+	//else if (PUT_OI_Change_total > Call_OI_Change_total && (PUT_OI_Change_total / Call_OI_Change_total) >= 2)
+	else if (PUT_OI_Change_total > Call_OI_Change_total) {
+		division = (PUT_OI_Change_total / Call_OI_Change_total).toFixed(2)
+
+	}
+
+
+
+	var chart = new CanvasJS.Chart("barChartOICHANGE", {
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		title: {
+			text: "OI Chng:  " + division + "x",
+			fontSize: 18,
+		},
+		axisY: {
+			includeZero: true,
+			gridThickness: 0.2
+			//title: "Reserves(MMbbl)"
+		},
+		data: [{
+			indexLabel: "{y}",
+			type: "column",
+			showInLegend: false,
+			indexLabelFontSize: 15,
+			//legendMarkerColor: "grey",
+			//legendText: "MMbbl = one million barrels",
+			dataPoints: [
+				{ color: "red", y: Call_OI_Change_total, label: "CE", color: CEColor },
+				{ color: "green", y: PUT_OI_Change_total, label: "PE", color: PEColor }
+
+
+			]
+		}]
+	});
+	chart.render();
+
+	//showDataInTOTALOI(Call_OI_Change_total,PUT_OI_Change_total,Total_Calls,Total_Puts)
+	//showDataInTOTALOI(dataArray)
+}
+
+
+// funtion for new column bar chart 
+//function showDataInTOTALOI(Call_OI_Change_total,PUT_OI_Change_total,Total_Calls,Total_Puts) {
+function showDataInTOTALOI(dataArray) {
+	// this function catches Array from showDataInOIChange() function and it then fetch required values from Array
+	//based on fetched values, it renders the data on  	barChartOITOTAL		chart 
+	//it then sends/passes the catched Array to  DonutChart(dataArray) function.
+
+
+	var Total_Calls = dataArray["totalOICE"] // 0 totalOICE
+	var Total_Puts = dataArray["totalOIPE"] // 2 totalOIPE
+	//green "#99cc00"
+	//red   "#e60000"
+
+	if (Total_Calls < 0)
+		CEColor = "#089981" //green CE
+	else
+		CEColor = "#990000" //red CE
+
+	if (Total_Puts < 0)
+		PEColor = "#990000" //red CE
+	else
+		PEColor = "#089981" //green CE
+
+
+	var division;
+	if (Total_Calls < 0) {
+		var temp = 1
+		division = (Total_Puts / temp).toFixed(2)
+	}
+	else if (Total_Puts < 0) {
+		var temp = 1
+		division = (Total_Calls / temp).toFixed(2)
+	}
+	//else if (Total_Calls > Total_Puts && (Total_Calls / Total_Puts) >= 2)
+	else if (Total_Calls > Total_Puts) {
+		division = (Total_Calls / Total_Puts).toFixed(2)
+	}
+
+	//else if (Total_Puts > Total_Calls && (Total_Puts / Total_Calls) >= 2)
+	else if (Total_Puts > Total_Calls) {
+		division = (Total_Puts / Total_Calls).toFixed(2)
+	}
+
+
+
+	var chart = new CanvasJS.Chart("barChartOITOTAL", {
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		title: {
+			text: "Total OI:  " + division + "x",
+			fontSize: 18,
+		},
+		axisY: {
+			includeZero: true,
+			gridThickness: 0.2
+			//title: "Reserves(MMbbl)"
+		},
+		data: [{
+			indexLabel: "{y}",
+			type: "column",
+			showInLegend: false,
+			indexLabelFontSize: 15,
+			//legendMarkerColor: "grey",
+			//legendText: "MMbbl = one million barrels",
+			dataPoints: [
+				{ color: "red", y: Total_Calls, label: "Total OI CE", color: CEColor },
+				{ color: "green", y: Total_Puts, label: "Total OI PE", color: PEColor }
+
+
+			]
+		}]
+	});
+	chart.render();
+
+	//DonutChart(Call_OI_Change_total,PUT_OI_Change_total)
+	//DonutChart(dataArray)
+}
+
+
+//function DonutChart(Call_OI_Change_total,PUT_OI_Change_total) {
+function DonutChart(dataArray) {
+	// this function catches Array from showDataInTOTALOI() function and it then fetch required values from Array
+	//based on fetched values, it renders the data on  	donutChartContainer		chart 
+	// it then call this PriceTime(dataArray) function for printing the values in     MyPriceDiv    div and 		price	div
+	//showDataSupportRegistance(dataArray) : it hen call this function and renders Support & Registance in		supportRegistanceChart		chart
+	//showOIBuildupData()
+	//it then sends/passes the catched Array to  DonutChart(dataArray) function.
+
+
+
+	var Call_OI_Change_total = dataArray["intradayOICEChange"] // 4 totalOICEChange/IntradayOICEChange
+	var PUT_OI_Change_total = dataArray["intradayOIPEChange"]  // 5 totalOIPEChange/IntradayOIPEChange
+
+
+	if (Call_OI_Change_total < 0)
+		CEColor = "#089981" //green CE
+	else
+		CEColor = "#990000" //red CE
+
+	if (PUT_OI_Change_total < 0)
+		PEColor = "#990000" //red CE
+	else
+		PEColor = "#089981" //green CE
+
+	var chart = new CanvasJS.Chart("donutChartContainer", {
+
+		//green "#99cc00"
+		//red   "#e60000"
+
+
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		title: {
+			text: "OI Change %",
+			horizontalAlign: "center",
+			fontSize: 18,
+		},
+		data: [{
+			indexLabelPlacement: "inside",
+
+			type: "doughnut",
+			startAngle: 90,
+			//innerRadius: 60,
+			indexLabelFontSize: 15,
+			indexLabelFontColor: "white",
+			indexLabel: "{label} #percent%",
+			toolTipContent: "<b>{label}:</b> {y} (#percent%)",
+			dataPoints: [
+				{ y: Call_OI_Change_total, label: "CE", color: CEColor, },
+				{ y: PUT_OI_Change_total, label: "PE", color: PEColor, },
+
+			]
+		}]
+	});
+	chart.render();
+
+	//printPriceTime(dataArray)
+
+	//showDataSupportRegistance(dataArray)
+
+	//showOIBuildupData()
+
+	//showPipsInSlider()
+
+	//fetchSlidersBuildupData()
+
+
+}
+
+
+//direct code Ends till here
+
+
+
+
+
+
+async function showData2(passedValue) {			//this function gets the selected index/symbol and time, and then based on these values it fetches data from 'SpecificStocks' object
+		var selectedValue, selectedTime;
+
+
+	var SpecificStocks = mainOIDataObject['option_chain_data']
+
+	var selectedExpiry = document.getElementById("select_expiry").value;
+	
+	if (document.getElementById("select_symbol").value != '')
+		selectedValue = document.getElementById("select_symbol").value;
+	else if (document.getElementById("select_index").value != '')
+		selectedValue = document.getElementById("select_index").value;
+	else
+		alert('please select any symbol or index')
+
+
+	selectedTime = document.getElementById("select_time").value;
+	
+	//var expiryKeys = Object.keys(mainOIDataObject['option_chain_data'][selectedValue])
+	var currentSelectedData = mainOIDataObject['option_chain_data'][selectedValue][ selectedExpiry ][selectedTime]["totalCEPE"]
+	
+
+
+			//saveCurrentSelection();
+
+		await showDataInOIChange(currentSelectedData)
+		await showDataInTOTALOI(currentSelectedData)
+		await DonutChart(currentSelectedData)
+			
+		try{
+		if (passedValue == "flexibleSlider") {
+			//dont call showPipsInSlider() function 
+		}
+		else {
+			showPipsInSlider()
+		}
+		} //try ends here
+		catch(err) {
+			console.log(' showPipsInSlider() calling function  error:- ', err);
+		}
+		
+		try{
+		await fetchSlidersBuildupData()
+		}
+		catch(err) {
+			console.log(' fetchSlidersBuildupData() calling function  error:- ', err);
+		}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+function setIndicesSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+	var selectElementRef = document.getElementById("indicesTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+}
+
+async function getIndicesData( passedValue )
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedTimeValue = document.getElementById('indicesTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedTimeValue
+	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
+	
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+
+}
+
+async function showIndicesPerformanceChart ( returnedDataObj )
+{
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	//var selectedValue = document.getElementById("indices_performance_time").value;
+		
+	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
+	var indicesPerformanceObject = returnedDataObj ['data']
+		
+	var dataPointsArray=[]
+	var dataPointsArrayAdvances=[]
+	var dataPointsArrayDeclines=[]
+	var dataPointsArrayUnchanged=[]
+	var dataPointsArrayPChangeAddition=[]
+	
+	var tempObj={}
+	for (var symbol in indicesPerformanceObject) {
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY PSU BANK' && symbol !='NIFTY PVT BANK' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+			
+		{
+		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+		}
+	}
+	
+// tempObj is sorted by this code
+//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
+Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
+var temp={}
+if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=symbol.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=symbol
+}
+	
+		//temp["y"]=tempObj[symbol]; 
+		temp["y"]= Math.abs( tempObj[symbol] ); 
+		if(tempObj[symbol]<0) 
+		{
+			temp["color"]="#cd5652"
+		}
+		else if(tempObj[symbol]>0) 
+		{
+			temp["color"]="#3a7dd4"
+		}
+		else if(tempObj[symbol]==0) 
+		{
+			temp["color"]="black"
+		}
+		
+		dataPointsArray.push(temp)
+	});
+	
+/*
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][9]; 
+		temp["color"]="#089981"
+			
+		dataPointsArrayAdvances.push(temp)
+		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
+	});
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][10]; 
+		temp["color"]="#cd5652"
+		
+	
+		
+		dataPointsArrayDeclines.push(temp)
+		
+	});	
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][11]; 
+	
+		temp["color"]="#cbba4d"
+		
+		
+		dataPointsArrayUnchanged.push(temp)
+	});
+	
+	*/
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+	animationEnabled: false,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
+			//verticalAlign: "top",
+
+			 //horizontalAlign: "right",
+	
+			 //fontSize: 15,
+			 fontSize: 13,
+			//dockInsidePlotArea: true
+			dockInsidePlotArea: false
+	}],
+	
+	toolTip: {
+			//fontSize: 19,
+			fontSize: 15,
+	},
+	axisY: {
+		//title: "Growth Rate (in %)",
+		//includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.1,
+		//labelFontSize: 18,
+		labelFontSize: 11, // bottom size for change%
+	},
+	axisX: {
+		interval: 1,
+		//title: "Countries"
+		includeZero: true,
+		 //labelFontSize: 17,
+		 labelFontSize: 11, // vertical axis size for text
+		 //labelFontWeight: "bold",
+	},
+	dataPointWidth: 9,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		//click: onClick,
+		//type: "column",
+		type: "bar",
+		yValueFormatString: "#,##0.0#\"%\"",
+		dataPoints: dataPointsArray
+	}]
+});
+
+
+console.log("dataPointsArray",dataPointsArray)
+chart.render();
+//chart2.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+</script>
+<!-- Option Chain Code Ends Here -->
+
+
+<!-- Floating Buttons Code Starts Here -->
+<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:10%;	right:2px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
+<!-- <div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div> -->
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div>
+<!-- Floating Buttons Code Ends Here -->
+
+
+<script>
+// Example usage: generate month and year from April 2023 till now
+generateMonthYearFromDate( new Date("April 2023") );
+</script>
