@@ -123,7 +123,7 @@ body {
         button {
             display: inline-block;
             vertical-align: middle;
-            margin-left: 10px;
+            margin-left: 5px;
         }
     </style>
 	
@@ -140,21 +140,20 @@ body {
  .column {
   float: left;
   padding: 0.5px;
-  height: 700px;
-  width: 47.5%;
-  margin-top:5px;
+  height: 590px;
+  margin-top:0px;
 }
 
 .Left {
-  width: 47.5%;
-  margin-left:1.5%;
+  width: 55%;
+  margin-left:1%;
 }
 
 .Right {
-  width: 47.5%;
-  margin-right:1.5%;
-  margin-left:1.5%;
-  margin-bottom:15px;
+  width: 42%;
+  margin-right:1%;
+  margin-left:0.5%;
+  margin-bottom:12px;
 }
 
 .row:after {
@@ -167,47 +166,47 @@ body {
  .Side {
   float: left;
   padding: 0.5px;
-  height: 345px;
+  height: 292px;
   width: 49.5%;
   
 }
 
 .First {
   width: 49.5%;
-  margin-left:0.3%;
+  margin-left:0.25%;
   margin-bottom:2px;
 }
 
 .Second {
   width: 49.5%;
   margin-right:0.1%;
-  margin-left:0.3%;
+  margin-left:0.25%;
   margin-bottom:2px;
   
 }
 
 .Bar1 {
   float: left;
-  padding: 0.5px;
-  height: 35px;
+  padding: 0.0px;
+  height: 32px;
   width: 100%;
-  margin-top:20px;
+  margin-top:10px;
 }
 
 .sliderbar {
   width: 92%;
-  height: 35px;
+  height: 32px;
   margin-left:1%;
 }
 
 .sliderBtn {
   width: 6.5%;
-  height: 35px;
+  height: 32px;
   margin-left:0.2%;
 }
 
 .SmallBoxes{
-height: 345px;
+height: 292px;
 }
 
 .SliderGO{
@@ -221,6 +220,14 @@ margin-top: 1.5px;
   box-shadow: 0 5px #666;
   transform: translateY(2px);
   color: white;
+}
+
+.IntradayOI {
+width: 48.5%;
+}
+
+.TotalOI {
+width: 48.5%;
 }
 
 
@@ -251,19 +258,28 @@ width: 50%;
 }
 
 .sliderBtn {
-  width: 100%;
-  margin-top:50px;
+  width: 98%;
+  margin-top:55px;
   }
   
   .sliderbar {
-  width: 100%;
+  width: 98%;
   height: 35px;
   margin-left:0%;
 }
 
+.IntradayOI {
+width: 98%;
+}
+
+.TotalOI {
+width: 98%;
+}
+
+
 }
 </style>
- 
+ <br> <br>
 <center>
   
   <div class="row">
@@ -281,7 +297,7 @@ width: 50%;
   
 <div class="row">
   <div class="column Left" style="background-color:#aaa;">
-<div id="optionChainChart" style="height: 700px;"></div>
+<div id="optionChainChart" style="height: 590px;"></div>
   </div>
   <div class="column Right" style="background-color:#bbb;">
   
@@ -305,12 +321,12 @@ width: 50%;
     
   </div>
   
-  <div class="column Left" style="background-color:#bbb;">
-    <h2>Box 3</h2>
+  <div class="column IntradayOI" style="background-color:#bbb;margin-top:5px;">
+<div id="optionChainIntradayOIChart" style="height: 590px;"></div>
   </div>
   
-  <div class="column Right" style="background-color:#bbb;">
-    <h2>Box 4</h2>
+  <div class="column TotalOI" style="background-color:#bbb;margin-top:5px;">
+<div id="optionChainTotalOIChart" style="height: 590px;"></div>
   </div>
 </div>
 <br><br>
@@ -328,7 +344,7 @@ width: 50%;
 <script>
 function fetchDataForAllSegments()
 {
- setOptionChainSymbolsSelector( )
+ setOptionChainSymbolsSelector( "syncWithCommonTime" )
 //setIndicesSelectorTimeValues( "syncWithCommonTime" );
 //setSpurtsSelectorTimeValues( "syncWithCommonTime" );
 }
@@ -371,13 +387,16 @@ function fetchDataForAllSegments()
 	
 <!-- Option Chain Code Starts Here -->
 <script>
+var sliderValuesForTimeValuesObj ={}
+
 function setOptionChainSymbolsSelector( passedValue )
 {
 	var tradingDate = document.getElementById('tradingDate').value
 	var optionChainObj = firestoreIndexObj[ tradingDate ]['Index']['option_chain_data']
 	var selectElementRef = document.getElementById("optionChainSymbol");
 	
-	selectElementRef.innerHTML = '<option>Select</option>'
+	//selectElementRef.innerHTML = '<option>Select</option>'
+	selectElementRef.innerHTML = ''
 	for(var symbol in optionChainObj )
 	{
 	 var optionElement = document.createElement("option");
@@ -385,9 +404,31 @@ function setOptionChainSymbolsSelector( passedValue )
     selectElementRef.add(optionElement);
 	}
 	//handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+	setExpires( passedValue )
 }
 
-function setExpires()
+function setExpires( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedSymbol = document.getElementById("optionChainSymbol").value;
+	var optionChainExpiriesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['expiryDates']
+	var optionChainTimeValuesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['timeValues']
+	var selectElementRef = document.getElementById("expiryDate");
+	
+	selectElementRef.innerHTML = ''
+	for( var i=0;i<optionChainExpiriesArray.length;i++ )
+	{
+	 var optionElement = document.createElement("option");
+    optionElement.text = optionChainExpiriesArray[i];
+    selectElementRef.add(optionElement);
+	}
+	
+	var selectElementRef = document.getElementById("optionChainTimeValues");
+
+	handleTimeValues( passedValue, optionChainTimeValuesArray, selectElementRef, showPipsInSlider )
+}
+
+function setExpires2()
 {
 	var tradingDate = document.getElementById('tradingDate').value
 	var selectedSymbol = document.getElementById("optionChainSymbol").value;
@@ -418,207 +459,6 @@ function setExpires()
 
 }
 
-
-
-//direct code Starts from here
-async function showPipsInSlider_ORIGINAL() {
-
-
-	var tradingDate = document.getElementById('tradingDate').value
-	var selectedSymbol = document.getElementById("optionChainSymbol").value;
-	var optionChainTimeValuesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['timeValues']
-
-
-	var selectedValue;
-
-	var selectedTime = document.getElementById("optionChainTimeValues").value;
-
-
-	var theSelect = document.getElementById('optionChainTimeValues');
-	var pre15StempsTime = theSelect.options[theSelect.options.selectedIndex - 7];
-
-	if (pre15StempsTime != undefined) {
-		if (pre15StempsTime.value != '')
-			pre15StempsTime = pre15StempsTime.value
-		else
-			pre15StempsTime = theSelect.options[theSelect.options.length - theSelect.options.length + 1].value;
-	}
-	else
-		pre15StempsTime = theSelect.options[theSelect.options.length - theSelect.options.length + 1].value;
-
-
-
-
-
-
-	//document.getElementsByClassName("section")[0].setAttribute("style", "background-color:black;");
-	//document.getElementById('slider').innerHTML = ""
-	document.getElementById('slider').innerHTML = ""
-	var percentage = 0
-
-
-	var initialSlider = [timeToMinutes(pre15StempsTime), timeToMinutes(selectedTime)]
-	var range2 = {}
-
-	var keysLength = optionChainTimeValuesArray.length
-	var previous_key = timeToMinutes("09:15:00");
-	var current = 0;
-	var difference = 0;
-	//range['min']= [555,3],
-
-	var division = 100 / keysLength
-
-	//range2['min']= [555,1]
-	var index = 0
-
-	var timeValues = ""
-
-	for (var i=0;i<optionChainTimeValuesArray.length;i++ ) {
-	 var key = optionChainTimeValuesArray[i]
-	//for (var key in SpecificStocks) {
-
-		if (timeValues.includes(key) == false) //if block for showing pips on slider for specific Time values
-		{
-			if (timeValues.includes(key.split(':')[0] + ":") == false)
-				//timeValues += key+"#"+timeToMinutes(key)+","
-				timeValues += key.split(':')[0] + ":" + key.split(':')[1] + "#" + timeToMinutes(key) + ","
-		}
-
-		index++;
-		var arr = []
-		//current=key.split(':')[0]+key.split(':')[1]
-		current = timeToMinutes(key)
-
-
-
-		difference = current - previous_key
-		//if(difference==0)
-		//difference=1
-		////console.log(current+" - "+previous_key+" = "+difference)
-		//console.log(key + ", " + difference)
-
-
-		percentage += division
-		arr.push(previous_key)
-		arr.push(difference)
-
-		if (index == 1 || difference == 0) {
-		}
-		else if (index == 2) {
-			//range2['min']= [555,difference]
-			range2['min'] = arr
-		}
-		else if (index == keysLength) {
-			range2['max'] = [current]
-			//timeValues += key+"#"+timeToMinutes(key)+","
-			timeValues += key.split(':')[0] + ":" + key.split(':')[1] + "#" + timeToMinutes(key) + ","
-		}
-
-		else {
-			range2[percentage + "%"] = arr
-		}
-
-
-		previous_key = current
-		//Object.keys(SpecificStocks).length
-
-	}
-	//range2['max']= [930]
-
-
-
-	new Vue({
-		el: '#app',
-		data() {
-			return {};
-
-
-		},
-		mounted() {
-			flatpickr(".date", {
-				minDate: 'today'
-			});
-
-
-			flatpickr(".time", {
-				enableTime: true,
-				noCalendar: true,
-				minuteIncrement: 15,
-				dateFormat: "h:i K",
-				mode: "range"
-			});
-
-
-			var slider = document.getElementById('slider');
-			noUiSlider.create(slider, {
-				start: initialSlider,
-				connect: true,
-				step: 3,
-				tooltips: [true, true],
-
-				range: range2,
-
-				pips: {
-					mode: 'steps',
-					density: 4,
-					//values: [0, 720, 1439],
-					filter: function (value, type) {
-						// //console.log(type, value, value % 60);
-						// document.getElementById('temp').innerHTML += value+': '+ (value % 240) +',  '+(value % 60)+', '+(value % (60 * 4) === 0 ? 1 : value % 60 === 0 ? 2 : 0)+'<br>';
-
-						if (timeValues.includes(value))
-							//if(value==555 || value==930)
-							return 1
-						else
-							return value % (60 * 4) === 0 ? 1 : value % 60 === 0 ? 1 : 0;
-					},
-					//density: 2,
-					format: {
-						to: function (value) {
-							if (timeValues.includes(value)) {
-								//if (value % (60) === 0 || value==555  || value==930) {
-								// return moment().startOf('day').add(value, 'minutes').format('hh:mm A');
-								return moment().startOf('day').add(value, 'minutes').format('hh:mm');
-							}
-							return '';
-						},
-						from: function (value) {
-							return value;
-						}
-					}
-				},
-
-
-				format: {
-					to: function (value) {
-						//return value + ',-';
-						//return moment().startOf('day').add(value, 'minutes').format('hh:mm A');
-						return moment().startOf('day').add(value, 'minutes').format('hh:mm');
-					},
-					from: function (value) {
-						return value;
-					}
-				}
-			});
-
-
-		}
-	});
-
-	
-	//document.getElementById('slider').setAttribute('onclick','fetchSlidersBuildupData()')
-	//document.getElementsByClassName('noUi-handle noUi-handle-lower')[0].setAttribute('onmouseup','fetchSlidersBuildupData()')
-	//document.getElementsByClassName('noUi-handle noUi-handle-upper')[0].setAttribute('onmouseup','fetchSlidersBuildupData()')
-
-	document.getElementById('slider').setAttribute('onclick', 'showData("flexibleSlider")')
-	document.getElementsByClassName('noUi-handle noUi-handle-lower')[0].setAttribute('onmouseup', 'showData("flexibleSlider")')
-	document.getElementsByClassName('noUi-handle noUi-handle-upper')[0].setAttribute('onmouseup', 'showData("flexibleSlider")')
-
-
-} //showSliderData() ends here
-
-var sliderValuesForTimeValuesObj ={}
-
 function convert24HTimeInto12HTime(timeValue) {
   var timeArray = timeValue.split(":");
   var hours = parseInt(timeArray[0]);
@@ -632,8 +472,7 @@ function convert24HTimeInto12HTime(timeValue) {
   return convertedTime;
 }
 
-
-async function showPipsInSlider() {
+function showPipsInSlider() {
 
 
 	var tradingDate = document.getElementById('tradingDate').value
@@ -849,6 +688,10 @@ function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selected
 	var changeInCall = 0;
 	var changeInPut = 0;
 	var changeinOIObj={};
+	
+	var totalOIObj={};
+	var intradayOIObj={};
+	
 	var lastTimesSpotPrice;
 	
 	{
@@ -878,6 +721,9 @@ function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selected
 							"CE" : currentDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"], //"changeinOpenInterest"
 							"PE" : currentDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] // "changeinOpenInterest"
 						}
+						
+					
+						
 					}
 					else
 					{
@@ -907,6 +753,7 @@ function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selected
 							"CE" : previousDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"], //"changeinOpenInterest"
 							"PE" : previousDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] // "changeinOpenInterest"
 						}
+
 					}
 					else
 					{
@@ -919,12 +766,23 @@ function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selected
 
 					}
 					//console.log(changeinOIObj [strikePrice] ["CE"])
+					
+					
+						totalOIObj [strikePrice] = {
+							"CE" : previousDataObj [ strikePrice ] [ "CE" ] ["openInterest"], //"changeinOpenInterest"
+							"PE" : previousDataObj [ strikePrice ] [ "PE" ] ["openInterest"] // "changeinOpenInterest"
+						}
+						intradayOIObj [strikePrice] = {
+							"CE" : previousDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"], //"changeinOpenInterest"
+							"PE" : previousDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] // "changeinOpenInterest"
+						}
 				}
 			
 			}
 			
 			
-			lastTimesSpotPrice = currentDataObj ["SpotPrice"]
+			//lastTimesSpotPrice = currentDataObj ["SpotPrice"]
+			lastTimesSpotPrice = previousDataObj ["SpotPrice"]
 	
 
 
@@ -938,14 +796,17 @@ function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selected
 
 	showOptionChainChart( changeinOIObj, lastTimesSpotPrice, selectedSymbol )
 	
+	
 
-		showDataInOIChange( currentDataObj["totalCEPE"] )
-		showDataInTOTALOI( currentDataObj["totalCEPE"] )
-		DonutChart( currentDataObj["totalCEPE"] )
+		showDataInOIChange( previousDataObj["totalCEPE"] )
+		showDataInTOTALOI( previousDataObj["totalCEPE"] )
+		DonutChart( previousDataObj["totalCEPE"] )
+		
+		showOptionChainTotalOIChart( totalOIObj, lastTimesSpotPrice, selectedSymbol )
+	showOptionChainIntradayOIChart( intradayOIObj, lastTimesSpotPrice, selectedSymbol )
+		
 			
 }
-
-
 
 function showOIBuildupData(sliderCE, sliderPE) {
 	//if this function is called without parameters then
@@ -1030,7 +891,7 @@ function showOIBuildupData(sliderCE, sliderPE) {
 			indexLabel: "{y}",
 			type: "column",
 			showInLegend: false,
-			indexLabelFontSize: 15,
+			indexLabelFontSize: 12,
 			//legendMarkerColor: "grey",
 			//legendText: "MMbbl = one million barrels",
 			dataPoints: [
@@ -1046,7 +907,6 @@ function showOIBuildupData(sliderCE, sliderPE) {
 	//DonutChart(Call_OI_Change_total,PUT_OI_Change_total)
 
 }
-
 
 function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbol ) {
 	// this function catches Array from DonutChart() function and it then fetch required values from Array
@@ -1141,14 +1001,15 @@ function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbo
 		subtitles: [{
 			//text: "Subtitle 1"
 		  },{
-			text: selectedSymbol+' | '+ fromTime+' - '+toTime,
-			verticalAlign: "bottom",
+			text: selectedSymbol+' | '+ fromTime+'-'+toTime,
+			//verticalAlign: "bottom",
+			verticalAlign: "top",
 			 horizontalAlign: "right",
-			 fontSize: 15,
+			 fontSize: 12,
 			dockInsidePlotArea: true
 		  }],
 		axisX:{
-			 labelFontSize: 14,
+			 labelFontSize: 12,
 			interval: intervalDifference,
 			gridThickness: 0,
 			tickColor: "black",
@@ -1160,11 +1021,11 @@ function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbo
 				label: spotPrice,
 				labelPlacement: "inside",//"inside", "outside"
 				labelAlign: "near",//"center", "near", "far"
-				thickness: 2,
+				thickness: 1,
 				showOnTop: true,
 				labelFontColor:"black",
 				labelBackgroundColor: "white",
-				labelFontSize:15,
+				labelFontSize:12,
 				//labelFontWeight:"bold",
 				color : "yellow"
 			}
@@ -1189,7 +1050,7 @@ function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbo
 		data: [
 		{
 			indexLabel: "{y}",
-			indexLabelFontSize:14,
+			indexLabelFontSize:12,
 			
 			type: "bar",            
 			color: "#cc5f5f",
@@ -1197,7 +1058,7 @@ function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbo
 		},
           {
 			indexLabel: "{y}",
-			indexLabelFontSize: 14,
+			indexLabelFontSize: 12,
 			
 			type: "bar",            
 			color: "#1e9b87",
@@ -1209,7 +1070,331 @@ function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbo
 
 }
 
+function showOptionChainTotalOIChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbol ) {
+	// this function catches Array from DonutChart() function and it then fetch required values from Array
+	//based on fetched values, it renders the data in		supportRegistanceChart		chart
 
+	var arrObjCE=[];
+	var arrObjPE=[];
+	var tempObj={}
+	
+	var fromTime = slider.noUiSlider.get()[0];
+	var toTime = slider.noUiSlider.get()[1];
+	
+	
+		var strikesPrices = Object.keys( changeinOIObj )
+		strikesPrices = strikesPrices.filter(v => v !== 'SpotPrice')
+		strikesPrices = strikesPrices.filter(v => v !== 'totalCEPE')
+
+		var findClosest = (arr,num) => {
+		  if(arr == null){
+			return
+		  }
+		  return arr.indexOf(arr.reduce((prev,current) => Math.abs(current - num)<Math.abs(prev - num) ? current : prev));
+		}
+
+
+		var spotPrice = lastTimesSpotPrice
+		var indexOfATM=findClosest(strikesPrices,spotPrice)
+		//console.log(findClosest(array,num));
+	
+		var intervalDifference = Number(strikesPrices[indexOfATM]) - Number(strikesPrices[indexOfATM-1])
+		
+		var maxinumStrikeNum=21
+		//var maxinumStrikeNum=strikesPrices.length
+		var belowATM, aboveATM;
+		if( (indexOfATM-maxinumStrikeNum)<=0 )
+		{
+			belowATM=0
+		}
+		else{
+			belowATM = indexOfATM-maxinumStrikeNum
+		}
+		
+		if( (indexOfATM+maxinumStrikeNum) >= strikesPrices.length )
+		{
+			aboveATM=strikesPrices.length
+		}
+		else{
+			aboveATM = indexOfATM+maxinumStrikeNum
+		}
+		
+		/*
+		if( (indexOfATM-maxinumStrikeNum) >= 0 && (indexOfATM+maxinumStrikeNum) <= strikesPrices.length ) 
+		{
+			belowATM = indexOfATM-maxinumStrikeNum
+			aboveATM = indexOfATM+maxinumStrikeNum
+		}
+		*/
+		//console.log( belowATM, aboveATM )
+
+		//console.log( belowATM, aboveATM )
+		//for( var strikePrice in currentSelectedTimeData )
+		for( var arrIndex=belowATM; arrIndex < aboveATM; arrIndex++ )
+		{
+			var strikePrice = strikesPrices [arrIndex]
+			if( strikePrice != "SpotPrice" && strikePrice != "totalCEPE" )
+			{
+				/*
+				tempObj= { y: currentSelectedTimeData [ strikePrice ] [ "CE" ] [1], x: strikePrice  }
+				arrObjCE.push(tempObj)
+				
+				tempObj= { y: currentSelectedTimeData [ strikePrice ] [ "PE" ] [1], x: strikePrice  }
+				arrObjPE.push(tempObj)
+				*/
+				
+				tempObj= {  x: Number(strikePrice), y: changeinOIObj [ strikePrice ] [ "CE" ]  }
+				arrObjCE.push(tempObj)
+				
+				tempObj= {  x: Number(strikePrice), y: changeinOIObj [ strikePrice ] [ "PE" ] }
+				arrObjPE.push(tempObj)
+			}
+		}
+		
+		//console.log( changeinOIObj, lastTimesSpotPrice, indexOfATM, intervalDifference ) 
+		//console.log( arrObjCE, arrObjPE )
+
+	var chart = new CanvasJS.Chart("optionChainTotalOIChart", {
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		backgroundColor: "black",
+		title: {
+			 //text: "Using labelAlign property of stripline"
+		},
+		subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text: 'TotalOI | '+selectedSymbol+' | '+ toTime,
+			//verticalAlign: "bottom",
+			verticalAlign: "top",
+			 horizontalAlign: "right",
+			 fontSize: 12,
+			dockInsidePlotArea: true
+		  }],
+		axisX:{
+			 labelFontSize: 12,
+			interval: intervalDifference,
+			gridThickness: 0,
+			tickColor: "black",
+			includeZero: true,
+			interval: 200,
+			stripLines:[
+			{
+				value: spotPrice,
+				label: spotPrice,
+				labelPlacement: "inside",//"inside", "outside"
+				labelAlign: "near",//"center", "near", "far"
+				thickness: 1,
+				showOnTop: true,
+				labelFontColor:"black",
+				labelBackgroundColor: "white",
+				labelFontSize:12,
+				//labelFontWeight:"bold",
+				color : "yellow"
+			}
+			],
+
+		},
+		axisY:{
+	
+			title: "",
+			tickLength: 0,
+			  lineThickness:0,
+			  margin:0,
+			  labelFormatter: function(e) {
+				 return "";
+			  },
+			interval: 0,
+			gridThickness: 0,
+			tickColor: "black",
+			includeZero: true,
+		},
+		// dataPointWidth: 15,
+		data: [
+		{
+			//indexLabel: "{y}",
+			indexLabelFontSize:12,
+
+			type: "bar", //change type to column, bar, line, area, pie, etc
+			color: "#cc5f5f",
+			dataPoints: arrObjCE // CE
+		},
+          {
+			//indexLabel: "{y}",
+			indexLabelFontSize: 12,
+			
+			type: "bar",  //change type to column, bar, line, area, pie, etc    
+			color: "#1e9b87",
+			dataPoints: arrObjPE //PE
+		}
+		]        
+	});
+	chart.render();
+
+}
+
+function showOptionChainIntradayOIChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbol ) {
+	// this function catches Array from DonutChart() function and it then fetch required values from Array
+	//based on fetched values, it renders the data in		supportRegistanceChart		chart
+
+	var arrObjCE=[];
+	var arrObjPE=[];
+	var tempObj={}
+	
+	var fromTime = slider.noUiSlider.get()[0];
+	var toTime = slider.noUiSlider.get()[1];
+	
+	
+		var strikesPrices = Object.keys( changeinOIObj )
+		strikesPrices = strikesPrices.filter(v => v !== 'SpotPrice')
+		strikesPrices = strikesPrices.filter(v => v !== 'totalCEPE')
+
+		var findClosest = (arr,num) => {
+		  if(arr == null){
+			return
+		  }
+		  return arr.indexOf(arr.reduce((prev,current) => Math.abs(current - num)<Math.abs(prev - num) ? current : prev));
+		}
+
+
+		var spotPrice = lastTimesSpotPrice
+		var indexOfATM=findClosest(strikesPrices,spotPrice)
+		//console.log(findClosest(array,num));
+	
+		var intervalDifference = Number(strikesPrices[indexOfATM]) - Number(strikesPrices[indexOfATM-1])
+		
+		var maxinumStrikeNum=21
+		//var maxinumStrikeNum=strikesPrices.length
+		var belowATM, aboveATM;
+		if( (indexOfATM-maxinumStrikeNum)<=0 )
+		{
+			belowATM=0
+		}
+		else{
+			belowATM = indexOfATM-maxinumStrikeNum
+		}
+		
+		if( (indexOfATM+maxinumStrikeNum) >= strikesPrices.length )
+		{
+			aboveATM=strikesPrices.length
+		}
+		else{
+			aboveATM = indexOfATM+maxinumStrikeNum
+		}
+		
+		/*
+		if( (indexOfATM-maxinumStrikeNum) >= 0 && (indexOfATM+maxinumStrikeNum) <= strikesPrices.length ) 
+		{
+			belowATM = indexOfATM-maxinumStrikeNum
+			aboveATM = indexOfATM+maxinumStrikeNum
+		}
+		*/
+		//console.log( belowATM, aboveATM )
+
+		//console.log( belowATM, aboveATM )
+		//for( var strikePrice in currentSelectedTimeData )
+		for( var arrIndex=belowATM; arrIndex < aboveATM; arrIndex++ )
+		{
+			var strikePrice = strikesPrices [arrIndex]
+			if( strikePrice != "SpotPrice" && strikePrice != "totalCEPE" )
+			{
+				/*
+				tempObj= { y: currentSelectedTimeData [ strikePrice ] [ "CE" ] [1], x: strikePrice  }
+				arrObjCE.push(tempObj)
+				
+				tempObj= { y: currentSelectedTimeData [ strikePrice ] [ "PE" ] [1], x: strikePrice  }
+				arrObjPE.push(tempObj)
+				*/
+				
+				tempObj= {  x: Number(strikePrice), y: changeinOIObj [ strikePrice ] [ "CE" ]  }
+				arrObjCE.push(tempObj)
+				
+				tempObj= {  x: Number(strikePrice), y: changeinOIObj [ strikePrice ] [ "PE" ] }
+				arrObjPE.push(tempObj)
+			}
+		}
+		
+		//console.log( changeinOIObj, lastTimesSpotPrice, indexOfATM, intervalDifference ) 
+		//console.log( arrObjCE, arrObjPE )
+
+	var chart = new CanvasJS.Chart("optionChainIntradayOIChart", {
+		animationEnabled: false,
+		theme: "dark2", // "light1", "light2", "dark1", "dark2"
+		backgroundColor: "black",
+		title: {
+			 //text: "Using labelAlign property of stripline"
+		},
+		subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text: 'IntradayOI | '+selectedSymbol+' | '+ toTime,
+			//verticalAlign: "bottom",
+			verticalAlign: "top",
+			 horizontalAlign: "right",
+			 fontSize: 12,
+			dockInsidePlotArea: true
+		  }],
+		axisX:{
+			 labelFontSize: 12,
+			interval: intervalDifference,
+			gridThickness: 0,
+			tickColor: "black",
+			includeZero: true,
+			interval: 200,
+			stripLines:[
+			{
+				value: spotPrice,
+				label: spotPrice,
+				labelPlacement: "inside",//"inside", "outside"
+				labelAlign: "near",//"center", "near", "far"
+				thickness: 1,
+				showOnTop: true,
+				labelFontColor:"black",
+				labelBackgroundColor: "white",
+				labelFontSize:12,
+				//labelFontWeight:"bold",
+				color : "yellow"
+			}
+			],
+
+		},
+		axisY:{
+	
+			title: "",
+			tickLength: 0,
+			  lineThickness:0,
+			  margin:0,
+			  labelFormatter: function(e) {
+				 return "";
+			  },
+			interval: 0,
+			gridThickness: 0,
+			tickColor: "black",
+			includeZero: true,
+		},
+		// dataPointWidth: 15,
+		data: [
+		{
+			//indexLabel: "{y}",
+			indexLabelFontSize:12,
+			
+			type: "bar",  //change type to column, bar, line, area, pie, etc              
+			color: "#cc5f5f",
+			dataPoints: arrObjCE // CE
+		},
+          {
+			//indexLabel: "{y}",
+			indexLabelFontSize: 12,
+			
+			type: "bar",  //change type to column, bar, line, area, pie, etc           
+			color: "#1e9b87",
+			dataPoints: arrObjPE //PE
+		}
+		]        
+	});
+	chart.render();
+
+}
 
 function showDataInOIChange(dataArray) {
 	// this function catches Array from showData() function and it then fetch required values from Array
@@ -1275,7 +1460,7 @@ function showDataInOIChange(dataArray) {
 			indexLabel: "{y}",
 			type: "column",
 			showInLegend: false,
-			indexLabelFontSize: 15,
+			indexLabelFontSize: 12,
 			//legendMarkerColor: "grey",
 			//legendText: "MMbbl = one million barrels",
 			dataPoints: [
@@ -1292,9 +1477,6 @@ function showDataInOIChange(dataArray) {
 	//showDataInTOTALOI(dataArray)
 }
 
-
-// funtion for new column bar chart 
-//function showDataInTOTALOI(Call_OI_Change_total,PUT_OI_Change_total,Total_Calls,Total_Puts) {
 function showDataInTOTALOI(dataArray) {
 	// this function catches Array from showDataInOIChange() function and it then fetch required values from Array
 	//based on fetched values, it renders the data on  	barChartOITOTAL		chart 
@@ -1354,7 +1536,7 @@ function showDataInTOTALOI(dataArray) {
 			indexLabel: "{y}",
 			type: "column",
 			showInLegend: false,
-			indexLabelFontSize: 15,
+			indexLabelFontSize: 12,
 			//legendMarkerColor: "grey",
 			//legendText: "MMbbl = one million barrels",
 			dataPoints: [
@@ -1371,8 +1553,6 @@ function showDataInTOTALOI(dataArray) {
 	//DonutChart(dataArray)
 }
 
-
-//function DonutChart(Call_OI_Change_total,PUT_OI_Change_total) {
 function DonutChart(dataArray) {
 	// this function catches Array from showDataInTOTALOI() function and it then fetch required values from Array
 	//based on fetched values, it renders the data on  	donutChartContainer		chart 
@@ -1416,7 +1596,7 @@ function DonutChart(dataArray) {
 			type: "doughnut",
 			startAngle: 90,
 			//innerRadius: 60,
-			indexLabelFontSize: 15,
+			indexLabelFontSize: 12,
 			indexLabelFontColor: "white",
 			indexLabel: "{label} #percent%",
 			toolTipContent: "<b>{label}:</b> {y} (#percent%)",
@@ -1442,18 +1622,13 @@ function DonutChart(dataArray) {
 
 }
 
-
-//direct code Ends till here
-
-
 </script>
 <!-- Option Chain Code Ends Here -->
 
 
 <!-- Floating Buttons Code Starts Here -->
-<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:10%;	right:2px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<!-- <div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div> -->
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div>
+<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	     <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
 <!-- Floating Buttons Code Ends Here -->
 
 
