@@ -394,7 +394,8 @@ function setOptionChainSymbolsSelector( passedValue )
 	var tradingDate = document.getElementById('tradingDate').value
 	var optionChainObj = firestoreIndexObj[ tradingDate ]['Index']['option_chain_data']
 	var selectElementRef = document.getElementById("optionChainSymbol");
-	
+	if( selectElementRef.options.length<1 )
+	{
 	//selectElementRef.innerHTML = '<option>Select</option>'
 	selectElementRef.innerHTML = ''
 	for(var symbol in optionChainObj )
@@ -402,6 +403,8 @@ function setOptionChainSymbolsSelector( passedValue )
 	 var optionElement = document.createElement("option");
     optionElement.text = symbol;
     selectElementRef.add(optionElement);
+	}
+	
 	}
 	//handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
 	setExpires( passedValue )
@@ -415,6 +418,7 @@ function setExpires( passedValue )
 	var optionChainTimeValuesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['timeValues']
 	var selectElementRef = document.getElementById("expiryDate");
 	
+	
 	selectElementRef.innerHTML = ''
 	for( var i=0;i<optionChainExpiriesArray.length;i++ )
 	{
@@ -422,6 +426,7 @@ function setExpires( passedValue )
     optionElement.text = optionChainExpiriesArray[i];
     selectElementRef.add(optionElement);
 	}
+	
 	
 	var selectElementRef = document.getElementById("optionChainTimeValues");
 
@@ -1019,15 +1024,19 @@ function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbo
 			{
 				value: spotPrice,
 				label: spotPrice,
-				labelPlacement: "inside",//"inside", "outside"
+				labelPlacement: "outside",//"inside", "outside"
 				labelAlign: "near",//"center", "near", "far"
 				thickness: 1,
-				showOnTop: true,
-				labelFontColor:"black",
-				labelBackgroundColor: "white",
-				labelFontSize:12,
+				//showOnTop: true,
+				showOnTop: false,
+				//labelFontColor:"black",
+				labelFontColor:"white",
+				//labelBackgroundColor: "white",
+				labelBackgroundColor: "black",
+				labelFontSize:10,
 				//labelFontWeight:"bold",
-				color : "yellow"
+				//color : "yellow"
+				color : "#c7c797"
 			}
 			],
 
@@ -1047,10 +1056,11 @@ function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbo
 			includeZero: true,
 		},
 		// dataPointWidth: 15,
+			dataPointWidth: 9,
 		data: [
 		{
 			indexLabel: "{y}",
-			indexLabelFontSize:12,
+			indexLabelFontSize:11,
 			
 			type: "bar",            
 			color: "#cc5f5f",
@@ -1058,7 +1068,7 @@ function showOptionChainChart ( changeinOIObj, lastTimesSpotPrice, selectedSymbo
 		},
           {
 			indexLabel: "{y}",
-			indexLabelFontSize: 12,
+			indexLabelFontSize: 11,
 			
 			type: "bar",            
 			color: "#1e9b87",
@@ -1182,15 +1192,19 @@ function showOptionChainTotalOIChart ( changeinOIObj, lastTimesSpotPrice, select
 			{
 				value: spotPrice,
 				label: spotPrice,
-				labelPlacement: "inside",//"inside", "outside"
+				labelPlacement: "outside",//"inside", "outside"
 				labelAlign: "near",//"center", "near", "far"
 				thickness: 1,
-				showOnTop: true,
-				labelFontColor:"black",
-				labelBackgroundColor: "white",
-				labelFontSize:12,
+				//showOnTop: true,
+				showOnTop: false,
+				//labelFontColor:"black",
+				labelFontColor:"white",
+				//labelBackgroundColor: "white",
+				labelBackgroundColor: "black",
+				labelFontSize:10,
 				//labelFontWeight:"bold",
-				color : "yellow"
+				//color : "yellow"
+				color : "#c7c797"
 			}
 			],
 
@@ -1345,15 +1359,19 @@ function showOptionChainIntradayOIChart ( changeinOIObj, lastTimesSpotPrice, sel
 			{
 				value: spotPrice,
 				label: spotPrice,
-				labelPlacement: "inside",//"inside", "outside"
+				labelPlacement: "outside",//"inside", "outside"
 				labelAlign: "near",//"center", "near", "far"
 				thickness: 1,
-				showOnTop: true,
-				labelFontColor:"black",
-				labelBackgroundColor: "white",
-				labelFontSize:12,
+				//showOnTop: true,
+				showOnTop: false,
+				//labelFontColor:"black",
+				labelFontColor:"white",
+				//labelBackgroundColor: "white",
+				labelBackgroundColor: "black",
+				labelFontSize:10,
 				//labelFontWeight:"bold",
-				color : "yellow"
+				//color : "yellow"
+				color : "#c7c797"
 			}
 			],
 
