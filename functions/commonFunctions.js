@@ -11,7 +11,33 @@ function saveSelectedValues()
 	"selectedTradingDate": selectedTradingDate,
 	"selectedCommonTimeValues":selectedCommonTimeValues,
 	}
-	localStorage.setItem( 'selectedValues', JSON.stringify(selectedValuesObj) )
+	
+
+
+
+         // Attempt to update localStorage and handle quota exceeded error (Starts Here)
+		 	var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+		var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+             localStorage.setItem( 'selectedValues', JSON.stringify(selectedValuesObj) )
+              break; // Successfully stored the new entry
+            } catch (e) {
+				//document.getElementById('messages').innerHTML = e;
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              currentAttempt++;
+            }
+          }
+		  // Attempt to update localStorage and handle quota exceeded error (Ends Here)
+		  
+	
 
 }
 
