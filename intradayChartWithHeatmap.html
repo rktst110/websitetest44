@@ -114,6 +114,8 @@ body {
 	
  <span class="toggle-label"> Sync With Time :  </span> <label class="toggle">  <input id="syncWithCommonTime" class="toggle-checkbox" type="checkbox"> <div class="toggle-switch"></div> </label>   
 
+
+
 &nbsp; | &nbsp;&nbsp;
  <label> Spurts TimeValues:</label>
 <select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
@@ -121,27 +123,13 @@ body {
 
 <!--Content Start From Here-->
  <div id="IntradayChartWithOIDataFlowContainer" style="height: 500px; width: 99%; margin: 0px auto;"></div>
+<br> <br>  
+<center>Entries Difference  &nbsp;<input id="differenceBetweenEntries" type="number" min="1" value="2" size="3" onchange="calculate_OI_Data_Change()">  	</center>
+<div id="OIDataFlowChart" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div>  
 
-   <br>   <br>
+   <br>   
    <center> HeatMap Sectors: &nbsp;<select id="heatMapSectorSelector" aria-labelledby="expiryLbl" onchange="showHeatMapChart()"> <option value="">Select</option> </select></center>  <div id="heatMapContainer" style=" height:500px; width: auto; margin: 0 auto;"></div>
-
-<div class="row">
-  <div class="column left" style="background-color:#aaa;">
-  
-
-   <br>
-   </div>
-  <div class="column right" style="background-color:#bbb;">
-  
-  </div>
-</div>
-
-<br><br>
-
-
-
-
-
+<br>
 <div class="row">
   <div class="column equityLeft" style="background-color:#aaa;">
     <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
@@ -459,7 +447,7 @@ async function getSpurtsEquityData( passedValue )
 	
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
-	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+	//console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
 
 	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
 	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
@@ -1097,7 +1085,8 @@ async function setIntradayChartSelectorValues( passedValue )
 	var tradingDate = document.getElementById('tradingDate').value
 	var optionChainObj = firestoreIndexObj[ tradingDate ]['Index']['option_chain_data']
 	var selectElementRef = document.getElementById("chart_index_type_value");
-	
+	if( selectElementRef.options.length<1 )
+	{
 	//selectElementRef.innerHTML = '<option>Select</option>'
 	selectElementRef.innerHTML = ''
 	for(var symbol in optionChainObj )
@@ -1106,7 +1095,7 @@ async function setIntradayChartSelectorValues( passedValue )
     optionElement.text = symbol;
     selectElementRef.add(optionElement);
 	}
-	
+	}
 	document.getElementById("chartTimeFrame").addEventListener("keydown", function (e) {
     if (e.code === "Enter") {  //checks whether the pressed key is "Enter"
         syncCandlesWithOIData();
@@ -1137,12 +1126,17 @@ async function setExpires()
 		}
 	}
 
+await getIntradayChartData() 
 await syncCandlesWithOIData() 
 
 }
 
-async function syncCandlesWithOIData()
+var timeValuesWithTotalCEPEObj = {}
+var graphDataObj = {}
+
+async function getIntradayChartData()
 {
+
 	var selectedMonthYear = document.getElementById('monthYear').value
 	var selectedTradingDate = document.getElementById('tradingDate').value
 	var selectedSymbol = document.getElementById("chart_index_type_value").value;
@@ -1172,10 +1166,23 @@ else if( selectedIndexValue=='FINNIFTY' )
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 
 	//var dataObjFromTime =  JSON.parse( (await fetchFirebaseDocData( docPathFromTime ) ) ['data'] )
-	var graphDataObj =   (await fetchFirebaseDocData( docPath ) )
+	graphDataObj =   (await fetchIntradayChartFirebaseDocData( docPath, selectedTradingDate ) )
 	
 //console.log( "graphDataObj", JSON.parse( graphDataObj['data'] ) )
-console.log( "graphDataObj",  graphDataObj )
+//console.log( "graphDataObj",  graphDataObj )
+
+}
+
+async function syncCandlesWithOIData()
+{
+
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedCommonTimeValue = document.getElementById("commonTimeValues").value;
+	var selectedIndexValue = document.getElementById("chart_index_type_value").value
+	var selectedExpiryValue = document.getElementById("intraday_index_expiry_value").value
+	var chartTimeFrame = document.getElementById("chartTimeFrame").value
+	
+
 
 /*
 const timestamp = JSON.parse( graphDataObj['data'] )[graphData];
@@ -1185,14 +1192,12 @@ console.log(date);
 
 
 
-//var graphData = mainOIDataObject['intraday_chart_data'][intradayChartSymbol]['graphData']
-//var graphDataObj = mainOIDataObject['intraday_chart_data'][intradayChartSymbol]
-
 var candlesObj = await generateCandlestickFromGraphData( JSON.parse( graphDataObj['data'] ), chartTimeFrame, selectedTradingDate, selectedCommonTimeValue )
 
-console.log( "candlesObj", candlesObj )
+//console.log( "candlesObj", candlesObj )
 
-var timeValuesWithTotalCEPEObj = {}
+timeValuesWithTotalCEPEObj = {}
+var timeValuesWithTotalCEPEObjSorted = {}
 var indexTimeValue =[]
 var totalCEPE_OIDataObj = graphDataObj['totalCEPE_OIData']
 for( var timeValue in totalCEPE_OIDataObj ) // timeValue in this format 09:18:00_09:16:15
@@ -1202,10 +1207,24 @@ indexTimeValue.push( time )
 timeValuesWithTotalCEPEObj[ time ] = totalCEPE_OIDataObj[timeValue][selectedExpiryValue]
 }
 
+
+
+//console.log( "timeValuesWithTotalCEPEObj",timeValuesWithTotalCEPEObj )
+
 indexTimeValue = indexTimeValue.sort((a, b) => new Date(`1970/01/01 ${a}`) - new Date(`1970/01/01 ${b}`));
 
+for( var i=0;i<indexTimeValue.length;i++ ) // timeValue in this format 09:18:00_09:16:15
+{
+var time = indexTimeValue[i]
+timeValuesWithTotalCEPEObjSorted[ time ] = timeValuesWithTotalCEPEObj[time]
+}
+timeValuesWithTotalCEPEObj = timeValuesWithTotalCEPEObjSorted
 
-
+ //calculate_OI_Data_Change( timeValuesWithTotalCEPEObj, selectedExpiryValue, selectedIndexValue, selectedTradingDate ) 
+ calculate_OI_Data_Change() 
+ 
+ 
+ 
 //console.log( "indexTimeValue", indexTimeValue )
 
 var dataPointsArray = []
@@ -1272,6 +1291,8 @@ await showHeatMapChartWithIntradayChart( selectedIndexValue )
 
 
 }
+
+
 
 
 async function generateCandlestickFromGraphData( graphDataObj, chartTimeFrame, currentTradingDate, selectedTimeValue )
@@ -1748,140 +1769,245 @@ else if( selectedIndexValue=='FINNIFTY' )
 
 }
 
-async function showHeatMapChartWithIntradayChart2( selectedIndexValue )
+
+// OI Flow with OHLC Candlesticks code (ENDS HERE)
+</script>
+
+<script>
+// OI Flow code (STARTS HERE)
+
+//async function calculate_OI_Data_Change( timeValuesWithTotalCEPEObj, selectedExpiryValue, selectedIndexValue, selectedTradingDate ) 
+async function calculate_OI_Data_Change() 
+//this function calculate OI Data Change in each two entries of any stock/index
 {
-	await setHighChartsDarkTheme()
-	var sectorDataArrayForHeatChart=[{
-      id: 'Green',
-      //name: 'Green',
-      color: "#EC2500"
-    }, {
-      id: 'Red',
-      //name: 'Red',
-      color: "#ECE100"
-    }]
 	
-	//var heatMapSectorSelected = document.getElementById("heatMapSectorSelector").value
-	var heatMapSectorSelected 
-	
-	if( selectedIndexValue=='NIFTY' )
-	heatMapSectorSelected = 'NIFTY 50'
-else if( selectedIndexValue=='BANKNIFTY' )
-	heatMapSectorSelected = 'ALL BANKS'
-else if( selectedIndexValue=='FINNIFTY' )
-	heatMapSectorSelected = 'NIFTY FIN SERVICE'
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedIndexValue = document.getElementById("chart_index_type_value").value
+	var selectedExpiryValue = document.getElementById("intraday_index_expiry_value").value
+
+
+//var symbolTimeValues = mainOIDataObject['option_chain_data'][selectedIndexValue][ selectedExpiryValue ]
+var symbolTimeValues = timeValuesWithTotalCEPEObj
+
+var OIChangeObj = {}
+
+var dataPointsArray=[]
+
+
+var counter = 0
+var previousTimeValue ;
+var previousEntryData ;
+for( var timeValue in symbolTimeValues )
+{
+	var temp={}
 
 	
-	
-	var sectorStockArray;
-	if( heatMapSectorSelected=='ALL BANKS' )
+	if( counter ==0 )
 	{
+		previousTimeValue=timeValue
+		previousEntryData = symbolTimeValues[timeValue]
 		
-		for( var sector in mainOIDataObject['sector_stockNames'] )
+	}
+	else{
+
+		var currentSelectedTimeData = symbolTimeValues[timeValue]
+		var previousSelectedTimeData = previousEntryData
+		var callPutSubstraction
+		var CallPut
+
+		//changeInCall = currentSelectedTimeData[4] - previousSelectedTimeData[4]
+		//changeInPut = currentSelectedTimeData[5] - previousSelectedTimeData[5]
+		
+		changeInCall = currentSelectedTimeData["intradayOICEChange"] - previousSelectedTimeData["intradayOICEChange"]
+		changeInPut = currentSelectedTimeData["intradayOIPEChange"] - previousSelectedTimeData["intradayOIPEChange"]
+		
+		//if (changeInCall > changeInPut)
+		
+		if( changeInCall<=0 && changeInPut>=0 )
 		{
-			if( sector.includes('BANK')==true )
+			callPutSubstraction = Math.abs(changeInCall) + Math.abs(changeInPut)
+		}
+		else if( changeInCall>=0 && changeInPut<=0 )
+		{
+			callPutSubstraction = Math.abs(changeInCall) + Math.abs(changeInPut)
+		}
+		else if( changeInCall>=0 && changeInPut>=0 )
+		{
+			if ( Math.abs(changeInCall) > Math.abs(changeInPut) )
 			{
-				var sectorStockArray = mainOIDataObject['sector_stockNames'] [sector]['Symbols']
-				for( var s=0;s<sectorStockArray.length;s++)
-				{
-					var Symbol = sectorStockArray [s]
-					allBanksStocksObj [Symbol] = 1
-				}
-				
+				callPutSubstraction = Math.abs(changeInCall) - Math.abs(changeInPut)
+			}
+			else if ( Math.abs(changeInPut) > Math.abs(changeInCall) )
+			{
+				callPutSubstraction = Math.abs(changeInPut)-Math.abs(changeInCall)
 			}
 		}
-		
-		sectorStockArray = Object.keys(allBanksStocksObj)
-	}
-	else {
-	sectorStockArray = mainOIDataObject['sector_stockNames'] [heatMapSectorSelected]['Symbols']
-	}
-	for( var s=0;s<sectorStockArray.length;s++)
-	{
-		var Symbol = sectorStockArray [s]
-		//console.log(Symbol)
-		if( dataObjectForHeatChart[Symbol] !=undefined )
+		else if( changeInCall<=0 && changeInPut<=0 )
 		{
-			sectorDataArrayForHeatChart.push( dataObjectForHeatChart[Symbol] )
+			if ( Math.abs(changeInCall) > Math.abs(changeInPut) )
+			{
+				callPutSubstraction = Math.abs(changeInCall) - Math.abs(changeInPut)
+			}
+			else if ( Math.abs(changeInPut) > Math.abs(changeInCall) )
+			{
+				callPutSubstraction = Math.abs(changeInPut)-Math.abs(changeInCall)
+			}
 		}
+			
+		
+		if ( Math.abs(changeInCall) >= Math.abs(changeInPut) )
+		{
+			//callPutSubstraction = changeInCall-changeInPut
+			//callPutSubstraction = Math.abs(changeInCall)-Math.abs(changeInPut)
+			//CallPut = "Call"
+			
+			OIChangeObj[ previousTimeValue+"-"+timeValue ] = {
+			"Call":callPutSubstraction,
+			"changeInCall":changeInCall,
+			"changeInPut":changeInPut
+			}
+			
+			
+			temp["label"]=timeValue
+			//temp["x"]=timeValue
+			if( changeInCall < 0 ) 
+			{ //short covering
+				temp["y"]= callPutSubstraction
+				temp["color"]="#ACE1D7" // light green color
+				//temp["color"]="blue" // light green color
+				dataPointsArray.push(temp)
+			}
+			else if( changeInCall>=0 ) 
+			{ // short buildup
+				temp["y"]= (- callPutSubstraction )  
+				temp["color"]="#cd5652" // red color			
+				dataPointsArray.push(temp)
+			}
+			
+			
+		}
+		else if ( Math.abs(changeInPut) >= Math.abs(changeInCall) )
+		{
+			//callPutSubstraction = Math.abs(changeInPut)-Math.abs(changeInCall)
+			//CallPut = "Put"
+			
+			OIChangeObj[ previousTimeValue+"-"+timeValue ] = {
+			"Put":callPutSubstraction,
+			"changeInCall":changeInCall,
+			"changeInPut":changeInPut
+			}
+			
+			
+			temp["label"]= timeValue
+			if( changeInPut>=0 ) 
+			{ //long buildup
+				temp["y"]= callPutSubstraction
+				temp["color"]="#2CA78A" // green color			
+				dataPointsArray.push(temp)
+			}
+			else if( changeInPut < 0 ) 
+			{ // long unwinding
+				temp["y"]= (- callPutSubstraction )
+				temp["color"]="#D4B6A6" // light red color
+				//temp["color"]="yellow" // light red color
+				dataPointsArray.push(temp)
+			}
+		}
+			
+	
+		
+	//var numOfPreviousEntries = 1
+	var numOfPreviousEntries = Number( document.getElementById('differenceBetweenEntries').value ) -1
+	if( Object.keys(symbolTimeValues)[counter-numOfPreviousEntries] ==undefined )
+	{
+		var tValue = Object.keys(symbolTimeValues)[0]
+		
+		previousTimeValue=tValue
+		previousEntryData = symbolTimeValues[tValue] 
 	}
-	//console.log("sectorDataArrayForHeatChart", sectorDataArrayForHeatChart)
+	else{
+		var tValue = Object.keys(symbolTimeValues)[counter-numOfPreviousEntries]
+		previousTimeValue=tValue
+		previousEntryData = symbolTimeValues[tValue] 
+	}
 	
+	}
 	
-var H = Highcharts
-H.addEvent(H.Legend, 'afterGetAllItems', function(e) {
-  e.allItems.splice(2, 6);
-});
+			counter += 1
+		
+}
 
-H.chart('heatMapContainerWithIntradayChart', {
-  colorAxis: {
-      stops: [
-       
-	  [0, '#ff0000'],//red
-      [0.5, '#fff'], // white
-      [1, '#02ff00']//green
-	  
-    ],
-  },
-  legend: {
-      enabled: false
-    },
-  series: [{
-	animation: false,
-	borderWidth: 0.25,
-    //borderColor: '#fff',
-    borderColor: '#4b4b4c',
-    colorAxis: 0,
-    legendType: 'point',
-    showInLegend: false,
-    type: "treemap",
-    layoutAlgorithm: 'squarified',
-    alternateStartingDirection: true,
-    levels: [{
-      level: 1,
-      layoutAlgorithm: 'sliceAndDice',
-      dataLabels: {
-        enabled: false,
-        align: 'left',
-        verticalAlign: 'top',
-        style: {
-          fontSize: '15px',
-          fontWeight: 'bold'
-        }
-      }
-    }],
-    data: sectorDataArrayForHeatChart,
 	
-  dataLabels: {
-		enabled: true,
-                format: '{point.name} <br> {point.value}',
-			 },
-			 
-			  events: {
-                    click: function (event) {
-                        //console.log(event.point.name);
-						copyHeatMapList( heatMapSectorSelected, event.point.parent )
-                    }
-                }
-  }],
-  tooltip: {
-            //headerFormat: 'Temperature<br/>',
-            pointFormat: '{point.name} <br> pChange: {point.pChange} <br> Rank: {point.value}'
-        },
-	
-  title: {
-    text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTime"] +' | '+ mainOIDataObject['Date'],
-	   style: {
-                    //color: 'red',
-                    fontSize:'15px'
-                }
-  }
-});
+//console.log( "OIChangeObj", OIChangeObj )
+//console.log( "dataPointsArray", dataPointsArray )
+showOIFlowDataChart(dataPointsArray, selectedIndexValue, selectedExpiryValue, selectedTradingDate)
 
 }
 
+async function showOIFlowDataChart( dataPointsArray, selectedIndexValue, selectedExpiryValue, selectedTradingDate )
+{
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart("OIDataFlowChart", {
+	animationEnabled: false,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text: selectedIndexValue+' | Exp: '+selectedExpiryValue+' | '+selectedTradingDate,
+			verticalAlign: "top",
+			 horizontalAlign: "right",
+			 fontSize: 15,
+			dockInsidePlotArea: true
+	}],
+	
+	toolTip: {
+			fontSize: 19,
+	},
+	axisY: {
+		/*
+		//title: "Growth Rate (in %)",
+		includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.1,
+		labelFontSize: 18,
+		*/
+		   title: "",
+    tickLength: 0,
+    lineThickness:0,
+	gridThickness: 0,
+    margin:0,
+		  labelFormatter: function(e) {
+      return "";
+    }
+	},
+	axisX: {
+		//title: "Countries"
+		//includeZero: true,
+		 labelFontSize: 12,
+		 //labelFontWeight: "bold",
+	},
+	dataPointWidth: 5,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		//click: onClick,
+		type: "column",
+		//yValueFormatString: "#,##0.0#\"%\"",
+		yValueFormatString: "#,###",
+		dataPoints: dataPointsArray
+	}]
+});
 
-// OI Flow with OHLC Candlesticks code (ENDS HERE)
+
+chart.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+// OI Flow code (ENDS HERE)
+
 </script>
 
 

@@ -49,15 +49,18 @@ body {
 .column {
   float: left;
   padding: 0.5px;
-  height: 520px; /* Should be removed. Only for demonstration */
-}
+  height: 600px; 
+  }
 
 .equityLeft {
-  width: 50%;
+  width: 49%;
+  margin-left: 5px;
 }
 
 .spurtsRight {
-  width: 50%;
+  width: 49%;
+  margin-left: 2px;
+  margin-right: 5px;
 }
 
 .left {
@@ -114,12 +117,12 @@ body {
 <div class="row">
   <div class="column left" style="background-color:#aaa;">
   
- <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
+ <div id="IndicesPerformanceChart" style="min-height: 600px; height: auto;width: 100%;"></div>
    <br>
    </div>
   <div class="column right" style="background-color:#bbb;">
   
-   <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
+   <div class="spaceBetweenTables"  style="height: 600px;">  	<div style="height: 600px;" id="equityDataTableContainer" ></div> </div>
 
   </div>
 </div>
@@ -438,7 +441,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		var tempObj = {};
 
 	
-	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Intraday Hike | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
+	  var onlyEquityTableStr = ' <div class=""> <div class="SpurtsEquity" style="height:600px;"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Intraday Hike | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Symbol</th>'
 	  +' <th>Chg%</th>'
 	   +' <th>LTP</th>'
@@ -496,7 +499,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 
 <!-- Floating Buttons Code Starts Here -->
 <style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
 <!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
 <!-- Floating Buttons Code Ends Here -->
 
