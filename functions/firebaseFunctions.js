@@ -114,7 +114,7 @@ function getFirestoreData( passedValue, passedObj )
              localStorage.setItem( 'firestoreIndexObj', JSON.stringify(firestoreIndexObj) )
               break; // Successfully stored the new entry
             } catch (e) {
-				document.getElementById('messages').innerHTML = e;
+				//document.getElementById('messages').innerHTML = e;
               // Remove oldest entry
               var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
               delete firebaseFetchedDocs[oldestEntryKey];
@@ -418,6 +418,122 @@ function fetchFirebaseDocData(docPath) {
       });
   }
 }
+
+
+//code for fetching intraday charts (STARTS HERE)
+
+function convertIntoSeconds(time) {
+		var ts = time.split(':');
+		return Date.UTC(1970, 0, 1, ts[0], ts[1], ts[2]) / 1000;
+}
+
+	var dateTimeOptions = {
+		timeZone: 'Asia/Kolkata',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false
+	};
+
+function fetchIntradayChartFirebaseDocData(docPath, selectedTradingDate ) {
+  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+ 
+  var firebaseIntradayChartsLocalStorage = localStorage.getItem('firebaseFetchedIntradayCharts');
+  var intradayChartsDocs = firebaseIntradayChartsLocalStorage ? JSON.parse(firebaseIntradayChartsLocalStorage) : {};
+
+
+	var currentTimeHMS = new Date().toLocaleString('en-IN', dateTimeOptions).split(' ')[1];
+	//context.log.info(`currentTime: ${currentTime}, currentTimeHMS: ${currentTimeHMS}`);
+	var currentDate = new Date().toLocaleString('en-IN', dateTimeOptions).split(',')[0];
+	var passedTradingDate = new Date( selectedTradingDate ).toLocaleString('en-IN', dateTimeOptions).split(',')[0];
+	
+	if ( passedTradingDate==currentDate && convertIntoSeconds(currentTimeHMS) > convertIntoSeconds('08:55:00') && convertIntoSeconds(currentTimeHMS) <= convertIntoSeconds('15:35:00') ) 
+	 { // fetch new data each time when these conditions meets
+	// console.log("current day.. fetching intraday chart data for ",passedTradingDate,"date & docPath is",docPath)
+	 var firebaseFetchedIntradayCharts = {};
+    var docRef = db.doc(docPath);
+
+    // Retrieve the document from Firebase
+    return docRef
+      .get()
+      .then(function (doc) {
+        if (doc.exists) {
+          var dataObj = doc.data();
+
+          // Store the fetched document in localStorage
+		firebaseFetchedIntradayCharts[docPath] = dataObj;
+
+          return dataObj;
+        } else {
+          console.log("Document does not exist");
+          return null;
+        }
+      })
+      .catch(function (error) {
+        console.log("Error getting document:", error);
+        return null;
+      });
+  }
+
+	else if( intradayChartsDocs[docPath] != undefined )
+	{
+	//console.log("data found in localstorage and returning it")
+    return intradayChartsDocs[docPath];
+  } else 
+  {
+  var firebaseFetchedIntradayCharts = {};
+    var docRef = db.doc(docPath);
+
+    // Retrieve the document from Firebase
+    return docRef
+      .get()
+      .then(function (doc) {
+        if (doc.exists) {
+          var dataObj = doc.data();
+
+          // Store the fetched document in localStorage
+         firebaseFetchedIntradayCharts[docPath] = dataObj;
+
+          // Attempt to update localStorage and handle quota exceeded error
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+              localStorage.setItem('firebaseFetchedIntradayCharts', JSON.stringify(firebaseFetchedIntradayCharts));
+              break; // Successfully stored the new entry
+            } catch (e) {
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              currentAttempt++;
+            }
+          }
+
+          if (currentAttempt === maxAttempts) {
+            console.log("Unable to store the new entry due to quota limitations.");
+          }
+
+          return dataObj;
+        } else {
+          console.log("Document does not exist");
+          return null;
+        }
+      })
+      .catch(function (error) {
+        console.log("Error getting document:", error);
+        return null;
+      });
+  }
+
+}
+
+//code for fetching intraday charts (ENDS HERE)
+
 
 
 function refreshOrLiveFirebaseData(passedValue)
