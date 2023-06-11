@@ -129,7 +129,7 @@ function handleTimeValues( passedValue, timeValuesArray, selectElementRef, callB
 	}
 }
 
-//Time to Minutes
+//Time to Minutes 
 function timeToMinutes(hms) {
 
 	//var hms = '15:24:33';   // your input string
