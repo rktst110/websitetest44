@@ -1157,6 +1157,8 @@ else if( selectedIndexValue=='BANKNIFTY' )
 	intradayChartSymbol = 'NIFTY BANK'
 else if( selectedIndexValue=='FINNIFTY' )
 	intradayChartSymbol = 'NIFTY FIN SERVICE'
+else if( selectedIndexValue=='MIDCPNIFTY' )
+	intradayChartSymbol = 'NIFTY MID SELECT'
 
 
 
@@ -1763,7 +1765,9 @@ else if( selectedIndexValue=='BANKNIFTY' )
 	heatMapSectorSelected = 'ALL BANKS'
 else if( selectedIndexValue=='FINNIFTY' )
 	heatMapSectorSelected = 'NIFTY_FIN_SERVICE'
-
+else if( selectedIndexValue=='MIDCPNIFTY' )
+	intradayChartSymbol = 'NIFTY MID SELECT'
+	
 	document.getElementById("heatMapSectorSelector").value = heatMapSectorSelected
 	 showHeatMapChart()
 

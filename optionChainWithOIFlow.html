@@ -699,7 +699,7 @@ await syncCandlesWithOIData()
 
 }
 
-function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selectedSymbol )
+function calculateData_previous( dataObjFromTime, dataObjToTime, selectedExpiry, selectedSymbol )
 {
 	var currentDataObj = dataObjFromTime[ selectedExpiry ]
 	var previousDataObj = dataObjToTime[ selectedExpiry ]
@@ -828,6 +828,172 @@ function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selected
 		
 			
 }
+
+
+function calculateData( dataObjFromTime, dataObjToTime, selectedExpiry, selectedSymbol )
+{
+	var currentDataObj = dataObjFromTime[ selectedExpiry ]
+	var previousDataObj = dataObjToTime[ selectedExpiry ]
+
+	//console.log("")
+	var previousTime;
+	var changeInCall = 0;
+	var changeInPut = 0;
+	var changeinOIObj={};
+	
+	var totalOIObj={};
+	var intradayOIObj={};
+	
+	var lastTimesSpotPrice;
+	
+	{
+				var currentSelectedTimeData = currentDataObj["totalCEPE"] // getting overall totalCEPE array
+				var previousSelectedTimeData = previousDataObj["totalCEPE"]
+	
+				//console.log("currentSelectedTimeData",currentSelectedTimeData)
+				//console.log("previousSelectedTimeData",previousSelectedTimeData)
+	
+				changeInCall += previousSelectedTimeData["intradayOICEChange"] - currentSelectedTimeData["intradayOICEChange"]    // totalOICEChange/IntradayOICEChange
+				changeInPut += previousSelectedTimeData["intradayOIPEChange"] - currentSelectedTimeData["intradayOIPEChange"]  // totalOICEChange/IntradayOICEChange 
+			
+			}
+
+
+	
+	
+			for( var strikePrice in currentDataObj ) // getting all strike prices key==timeValue
+			{ //SpecificStocks[key] 
+				
+				if( strikePrice != "SpotPrice" && strikePrice != "totalCEPE"  && strikePrice != "expiryDate" )
+				{
+					
+					if( currentDataObj [ strikePrice ] [ "CE" ] ==undefined )
+					{
+					currentDataObj [ strikePrice ] [ "CE" ] = {
+					"changeinOpenInterest": 0
+					}
+					
+					}
+					
+					if( currentDataObj [ strikePrice ] [ "PE" ] ==undefined )
+					{
+					currentDataObj [ strikePrice ] [ "PE" ] = {
+					"changeinOpenInterest": 0
+					}
+					
+					}
+					
+					if( changeinOIObj [strikePrice]==undefined )
+					{
+						changeinOIObj [strikePrice] = {
+							"CE" : currentDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"], //"changeinOpenInterest"
+							"PE" : currentDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] // "changeinOpenInterest"
+						}
+						
+					
+						
+					}
+					else
+					{
+						//console.log(currentDataObj [ strikePrice ])
+						changeinOIObj [strikePrice] ["CE"] =currentDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"] -changeinOIObj [strikePrice] ["CE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+						changeinOIObj [strikePrice] ["PE"] =currentDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] -changeinOIObj [strikePrice] ["PE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+
+						//changeinOIObj [strikePrice] ["CE"] =SpecificStocks[key] [ strikePrice ] [ "CE" ] [1] + changeinOIObj [strikePrice] ["CE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+						//changeinOIObj [strikePrice] ["PE"] =SpecificStocks[key] [ strikePrice ] [ "PE" ] [1] + changeinOIObj [strikePrice] ["PE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+
+					}
+					//console.log(changeinOIObj [strikePrice] ["CE"])
+				}
+			
+			}
+			
+			
+			for( var strikePrice in previousDataObj ) // getting all strike prices key==timeValue
+			{ //SpecificStocks[key] 
+				
+				if( strikePrice != "SpotPrice" && strikePrice != "totalCEPE"  && strikePrice != "expiryDate" )
+				{
+					
+					
+					if( previousDataObj [ strikePrice ] [ "CE" ] ==undefined )
+					{
+					previousDataObj [ strikePrice ] [ "CE" ] = {
+					"changeinOpenInterest": 0
+					} 
+					
+					}
+					
+					if( previousDataObj [ strikePrice ] [ "PE" ] ==undefined )
+					{
+					
+					previousDataObj [ strikePrice ] [ "PE" ] = {
+					"changeinOpenInterest": 0
+					}
+					
+					}
+					
+					if( changeinOIObj [strikePrice]==undefined )
+					{
+						changeinOIObj [strikePrice] = {
+							"CE" : previousDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"], //"changeinOpenInterest"
+							"PE" : previousDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] // "changeinOpenInterest"
+						}
+
+					}
+					else
+					{
+						
+						changeinOIObj [strikePrice] ["CE"] =previousDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"] -changeinOIObj [strikePrice] ["CE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+						changeinOIObj [strikePrice] ["PE"] =previousDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] -changeinOIObj [strikePrice] ["PE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+
+						//changeinOIObj [strikePrice] ["CE"] =SpecificStocks[key] [ strikePrice ] [ "CE" ] [1] + changeinOIObj [strikePrice] ["CE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+						//changeinOIObj [strikePrice] ["PE"] =SpecificStocks[key] [ strikePrice ] [ "PE" ] [1] + changeinOIObj [strikePrice] ["PE"] //"1 changeinOpenInterest", "2 totalTradedVolume"
+
+					}
+					//console.log(changeinOIObj [strikePrice] ["CE"])
+					
+					
+						totalOIObj [strikePrice] = {
+							"CE" : previousDataObj [ strikePrice ] [ "CE" ] ["openInterest"], //"changeinOpenInterest"
+							"PE" : previousDataObj [ strikePrice ] [ "PE" ] ["openInterest"] // "changeinOpenInterest"
+						}
+						intradayOIObj [strikePrice] = {
+							"CE" : previousDataObj [ strikePrice ] [ "CE" ] ["changeinOpenInterest"], //"changeinOpenInterest"
+							"PE" : previousDataObj [ strikePrice ] [ "PE" ] ["changeinOpenInterest"] // "changeinOpenInterest"
+						}
+				}
+			
+			}
+			
+			
+			//lastTimesSpotPrice = currentDataObj ["SpotPrice"]
+			lastTimesSpotPrice = previousDataObj ["SpotPrice"]
+	
+
+
+	console.log("changeInCall",changeInCall)
+	console.log("changeInPut",changeInPut)
+	console.log("lastTimesSpotPrice",lastTimesSpotPrice)
+	console.log("changeinOIObj",changeinOIObj)
+
+
+	showOIBuildupData(changeInCall, changeInPut)  //send fetched data to showOIBuildupData function for showing it on chart
+
+	showOptionChainChart( changeinOIObj, lastTimesSpotPrice, selectedSymbol )
+	
+	
+
+		showDataInOIChange( previousDataObj["totalCEPE"] )
+		showDataInTOTALOI( previousDataObj["totalCEPE"] )
+		DonutChart( previousDataObj["totalCEPE"] )
+		
+		showOptionChainTotalOIChart( totalOIObj, lastTimesSpotPrice, selectedSymbol )
+	showOptionChainIntradayOIChart( intradayOIObj, lastTimesSpotPrice, selectedSymbol )
+		
+			
+}
+
 
 function showOIBuildupData(sliderCE, sliderPE) {
 	//if this function is called without parameters then
@@ -1688,6 +1854,8 @@ else if( selectedIndexValue=='BANKNIFTY' )
 	intradayChartSymbol = 'NIFTY BANK'
 else if( selectedIndexValue=='FINNIFTY' )
 	intradayChartSymbol = 'NIFTY FIN SERVICE'
+else if( selectedIndexValue=='MIDCPNIFTY' )
+	intradayChartSymbol = 'NIFTY MID SELECT'
 
 
 

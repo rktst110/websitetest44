@@ -679,8 +679,9 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 
 	   var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
 	
-		if( symbolArray!=undefined ){
-	
+		if( symbolArray!=undefined && deliveryDataObj["Symbols"][Symbol]!=undefined ){
+		//if( symbolArray!=undefined  ){
+	//console.log(sector,Symbol)
 
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
