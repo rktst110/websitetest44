@@ -276,6 +276,13 @@ width: 98%;
 width: 98%;
 }
 
+#scrollableDiv {
+   overflow: auto;
+  }
+  
+#OIDataFlowChart {
+   width: 1350px;
+}
 
 }
 </style>
@@ -327,7 +334,10 @@ width: 98%;
   <br><br>
 <center>Entries Difference  &nbsp;<input id="differenceBetweenEntries" type="number" min="1" value="2" size="3" onchange="calculate_OI_Data_Change()">  	</center>
 
-<div id="OIDataFlowChart" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div>  
+<div id="scrollableDiv">
+<!--<div id="OIDataFlowChart" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div>  -->
+<div id="OIDataFlowChart" style="height: 350px; overflow-y: hidden; overflow-x: hidden;  padding-right: 10px;  padding-left: 10px;"></div>  
+</div>
 <br>
 
 

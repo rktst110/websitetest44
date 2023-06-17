@@ -80,6 +80,20 @@ body {
   .column {
     width: 100%;
   }
+  
+  #scrollableDiv {
+   overflow: auto;
+  }
+  
+#OIDataFlowChart {
+   width: 1350px;
+}
+
+#IntradayChartWithOIDataFlowContainer {
+   width: 1350px;
+}
+
+
 }
 </style>
 <style> *, *:before, *:after {box-sizing: border-box;}body {font-family: -apple-system, ".SFNSText-Regular", "Helvetica Neue", "Roboto", "Segoe UI", sans-serif;}.toggle {cursor: pointer;display: inline-block;}.toggle-switch {display: inline-block;background: #ccc;border-radius: 16px;width: 58px;height: 32px;position: relative;vertical-align: middle;transition: background 0.25s;}.toggle-switch:before, .toggle-switch:after {content: "";}.toggle-switch:before {display: block;background: linear-gradient(to bottom, #fff 0%, #eee 100%);border-radius: 50%;box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);width: 24px;height: 24px;position: absolute;top: 4px;left: 4px;transition: left 0.25s;}.toggle:hover .toggle-switch:before {background: linear-gradient(to bottom, #fff 0%, #fff 100%);box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);}.toggle-checkbox:checked + .toggle-switch {background: #56c080;}.toggle-checkbox:checked + .toggle-switch:before {left: 30px;}.toggle-checkbox {position: absolute;visibility: hidden;}.toggle-label {margin-left: 5px;position: relative;top: 2px;} </style>
@@ -122,10 +136,19 @@ body {
 </select>
 
 <!--Content Start From Here-->
- <div id="IntradayChartWithOIDataFlowContainer" style="height: 500px; width: 99%; margin: 0px auto;"></div>
+
+<div id="scrollableDiv">
+<!--  <div id="IntradayChartWithOIDataFlowContainer" style="height: 500px; width: 99%; margin: 0px auto;"></div>  -->
+<div id="IntradayChartWithOIDataFlowContainer" style="height: 525px; overflow-y: hidden; "></div>  
+</div>
+ 
 <br> <br>  
 <center>Entries Difference  &nbsp;<input id="differenceBetweenEntries" type="number" min="1" value="2" size="3" onchange="calculate_OI_Data_Change()">  	</center>
-<div id="OIDataFlowChart" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div>  
+
+<div id="scrollableDiv">
+<!-- <div id="OIDataFlowChart" style="height: 350px; width: 99%; overflow-y: hidden; overflow-x: hidden;  padding-right: 35px;  padding-left: 10px;"></div>   -->
+<div id="OIDataFlowChart" style="height: 350px; overflow-y: hidden; overflow-x: hidden;  padding-right: 10px;  padding-left: 10px;"></div>  
+</div>
 
    <br>   
    <center> HeatMap Sectors: &nbsp;<select id="heatMapSectorSelector" aria-labelledby="expiryLbl" onchange="showHeatMapChart()"> <option value="">Select</option> </select></center>  <div id="heatMapContainer" style=" height:500px; width: auto; margin: 0 auto;"></div>
