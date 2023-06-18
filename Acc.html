@@ -1,0 +1,139 @@
+
+ <script src="functions/importFiles.js"></script>
+ <div id="importedContent"></div>
+ 
+
+<div id="ptag"></div>
+
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+</style>
+<script>
+
+var accounts = {
+  "rakeshkumarfb74": {
+    '09 Jun': 'Rakesh',
+    '22 Jun': 'org2',
+    '01 Jul': 'org3',
+    '14 Jun': 'org4',
+    '21 Jun': 'org5',
+    '28 Jun': 'org6',
+    '04 Jul': 'org7',
+    '11 Jul': 'org8',
+  },
+  "coyisi4601": {
+    '10 jun': 'temp',
+    '11 jun': 'org1',
+    '22 jun': 'org2',
+    '01 jul': 'org3',
+    '08 jul': 'org4',
+    '15 jun': 'org5',
+    '23 jun': 'org6',
+    '30 jun': 'org7',
+    '06 jul': 'org8',
+    '13 jul': 'org9',
+  },
+  "moxafa5631": {
+    '07 jul': 'temp',
+    '07 jul': 'org1',
+    '15 jun': 'org2',
+    '23 jun': 'org3',
+    '30 jun': 'org4',
+    '06 jul': 'org5',
+    '13 jul': 'org6',
+  },
+};
+
+
+
+
+var accountsByMonthWeek = {};
+
+var currentDate = new Date(); // Get the current date
+
+for (var account in accounts) {
+  var transactions = accounts[account];
+  for (var date in transactions) {
+    var transactionDate = new Date(date);
+    var week = getWeekNumber(transactionDate);
+    var month = transactionDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+    var weekRange = getWeekRange(transactionDate);
+    if (!accountsByMonthWeek[month]) {
+      accountsByMonthWeek[month] = {};
+    }
+    if (!accountsByMonthWeek[month][weekRange]) {
+      accountsByMonthWeek[month][weekRange] = [];
+    }
+    var transactionInfo = date + '-' + transactions[date] + ' ' + account;
+    if (isCurrentWeek(week, currentDate)) {
+      transactionInfo = '<mark>' + transactionInfo + '</mark>'; // Highlight current week's accounts
+    }
+    accountsByMonthWeek[month][weekRange].push(transactionInfo);
+  }
+}
+
+var output = '';
+for (var month in accountsByMonthWeek) {
+  output += '<p>' + month.toUpperCase() + ':</p>';
+  var sortedWeekRanges = Object.keys(accountsByMonthWeek[month]).sort(sortWeekRange);
+  for (var i = 0; i < sortedWeekRanges.length; i++) {
+    var weekRange = sortedWeekRanges[i];
+    var sortedTransactions = accountsByMonthWeek[month][weekRange].sort();
+    var sortedTransactionsStr = sortedTransactions.toString().replace(/,/g,'<br>	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')
+	console.log(sortedTransactions)
+	console.log(sortedTransactionsStr)
+//    output += '<p>' + weekRange + ': ' + sortedTransactions.join(', ')+ '</p>';
+    output += '<div>' + weekRange + ': ' + sortedTransactionsStr+ '</div>';
+  }
+}
+
+document.getElementById("ptag").innerHTML = (output);
+
+// Function to get the week number from a date
+function getWeekNumber(date) {
+  var onejan = new Date(date.getFullYear(), 0, 1);
+  var week = Math.ceil(((date - onejan) / 86400000 + onejan.getDay() + 1) / 7);
+  return week;
+}
+
+// Function to get the week range for a given date
+function getWeekRange(date) {
+  var startDate = new Date(date);
+  startDate.setDate(startDate.getDate() - startDate.getDay() + 1); // Set to the first day of the week
+  var endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 6); // Set to the last day of the week
+  var startDay = startDate.getDate();
+  var endDay = endDate.getDate();
+  var startMonth = startDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+  var endMonth = endDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+  var weekRange = startDay + ' ' + startMonth + '-' + endDay + ' ' + endMonth;
+  return weekRange;
+}
+
+// Function to check if a given week is the current week
+function isCurrentWeek(week, currentDate) {
+  var currentWeek = getWeekNumber(currentDate);
+  return week === currentWeek;
+}
+
+// Function to sort the week ranges in ascending order
+function sortWeekRange(a, b) {
+  var startA = parseInt(a.split(' ')[0]);
+  var startB = parseInt(b.split(' ')[0]);
+  return startA - startB;
+}
+//This modified code should provide the correct output with accurate week ranges and sorted transactions within each week range.
+
+
+
+
+
+
+
+</script>

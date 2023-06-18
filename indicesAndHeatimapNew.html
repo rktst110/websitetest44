@@ -177,6 +177,7 @@ async function getIndicesData( passedValue )
 	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
+	console.log( "dataObj", JSON.parse( dataObj['data'] )  )
 	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 
 }
@@ -198,7 +199,8 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 	var tempObj={}
 	for (var symbol in indicesPerformanceObject) {
 		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
 		{
 		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
 		}
