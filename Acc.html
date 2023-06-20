@@ -17,7 +17,7 @@ body {
 <script>
 
 var accounts = {
-  "rakeshkumarfb74": {
+  "rakeshkumar": {
     '09 Jun': 'Rakesh',
     '22 Jun': 'org2',
     '01 Jul': 'org3',
@@ -26,27 +26,30 @@ var accounts = {
     '28 Jun': 'org6',
     '04 Jul': 'org7',
     '11 Jul': 'org8',
+    '18 Jul': 'org9',
   },
   "coyisi4601": {
-    '10 jun': 'temp',
-    '11 jun': 'org1',
-    '22 jun': 'org2',
-    '01 jul': 'org3',
-    '08 jul': 'org4',
-    '15 jun': 'org5',
-    '23 jun': 'org6',
-    '30 jun': 'org7',
-    '06 jul': 'org8',
-    '13 jul': 'org9',
+    '10 Jun': 'temp',
+    '11 Jun': 'org1',
+    '22 Jun': 'org2',
+    '01 Jul': 'org3',
+    '08 Jul': 'org4',
+    '15 Jun': 'org5',
+    '23 Jun': 'org6',
+    '30 Jun': 'org7',
+    '06 Jul': 'org8',
+    '13 Jul': 'org9',
+    '20 Jul': 'org10',
   },
   "moxafa5631": {
-    '07 jul': 'temp',
-    '07 jul': 'org1',
-    '15 jun': 'org2',
-    '23 jun': 'org3',
-    '30 jun': 'org4',
-    '06 jul': 'org5',
-    '13 jul': 'org6',
+    '07 Jul': 'temp',
+    '07 Jul': 'org1',
+    '15 Jun': 'org2',
+    '23 Jun': 'org3',
+    '30 Jun': 'org4',
+    '06 Jul': 'org5',
+    '13 Jul': 'org6',
+    '20 Jul': 'org7',
   },
 };
 
@@ -56,11 +59,15 @@ var accounts = {
 var accountsByMonthWeek = {};
 
 var currentDate = new Date(); // Get the current date
+//var currentDate = new Date("1 jun"); // Get the current date
 
 for (var account in accounts) {
   var transactions = accounts[account];
   for (var date in transactions) {
-    var transactionDate = new Date(date);
+  
+  const nextRenewal = getNextRenewalDate( date );
+  
+    var transactionDate = new Date(nextRenewal);
     var week = getWeekNumber(transactionDate);
     var month = transactionDate.toLocaleString('default', { month: 'short' }).toLowerCase();
     var weekRange = getWeekRange(transactionDate);
@@ -77,6 +84,8 @@ for (var account in accounts) {
     accountsByMonthWeek[month][weekRange].push(transactionInfo);
   }
 }
+
+console.log("accountsByMonthWeek",accountsByMonthWeek)
 
 var output = '';
 for (var month in accountsByMonthWeek) {
@@ -131,6 +140,39 @@ function sortWeekRange(a, b) {
 //This modified code should provide the correct output with accurate week ranges and sorted transactions within each week range.
 
 
+
+
+function getNextRenewalDate(passedRenewalDate) {
+  const currentDate = new Date();
+  //const currentDate = new Date("1 jun");
+  const currentDay = currentDate.getDate();
+  const currentMonth = currentDate.getMonth() + 1; // Adding 1 because month index starts from 0
+
+  // Set the renewal day and month
+  //var renewalDate = new Date( "28 Jun" );
+  var renewalDate = new Date( passedRenewalDate );
+  //const renewalDay = 16;
+  const renewalDay = renewalDate.getDate()
+  //const renewalMonth = 7; // July (index 7-1=6)
+  const renewalMonth = renewalDate.getMonth() + 1; // July (index 7-1=6)
+
+  // Calculate the next renewal month and year
+  let nextRenewalMonth = currentMonth;
+  let nextRenewalYear = currentDate.getFullYear();
+
+  if (currentDay > renewalDay || (currentDay === renewalDay && currentMonth !== renewalMonth)) {
+    nextRenewalMonth += 1;
+    if (nextRenewalMonth > 12) {
+      nextRenewalMonth = 1;
+      nextRenewalYear += 1;
+    }
+  }
+
+  // Create the next renewal date
+  const nextRenewalDate = new Date(nextRenewalYear, nextRenewalMonth - 1, renewalDay);
+
+  return nextRenewalDate;
+}
 
 
 
