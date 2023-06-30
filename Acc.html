@@ -3,9 +3,6 @@
  <div id="importedContent"></div>
  
 
-<div id="ptag"></div>
-
-
 <style>
 body {
   margin: 0;
@@ -14,7 +11,29 @@ body {
   color: white; /* Set the text color to white */
 }
 </style>
+
+<div>
+<br><br>
+rakeshkumarfb: Org 9 (Sunday 18-Jun-2023 08:49:34 PM)		<br>
+moxafa5631: Org 7 (Tuesday 20-Jun-2023 08:51:10 AM)		<br>
+coyisi4601: Org 10 (Tuesday 20-Jun-2023 08:52:40 AM)		<br><br>
+</div>
+
+<div id="ptag"></div>
+
+
 <script>
+/*
+rakeshkumarfb: Org 9 (Sunday 18-Jun-2023 08:49:34 PM)
+moxafa5631: Org 6 (Tuesday 13-Jun-2023 08:51:10 AM)
+moxafa5631: Org 8 (Tuesday 27-Jun-2023 08:53:00 PM)
+coyisi4601: Org 9 (Tuesday 13-Jun-2023 08:52:40 AM)
+
+account 1 = rakeshkumarfb
+account 2 = coyisi4601
+account 3 = moxafa5631
+*/
+
 
 var accounts = {
   "rakeshkumar": {
@@ -23,10 +42,11 @@ var accounts = {
     '01 Jul': 'org3',
     '14 Jun': 'org4',
     '21 Jun': 'org5',
-    '28 Jun': 'org6',
-    '04 Jul': 'org7',
-    '11 Jul': 'org8',
-    '18 Jul': 'org9',
+    '28 Jun': 'org6 (08:48 PM)',
+    '04 Jul': 'org7 (08:49 PM)',
+    '11 Jul': 'org8 (08:49:30 PM)',
+    '18 Jul': 'org9 (08:49:34 PM)',
+    '25 Jul': 'org10 (08:49:35 PM) ',
   },
   "coyisi4601": {
     '10 Jun': 'temp',
@@ -35,21 +55,22 @@ var accounts = {
     '01 Jul': 'org3',
     '08 Jul': 'org4',
     '15 Jun': 'org5',
-    '23 Jun': 'org6',
-    '30 Jun': 'org7',
-    '06 Jul': 'org8',
-    '13 Jul': 'org9',
-    '20 Jul': 'org10',
+    '23 Jun': 'org6 (08:24am)',
+    '30 Jun': 'org7 (08:52am)',
+    '06 Jul': 'org8 (08:52am)',
+    '13 Jul': 'org9 (08:52:40 AM)',
+    '20 Jul': 'org10 (08:52:40 AM)',
   },
   "moxafa5631": {
     '07 Jul': 'temp',
     '07 Jul': 'org1',
     '15 Jun': 'org2',
-    '23 Jun': 'org3',
-    '30 Jun': 'org4',
-    '06 Jul': 'org5',
-    '13 Jul': 'org6',
-    '20 Jul': 'org7',
+    '23 Jun': 'org3 (08:26am)',
+    '30 Jun': 'org4 (08:50am)',
+    '06 Jul': 'org5 (08:50am)',
+    '13 Jul': 'org6 (08:51:10 AM)',
+    '20 Jul': 'org7 (08:51:10 AM)',
+    '27 Jul': 'org8 (08:53:00 PM)',
   },
 };
 
@@ -59,7 +80,7 @@ var accounts = {
 var accountsByMonthWeek = {};
 
 var currentDate = new Date(); // Get the current date
-//var currentDate = new Date("1 jun"); // Get the current date
+//var currentDate = new Date("22 jun"); // Get the current date
 
 for (var account in accounts) {
   var transactions = accounts[account];
