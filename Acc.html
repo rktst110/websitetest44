@@ -22,6 +22,14 @@ coyisi4601: Org 10 (Tuesday 20-Jun-2023 08:52:40 AM)		<br><br>
 <div id="ptag"></div>
 
 
+
+<script>
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}
+
+</script>
+
 <script>
 /*
 rakeshkumarfb: Org 9 (Sunday 18-Jun-2023 08:49:34 PM)
@@ -98,7 +106,9 @@ for (var account in accounts) {
     if (!accountsByMonthWeek[month][weekRange]) {
       accountsByMonthWeek[month][weekRange] = [];
     }
-    var transactionInfo = date + '-' + transactions[date] + ' ' + account;
+	
+    //var transactionInfo = date + '-' + transactions[date] + ' ' + account;
+    var transactionInfo = date.split(' ')[0] + ' '+ capitalize(month) + '-' + transactions[date] + ' ' + account;
     if (isCurrentWeek(week, currentDate)) {
       transactionInfo = '<mark>' + transactionInfo + '</mark>'; // Highlight current week's accounts
     }
@@ -200,3 +210,4 @@ function getNextRenewalDate(passedRenewalDate) {
 
 
 </script>
+
