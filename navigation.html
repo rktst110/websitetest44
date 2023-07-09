@@ -102,13 +102,14 @@ body {
   <a href="index.html">Home</a>
   <a href="preMarket.html">Pre Market</a>
  <!-- <a href="indicesAndHeatimap.html" class="active">Indices-Heatimap (Old)</a>-->
- <a href="indicesAndHeatimap.html">Indices-Heatimap (Old)</a>
-  <a href="indicesAndHeatimapNew.html">Indices-Heatmap (New)</a>
+  <!-- <a href="indicesAndHeatimap.html">Indices-Heatimap (Old)</a> -->
+  <a href="indicesAndHeatimapNew.html">Indices-Heatmap</a>
  <a href="mostActiveFuturesOptions.html">Futures-Options</a>
   <a href="sectorsStocks.html">Sectors Stocks</a>
   <a href="momentumSpikes.html">Spikes</a>
   <a href="optionChain.html">OI Tracker</a>
   <a href="intradayChartWithHeatmap.html">Intraday Charts</a>
+
 
  <a href="javascript:void(0);" class="icon" onclick="var x = document.getElementById('myTopnav'); if (x.className === 'topnav') {  x.className += ' responsive';  } else {  x.className = 'topnav'; }">&#9776;</a>
 </div>
@@ -117,8 +118,8 @@ body {
   <a href="javascript:void(0)" class="closebtn" onclick="document.getElementById('mySidenav').style.width = '0';">&times;</a>
  <a href="index.html">Home</a>
  <a href="preMarket.html">Pre Market</a>
-  <a href="indicesAndHeatimap.html">Indices-Heatimap (Old)</a>
-  <a href="indicesAndHeatimapNew.html">Indices-Heatmap (New)</a>
+  <!-- <a href="indicesAndHeatimap.html">Indices-Heatimap (Old)</a> -->
+  <a href="indicesAndHeatimapNew.html">Indices-Heatmap</a>
   <a href="mostActiveFuturesOptions.html">Futures-Options</a>
   <a href="sectorsStocks.html">Sectors Stocks</a>
   <a href="momentumSpikes.html">Spikes</a>
@@ -136,3 +137,15 @@ body {
   <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
  <!-- Importing Firebase SDK Ends Here-->
+ 
+ 
+ <script>
+	var currentHref = document.location.href.split('/')[document.location.href.split('/').length-1]
+	var navBarLinks = document.getElementsByClassName('topnav')[0].getElementsByTagName('a');
+	for( var i=0;i<navBarLinks.length;i++ )
+	{
+		if( navBarLinks[i].href.includes(currentHref) == true )
+			navBarLinks[i].setAttribute('class','active')
+	}
+
+ </script>
