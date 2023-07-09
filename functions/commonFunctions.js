@@ -164,7 +164,11 @@ function minutesToTime(minutes) {
 			navBarLinks[i].setAttribute('class','active')
 	}
 }
-activeNavigationBar();
+
+window.onload = (event) => {
+  //console.log("page is fully loaded");
+  activeNavigationBar();
+};
 //<!-- Common Functions Code for all pages Ends Here -->
 
 
