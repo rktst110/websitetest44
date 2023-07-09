@@ -109,7 +109,8 @@ body {
   <a href="momentumSpikes.html">Spikes</a>
   <a href="optionChain.html">OI Tracker</a>
   <a href="intradayChartWithHeatmap.html">Intraday Charts</a>
-
+  <a href="optionChainWithOIFlow.html">OI Tracker & Flow</a>
+  
 
  <a href="javascript:void(0);" class="icon" onclick="var x = document.getElementById('myTopnav'); if (x.className === 'topnav') {  x.className += ' responsive';  } else {  x.className = 'topnav'; }">&#9776;</a>
 </div>
@@ -125,7 +126,8 @@ body {
   <a href="momentumSpikes.html">Spikes</a>
   <a href="optionChain.html">OI Tracker</a>
   <a href="intradayChartWithHeatmap.html">Intraday Charts</a>
-
+ <a href="optionChainWithOIFlow.html">OI Tracker & Flow</a>
+  
 
 </div>
 
@@ -138,16 +140,3 @@ body {
   <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
  <!-- Importing Firebase SDK Ends Here-->
  
- 
- <script>
- function activeNavigation()
- {
-	var currentHref = document.location.href.split('/')[document.location.href.split('/').length-1]
-	var navBarLinks = document.getElementsByClassName('topnav')[0].getElementsByTagName('a');
-	for( var i=0;i<navBarLinks.length;i++ )
-	{
-		if( navBarLinks[i].href.includes(currentHref) == true )
-			navBarLinks[i].setAttribute('class','active')
-	}
-}
- </script>
