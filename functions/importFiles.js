@@ -9,4 +9,3 @@ xhttp.onreadystatechange = function() {
 xhttp.open("GET", "navigation.html", true);
 xhttp.send();
 
-activeNavigation();

@@ -151,3 +151,21 @@ function minutesToTime(minutes) {
 
 
 //<!-- Common Functions Code for all pages Ends Here -->
+
+
+//<!-- Common Functions Code for all pages Starts Here -->
+ function activeNavigationBar()
+ {
+	var currentHref = document.location.href.split('/')[document.location.href.split('/').length-1]
+	var navBarLinks = document.getElementsByClassName('topnav')[0].getElementsByTagName('a');
+	for( var i=0;i<navBarLinks.length;i++ )
+	{
+		if( navBarLinks[i].href.includes(currentHref) == true )
+			navBarLinks[i].setAttribute('class','active')
+	}
+}
+activeNavigationBar();
+//<!-- Common Functions Code for all pages Ends Here -->
+
+
+
