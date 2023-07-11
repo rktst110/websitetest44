@@ -189,7 +189,10 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 		
 	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
 	var indicesPerformanceObject = returnedDataObj ['data']
-		
+	
+	// list updated on June 30, 2023 from https://archives.nseindia.com/content/indices/ind_nifty50.pdf
+	var sectorsWeightageInNifty50 = { "FIN SERVICE":37.59, "IT":12.65, "OIL AND GAS":11.99, "FMCG": 9.82, "AUTO":5.98, "PHARMA":3.86, "HEALTHCARE":3.86,"Construction":3.54, "METAL":3.52, "CONSR DURBL":3.30,"Telecommunication":2.61, "ENERGY":2.10,"INFRA":1.89, "SERV SECTOR":0.74, "Chemicals":0.41 }
+	
 	var dataPointsArray=[]
 	var dataPointsArrayAdvances=[]
 	var dataPointsArrayDeclines=[]
@@ -218,6 +221,11 @@ if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
 else{
 	temp["label"]=symbol
 }
+	
+	if( sectorsWeightageInNifty50[ temp["label"] ]!=undefined )
+	{
+		 temp["label"] =  temp["label"] +" ("+ sectorsWeightageInNifty50[ temp["label"] ] +")"
+	}
 	
 		//temp["y"]=tempObj[symbol]; 
 		temp["y"]= Math.abs( tempObj[symbol] ); 
@@ -376,7 +384,8 @@ chart.render();
 
 function onClick(e) {
 
-		var label=e.dataPoint.label
+		//var label=e.dataPoint.label
+		var label=e.dataPoint.label.replace(/ \(.*/g, '')
 		var labelToScroll;
 		{
 			if( label=='NIFTY 50' || label=='NIFTY BANK')
