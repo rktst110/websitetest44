@@ -250,7 +250,7 @@ function clickOnVolumeAutomatically()
     for (var th of ths) {
 		if( tableId=='stockOptionsTable' || tableId=='stockFuturesTable' || tableId=='mostActiveUnderlyingTable' || tableId=='mostActiveFutureContractsTable' ) 
 		{
-		if( th.innerText.includes('Volume') )
+		if( th.innerText.includes('Volume') || th.innerText.includes('Value') || th.innerText.includes('TotVal') )
 		{
 			th.click()
 		}
