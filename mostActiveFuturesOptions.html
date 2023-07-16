@@ -124,7 +124,7 @@ body {
                   <th>Symbol (Type)</th>
                   <th>Strike Price</th>
                   <th>LTP</th>
-                  <th>Volume</th>
+                  <th>Value</th>
                </tr>
             </thead>
             <tbody></tbody>
@@ -149,7 +149,7 @@ body {
                   <th>Symbol</th>
                   <th>LTP</th>
                   <th>Change(%)</th>
-                  <th>Volume</th>
+                  <th>Value</th>
                </tr>
             </thead>
             <tbody></tbody>
@@ -172,7 +172,9 @@ body {
                <tr>
                   <th>Symbol</th>
                   <th>Underlying</th>
-                  <th>Total Volume</th>
+                  <th>FutVal</th>
+                  <th>OptVal</th>
+                  <th>TotVal</th>
                </tr>
             </thead>
             <tbody></tbody>
@@ -199,7 +201,7 @@ body {
                   <th>Symbol</th>
                   <th>LTP</th>
                   <th>Change(%)</th>
-                  <th>Volume</th>
+                  <th>Value</th>
                </tr>
             </thead>
             <tbody></tbody>
@@ -262,7 +264,7 @@ async function show_stock_options_Data( dataObj, selectedTradingDate, selectedTi
 	stockOptionsTable.getElementsByTagName('caption')[0].innerHTML = 'Stock Options | ' + selectedTradingDate +' | '+ selectedTimeValue;
 
 	var stockOptionsObject = dataObj['data']
-
+//console.log("stockOptionsObject",stockOptionsObject)
 			
 	for (var i=0;i<stockOptionsObject.length;i++) {
 	var symbol = stockOptionsObject[i]['identifier']
@@ -299,7 +301,7 @@ async function show_stock_options_Data( dataObj, selectedTradingDate, selectedTi
           tr.appendChild(td);
 		  
 		  var td = document.createElement('td');
-          td.appendChild(document.createTextNode(symbolArray["volume"]));		// Volume 
+          td.appendChild(document.createTextNode(symbolArray["value"].toFixed(0)));		// value 
           tr.appendChild(td);
 		
 	 tbody.appendChild(tr);
@@ -348,7 +350,7 @@ async function show_stock_futures_Data( dataObj, selectedTradingDate, selectedTi
 	stockFuturesTable.getElementsByTagName('caption')[0].innerHTML = 'Stock Futures | ' + selectedTradingDate +' | '+ selectedTimeValue;
 
 	var StockFuturesObject = dataObj['data']
-
+//console.log("StockFuturesObject",StockFuturesObject)
 				
 	for (var i=0;i<StockFuturesObject.length;i++) {
 	var symbol = StockFuturesObject[i]['underlying']
@@ -372,7 +374,7 @@ async function show_stock_futures_Data( dataObj, selectedTradingDate, selectedTi
           tr.appendChild(td);
 		  
 		   var td = document.createElement('td');
-          td.appendChild(document.createTextNode(symbolArray['volume']));		//volume
+          td.appendChild(document.createTextNode(symbolArray['value'].toFixed(0)));		//value
           tr.appendChild(td);
 		
 	 tbody.appendChild(tr);
@@ -421,7 +423,8 @@ async function show_most_active_underlying_Data( dataObj, selectedTradingDate, s
 	mostActiveUnderlyingTable.getElementsByTagName('caption')[0].innerHTML = 'Most Active Underlying | ' + selectedTradingDate +' | '+ selectedTimeValue;
 
 	var mostActiveUnderlyingObject = dataObj['data']
-
+	
+	//console.log("mostActiveUnderlyingObject",mostActiveUnderlyingObject)
 				
 	for (var i=0;i<mostActiveUnderlyingObject.length;i++) {
 	var symbol = mostActiveUnderlyingObject[i]['symbol']
@@ -441,7 +444,16 @@ async function show_most_active_underlying_Data( dataObj, selectedTradingDate, s
           tr.appendChild(td);
 		  
 		   var td = document.createElement('td');
-          td.appendChild(document.createTextNode(symbolArray['totVolume']));	    	//0 totVolume 
+          //td.appendChild(document.createTextNode(symbolArray['totVolume']));	    	//0 totVolume 
+          td.appendChild(document.createTextNode(symbolArray['futTurnover'].toFixed(0)));	    	//0 futTurnover 
+          tr.appendChild(td);  
+		  
+		  var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['optTurnover'].toFixed(0) ));	    	// optTurnover 
+          tr.appendChild(td);
+		
+		  var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['totTurnover'].toFixed(0) ));	    	// totTurnover 
           tr.appendChild(td);
 		
 	 tbody.appendChild(tr);
@@ -491,7 +503,8 @@ async function show_most_Active_Future_Contracts_Data( dataObj, selectedTradingD
 	mostActiveFutureContractsTable.getElementsByTagName('caption')[0].innerHTML = 'Most Active Future Contracts | ' + selectedTradingDate +' | '+ selectedTimeValue;
 
 	var mostActiveFutureContractsObject = dataObj [ "volume" ] ['data']
-		
+	var mostActiveFutureContractsObjectValueWise = dataObj [ "value" ] ['data']
+		//console.log( "mostActiveFutureContractsObject", dataObj)
 	for (var i=0;i<mostActiveFutureContractsObject.length;i++) {
 	var symbol = mostActiveFutureContractsObject[i]['identifier']
 
@@ -521,7 +534,45 @@ async function show_most_Active_Future_Contracts_Data( dataObj, selectedTradingD
           tr.appendChild(td);
 		  
 		   var td = document.createElement('td');
-          td.appendChild(document.createTextNode(symbolArray['numberOfContractsTraded']));  //numberOfContractsTraded/Volume
+          //td.appendChild(document.createTextNode(symbolArray['numberOfContractsTraded']));  //numberOfContractsTraded/Volume
+          td.appendChild(document.createTextNode(symbolArray['totalTurnover'].toFixed(0)));  //totalTurnover/value
+          tr.appendChild(td);
+		
+	 tbody.appendChild(tr);
+
+	}
+	
+	for (var i=0;i<mostActiveFutureContractsObjectValueWise.length;i++) {
+	var symbol = mostActiveFutureContractsObjectValueWise[i]['identifier']
+
+		var symbolArray = mostActiveFutureContractsObjectValueWise[i]
+		
+		 var tbody = mostActiveFutureContractsTable.getElementsByTagName('tbody')[0]
+		 
+		 var symbolName=symbol
+		 if (symbol.includes('FUTIDX')==true)
+			symbolName=symbol.split('FUTIDX')[1].split(/[0-9]/)[0]
+		else if (symbol.includes('FUTSTK')==true)
+			symbolName=symbol.split('FUTSTK')[1].split(/[0-9]/)[0]
+				 
+		var tr = document.createElement("tr");
+		 tr.setAttribute("class","item");
+		 
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode( symbolName ));  	//symbol
+          tr.appendChild(td);
+		
+		 var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['lastPrice']));  //lastPrice
+          tr.appendChild(td);
+		  
+		   var td = document.createElement('td');
+          td.appendChild(document.createTextNode(symbolArray['pChange'].toFixed(2)));		//pChange
+          tr.appendChild(td);
+		  
+		   var td = document.createElement('td');
+          //td.appendChild(document.createTextNode(symbolArray['numberOfContractsTraded']));  //numberOfContractsTraded/Volume
+          td.appendChild(document.createTextNode(symbolArray['totalTurnover'].toFixed(0)));  //totalTurnover/value
           tr.appendChild(td);
 		
 	 tbody.appendChild(tr);
