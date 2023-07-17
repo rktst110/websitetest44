@@ -101,7 +101,10 @@ body {
 
 <hr>
 
-
+<center>
+<!-- added on 17-July-2023 -->
+<button onclick="copyAllTablesLists()">Copy All Tables Lists</button>
+</center>
 
 <!--Content Start From Here-->
 
@@ -583,6 +586,38 @@ async function show_most_Active_Future_Contracts_Data( dataObj, selectedTradingD
 
 </script>
 <!-- Most Active Future Contracts Code Ends Here -->
+
+
+<!-- Copying All Tables Code Starts Here -->
+<script>
+
+function copyAllTablesLists()
+{ //added on 17-July-2023
+	var tempStr=''
+	var tableIDsArray = [ 'stockOptionsTable', 'stockFuturesTable', 'mostActiveFutureContractsTable', 'mostActiveUnderlyingTable' ]
+	for(var i=0;i<tableIDsArray.length;i++ )
+	{
+	
+	//var clicked_table_id=caption.closest("table").id
+	var clicked_table_id=tableIDsArray[i]
+	//tempStr="NSE:"+caption.innerHTML.replace(/ /g,"_").replace(/\(/g,"").replace(/\)/g,"").replace(/\%/g,"").replace(/\-/g,"")+"," 
+	tempStr +="NSE:"+document.getElementById(clicked_table_id).caption.innerText.replace(/ /g,"_").replace(/\(/g,"").replace(/\)/g,"").replace(/\%/g,"").replace(/\-/g,"")+"," 
+	
+	var tablerows=document.getElementById(clicked_table_id).getElementsByTagName('tbody')[0].getElementsByTagName('tr')
+	for ( var tr=0; tr < tablerows.length; tr++ )
+	//for ( var tr=0; tr < 25; tr++ )
+	{
+		tempStr +="NSE:"+ tablerows[tr].getElementsByTagName('td')[0].innerText.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +"," 
+		//console.log(tablerows[tr].getElementsByTagName('td')[0])
+	}
+	
+	}
+	 navigator.clipboard.writeText(tempStr);
+
+}
+</script>
+
+<!-- Copying All Tables Code Ends Here -->
 
 
 <script>
