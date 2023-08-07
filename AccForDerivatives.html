@@ -1,0 +1,601 @@
+
+ <script src="functions/importFiles.js"></script>
+ <div id="importedContent"></div>
+ 
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+</style>
+
+<div>
+<br><br>
+
+nfilms30: Org (07 Aug (04:00:00 PM) Monday) <br>
+nfilms036: Org (01 Aug (04:00:00 PM) Tuesday) <br>
+newfilms71: Org (02 Aug (04:00:00 PM) Wednesday) <br>
+nfilms582: Org (03 Aug (04:00:00 PM) Thursday) <br>
+movieshub389: Org (04 Aug (04:00:00 PM) Friday) <br>
+movieshubs885: Org (05 Aug (04:00:00 PM) Saturday) <br>
+hubmovies62: Org (06 Aug (04:00:00 PM) Sunday) <br>
+
+</div>
+
+<div id="ptag"></div>
+
+
+
+<script>
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}
+
+</script>
+
+<script>
+/*
+rakeshkumarfb: Org 9 (Sunday 18-Jun-2023 08:49:34 PM)
+moxafa5631: Org 6 (Tuesday 13-Jun-2023 08:51:10 AM)
+moxafa5631: Org 8 (Tuesday 27-Jun-2023 08:53:00 PM)
+coyisi4601: Org 9 (Tuesday 13-Jun-2023 08:52:40 AM)
+
+account 1 = rakeshkumarfb
+account 2 = coyisi4601
+account 3 = moxafa5631
+*/
+
+/*
+'org': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  */
+  
+var accountsWithDetails = {
+  'nfilms30': {
+  'nfilms30': {
+  'createdAt': '31 Jul (09:00:00 PM)',
+  'userName': 'c383ahj1',
+  'userID': 'H4EaugxNki5XCjyGd',
+  'personalAPIToken': 'apify_api_YO8HoROmQz6ZhexMHIeAi0ORGmVeH32J0Smk',
+  'organizationAPIToken': '',
+  },
+  
+'org1': {
+  'createdAt': '07 Aug (04:00:00 PM)',
+  'userName': 'Kk1uad38j',
+  'userID': 'AC9P42C62wa5kMD58',
+  'personalAPIToken': 'apify_api_IcZ403eOl1tPHEBgzpIarZEeNfeQ3D202z45',
+  'organizationAPIToken': 'apify_api_sEqbqIefD37CIFyVQbiAjjEIoiet8M2eCPAL',
+  },
+  
+
+  
+  },
+  
+  "nfilms036": {
+
+ 'nfilms036': {
+  'createdAt': '01 Aug (08:14:00 PM)',
+  'userName': 'ivsdf32',
+  'userID': 'bBwjrPEJ4vkEEFthR',
+  'personalAPIToken': 'apify_api_MZcHha9y9N1O4cE2hGG6v9ELiJ8Pwx2ccZPH',
+  'organizationAPIToken': '',
+  },
+  
+
+  },
+  
+  "newfilms71": {
+  
+  'newfilms71': {
+  'createdAt': '02 Aug (08:12:00 PM)',
+  'userName': 'co2asd23',
+  'userID': 'ReSW6xYC5vMbnLipt',
+  'personalAPIToken': 'apify_api_ZcOg3VBjLTbzqLSNE6JXKVqJIdLto70Nivjk',
+  'organizationAPIToken': '',
+  },
+
+  },
+  
+  "nfilms582": {
+  
+  'nfilms582': {
+  'createdAt': '03 Aug (08:15:11 PM)',
+  'userName': 'cys32as',
+  'userID': 'jC2HBmq3TstJF9JzB',
+  'personalAPIToken': 'apify_api_jhcPwaGlMtNCMNesz2BmM1744ritLe0bxJE0',
+  'organizationAPIToken': '',
+  },
+
+  },
+  
+  
+  "movieshub389": {
+  
+  'movieshub389': {
+  'createdAt': '04 Aug (08:26:00 PM)',
+  'userName': 'hyg4ef',
+  'userID': 'Eoz3avTc5T8JnWBuT',
+  'personalAPIToken': 'apify_api_hjBcXUAuN18ff3FUrDvlWZEaiWwH9X0s2uGM',
+  'organizationAPIToken': '',
+  },
+
+  },
+  
+  "movieshubs885": {
+  
+  'movieshubs885': {
+  'createdAt': '05 Aug (03:49:00 PM)',
+  'userName': 'khsdf432',
+  'userID': 'mWsNpNuZXfdkdaTKB',
+  'personalAPIToken': 'apify_api_sKEradVEVpaiwip5HAVliCZgTuaPsg1EnbaH',
+  'organizationAPIToken': '',
+  },
+
+  },
+  
+  
+  "hubmovies62": {
+  
+ 'hubmovies62': {
+  'createdAt': '06 Aug (12:01:00 PM)',
+  'userName': 'viol2dq2',
+  'userID': 'LjEQT5dvWGnXdCD9M',
+  'personalAPIToken': 'apify_api_xVceaFvyqPOsOftRoUWDUhXOW7kvOB2NGdcj',
+  'organizationAPIToken': '',
+  },
+
+  },
+};
+
+//code to convert accountsWithDetails into simple form (Starts Here)
+var simplifiedAccountsObj = {}
+for( var email in accountsWithDetails )
+{
+	var organizations = accountsWithDetails[email] 
+	simplifiedAccountsObj [ email ] ={}
+	for( var org in organizations )
+	{
+		var orgObject = organizations[org]
+		var createdAt =  orgObject['createdAt']
+		var date =  createdAt.split(' ')[0] + ' '+createdAt.split(' ')[1]
+		
+		simplifiedAccountsObj [ email ] [date] = org + createdAt.split(date)[1]
+	}
+}
+//code to convert accountsWithDetails into simple form (Ends Here)
+
+var accounts = simplifiedAccountsObj
+
+/*
+
+accounts = {
+  "rakeshkumar": {
+    '09 Jun': 'Rakesh (01:13:22 PM)',
+    '22 Jun': 'org2 (02:00:23 PM)',
+    '01 Jul': 'org3 (12:44:26 PM)',
+    '14 Jun': 'org4 (09:55:57 AM)',
+    '21 Jun': 'org5 (08:28:37 PM)',
+    '28 Jun': 'org6 (08:48 PM)',
+    '04 Jul': 'org7 (08:49 PM)',
+    '11 Jul': 'org8 (08:49:30 PM)',
+    '18 Jul': 'org9 (08:49:34 PM)',
+    '25 Jul': 'org10 (08:49:35 PM) ',
+  },
+  "coyisi4601": {
+    '10 Jun': 'temp (09:09:00 PM)',
+    '11 Jun': 'org1 (11:00:34 AM)',
+    '22 Jun': 'org2 (9:55:30 PM)',
+    '01 Jul': 'org3 (12:45:44 PM)',
+    '08 Jul': 'org4 (01:53:07 PM)',
+    '15 Jun': 'org5 (10:00:53 PM)',
+    '23 Jun': 'org6 (08:24 AM)',
+    '30 Jun': 'org7 (08:52 AM)',
+    '06 Jul': 'org8 (08:52 AM)',
+    '13 Jul': 'org9 (08:52:40 AM)',
+    '20 Jul': 'org10 (08:52:40 AM)',
+  },
+  "moxafa5631": {
+    '07 Jul': 'temp (12:41:31 PM)',
+    '07 Jul': 'org1 (03:13:52 PM)',
+    '15 Jun': 'org2 (10:02:18 PM)',
+    '23 Jun': 'org3 (08:26 AM)',
+    '30 Jun': 'org4 (08:50 AM)',
+    '06 Jul': 'org5 (08:50 AM)',
+    '13 Jul': 'org6 (08:51:10 AM)',
+    '20 Jul': 'org7 (08:51:10 AM)',
+    '27 Jul': 'org8 (08:53:00 PM)',
+    '04 Aug': 'org9 (08:53:00 PM)',
+    '11 Aug': 'org10 (08:53:00 PM)',
+
+  },
+};
+*/
+
+
+
+var accountsByMonthWeek = {};
+var accountsByMonthWeekArray = [];
+
+var currentDate = new Date(); // Get the current date
+//var currentDate = new Date("03 Jul"); // Get the current date
+
+for (var account in accounts) {
+  var transactions = accounts[account];
+  for (var date in transactions) {
+  
+  const nextRenewal = getNextRenewalDate( date );
+  
+    var transactionDate = new Date(nextRenewal);
+    var week = getWeekNumber(transactionDate);
+    var month = transactionDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+    var weekRange = getWeekRange(transactionDate);
+    if (!accountsByMonthWeek[month]) {
+      accountsByMonthWeek[month] = {};
+    }
+    if (!accountsByMonthWeek[month][weekRange]) {
+      accountsByMonthWeek[month][weekRange] = [];
+    }
+	
+    //var transactionInfo = date + '-' + transactions[date] + ' ' + account;
+    //var transactionInfo = date.split(' ')[0] + ' '+ capitalize(month) + '-' + transactions[date] + ' ' + account;
+    var transactionInfo = date.split(' ')[0] + ' '+ capitalize(month) + '-' + transactions[date] + '_' + account;
+    
+	accountsByMonthWeekArray.push(transactionInfo);
+	
+	if (isCurrentWeek(week, currentDate)) {
+      transactionInfo = '<mark>' + transactionInfo + '</mark>'; // Highlight current week's accounts
+    }
+    accountsByMonthWeek[month][weekRange].push(transactionInfo);
+	
+  }
+}
+
+console.log("accountsByMonthWeek",accountsByMonthWeek)
+
+var output = '';
+for (var month in accountsByMonthWeek) {
+  output += '<p>' + month.toUpperCase() + ':</p>';
+  var sortedWeekRanges = Object.keys(accountsByMonthWeek[month]).sort(sortWeekRange);
+  for (var i = 0; i < sortedWeekRanges.length; i++) {
+    var weekRange = sortedWeekRanges[i];
+    var sortedTransactions = accountsByMonthWeek[month][weekRange].sort();
+    var sortedTransactionsStr = sortedTransactions.toString().replace(/,/g,'<br>	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')
+	//console.log(sortedTransactions)
+	//console.log(sortedTransactionsStr)
+//    output += '<p>' + weekRange + ': ' + sortedTransactions.join(', ')+ '</p>';
+    output += '<div>' + weekRange + ': ' + sortedTransactionsStr+ '</div>';
+  }
+}
+
+document.getElementById("ptag").innerHTML = (output);
+
+// Function to get the week number from a date
+function getWeekNumber(date) {
+  var onejan = new Date(date.getFullYear(), 0, 1);
+  var week = Math.ceil(((date - onejan) / 86400000 + onejan.getDay() + 1) / 7);
+  return week;
+}
+
+// Function to get the week range for a given date
+function getWeekRange(date) {
+  var startDate = new Date(date);
+  startDate.setDate(startDate.getDate() - startDate.getDay() + 1); // Set to the first day of the week
+  var endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 6); // Set to the last day of the week
+  var startDay = startDate.getDate();
+  var endDay = endDate.getDate();
+  var startMonth = startDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+  var endMonth = endDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+  var weekRange = startDay + ' ' + startMonth + '-' + endDay + ' ' + endMonth;
+  return weekRange;
+}
+
+// Function to check if a given week is the current week
+function isCurrentWeek(week, currentDate) {
+  var currentWeek = getWeekNumber(currentDate);
+  return week === currentWeek;
+}
+
+// Function to sort the week ranges in ascending order
+function sortWeekRange(a, b) {
+  var startA = parseInt(a.split(' ')[0]);
+  var startB = parseInt(b.split(' ')[0]);
+  return startA - startB;
+}
+//This modified code should provide the correct output with accurate week ranges and sorted transactions within each week range.
+
+
+
+
+function getNextRenewalDate(passedRenewalDate) {
+  const currentDate = new Date();
+  //const currentDate = new Date("1 Aug");
+  const currentDay = currentDate.getDate();
+  const currentMonth = currentDate.getMonth() + 1; // Adding 1 because month index starts from 0
+
+  // Set the renewal day and month
+  //var renewalDate = new Date( "28 Jun" );
+  var renewalDate = new Date( passedRenewalDate );
+  //const renewalDay = 16;
+  const renewalDay = renewalDate.getDate()
+  //const renewalMonth = 7; // July (index 7-1=6)
+  const renewalMonth = renewalDate.getMonth() + 1; // July (index 7-1=6)
+
+  // Calculate the next renewal month and year
+  let nextRenewalMonth = currentMonth;
+  let nextRenewalYear = currentDate.getFullYear();
+
+  if (currentDay > renewalDay || (currentDay === renewalDay && currentMonth !== renewalMonth)) {
+    nextRenewalMonth += 1;
+    if (nextRenewalMonth > 12) {
+      nextRenewalMonth = 1;
+      nextRenewalYear += 1;
+    }
+  }
+
+  // Create the next renewal date
+  const nextRenewalDate = new Date(nextRenewalYear, nextRenewalMonth - 1, renewalDay);
+
+  return nextRenewalDate;
+}
+
+
+/*
+
+function getAvaliableDate( specificDate )
+{
+
+//var array1 = ["6 aug 2023","2 Jul 2023", "5 aug 2023", "3 aug 2023","3 aug 2023","1 sep 2023"];
+//var array1 = ["6 aug","2 Jul", "5 aug", "3 aug","3 aug","1 sep"];
+//var array1 = [    "06 Aug-org8 (08:53:00 PM) moxafa5631",    "04 Aug-org9 (08:53:00 PM) moxafa5631", "11 Aug-org10 (08:53:00 PM) moxafa5631"];
+
+var dateMonthArray = []
+for (var i = 0; i < accountsByMonthWeekArray.length; i++) {
+	var dateMonthStr = accountsByMonthWeekArray[i].split('-')[0]
+        dateMonthArray.push( dateMonthStr )
+    
+}
+
+
+var currentDate;
+if( specificDate!=undefined )
+{//if checking for specific date then run this block
+currentDate = specificDate
+}
+else
+{// otherwise check for current date & run this block
+
+//var currentDate = "01 Aug 2023";
+//currentDate = "04 Aug";
+currentDate = formatDate( new Date() ) ;
+}
+
+function formatDate(date) {
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var day = date.getDate().toString().padStart(2, '0');
+  var month = months[date.getMonth()];
+  return `${day} ${month}`;
+}
+
+
+// Step 1: Convert dates to JavaScript Date objects
+var currentDateObj = new Date(currentDate);
+var array1Dates = dateMonthArray.map(dateStr => new Date(dateStr));
+
+// Step 2: Filter out dates greater than the currentDate
+var filteredDates = array1Dates.filter(date => date > currentDateObj);
+
+// Step 3: Sort the filtered dates in ascending order
+filteredDates.sort((a, b) => a - b);
+
+// Step 4: Get the first date from the sorted array as the next date
+//var nextDate = filteredDates.length > 0 ? filteredDates[0].toDateString() : "No next date found";
+var nextDate = filteredDates.length > 0 ? filteredDates[0].toDateString() : "Null";
+
+console.log(nextDate);
+return nextDate;
+}
+
+function getAvailableAccountsForToday_Previous()
+{
+var nextDate = getAvaliableDate()
+var availableAccountsForToday = []
+for (var i = 0; i < accountsByMonthWeekArray.length; i++) {
+	var dateMonthStr = accountsByMonthWeekArray[i].split('-')[0]
+    if (new Date( dateMonthStr ).getTime() === new Date( nextDate ).getTime()) {
+        availableAccountsForToday.push(accountsByMonthWeekArray[i])
+    }
+}
+console.log("availableAccountsForToday", availableAccountsForToday);
+
+return availableAccountsForToday;
+}
+
+function getAvailableAccountsForToday( checkedAccountForTodayStr, passedAvailableAccountsForTodayArray )
+{
+
+console.log("checkedAccountForTodayStr",checkedAccountForTodayStr)
+var nextDate = getAvaliableDate()
+var availableAccountsForToday = []
+for (var i = 0; i < accountsByMonthWeekArray.length; i++) {
+	var dateMonthStr = accountsByMonthWeekArray[i].split('-')[0]
+    if (new Date( dateMonthStr ).getTime() === new Date( nextDate ).getTime()) {
+        availableAccountsForToday.push(accountsByMonthWeekArray[i])
+    }
+}
+
+if( passedAvailableAccountsForTodayArray!=undefined )
+{
+	availableAccountsForToday = passedAvailableAccountsForTodayArray
+}
+
+if( checkedAccountForTodayStr==undefined )
+{ // if getting getAvailableAccountsForToday for first time then run this block
+
+console.log("availableAccountsForToday", availableAccountsForToday);
+
+//return availableAccountsForToday[0];
+return [ availableAccountsForToday[0], availableAccountsForToday ];
+}
+
+
+else if( checkedAccountForTodayStr!=undefined )
+{ // if getting getAvailableAccountsForToday for second or more time then run this block
+
+//console.log("availableAccountsForToday", availableAccountsForToday);
+var indexOfCheckedAccountForTodayStr = availableAccountsForToday.indexOf(checkedAccountForTodayStr)
+var nextAccount = availableAccountsForToday[ indexOfCheckedAccountForTodayStr +1 ]
+if( indexOfCheckedAccountForTodayStr !=-1 && availableAccountsForToday.length > 1 && nextAccount!=undefined )
+{// if availableAccountsForToday are more than 1, then return next account after increasing index to checking for apify credit
+
+//return nextAccount;
+return [ nextAccount, availableAccountsForToday ];
+}
+else
+{
+
+var upcomingDate = checkedAccountForTodayStr.split('-')[0]
+//console.log('fetch next date accounts')
+console.log('now checking for upcomingDate', upcomingDate)
+var nextDate = getAvaliableDate( upcomingDate )
+var availableAccountsForToday = []
+for (var i = 0; i < accountsByMonthWeekArray.length; i++) {
+	var dateMonthStr = accountsByMonthWeekArray[i].split('-')[0]
+    if (new Date( dateMonthStr ).getTime() === new Date( nextDate ).getTime()) {
+        availableAccountsForToday.push(accountsByMonthWeekArray[i])
+    }
+}
+
+
+console.log("availableAccountsForUpcomingDate", upcomingDate, availableAccountsForToday);
+//return availableAccountsForToday[0];
+return [ availableAccountsForToday[0], availableAccountsForToday ];
+
+}
+
+
+
+
+
+}
+
+
+}
+
+function getAccountDetailsObject( availableAccountStr )
+{
+	//availableAccountStr = '04 Aug-org9 (08:53:00 PM) moxafa5631'
+	var org = availableAccountStr.split('-')[1].split(' ')[0] 
+	var email = availableAccountStr.split('_')[1]
+	var accountDetailsObject = accountsWithDetails[ email ][ org ]
+	return accountDetailsObject;
+}
+
+
+
+	//var apifyURL = 'https://api.apify.com/v2/users/me/limits?token=apify_api_miYNvXi5huhwqWuSRP06rkqf5duqKK3u0tcL'
+	
+async function checkApifyAccountCredit(accountDetailsObject) {
+    var personalAPIToken = accountDetailsObject['personalAPIToken'];
+    var apifyURL = 'https://api.apify.com/v2/users/me/limits?token=' + personalAPIToken;
+
+    try {
+        // Fetch data using the Fetch API
+        const response = await fetch(apifyURL);
+
+        // Check if the response was successful
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        // Parse the response body as JSON
+        const data = await response.json();
+
+        // checking if apify account credit is used or not
+        var currentCredit = data['data']['current']['monthlyUsageUsd'].toFixed(2);
+        var monthlyCredit = data['data']['limits']['maxMonthlyUsageUsd'];
+        var usagePercentage = (currentCredit / monthlyCredit) * 100;
+
+        if (usagePercentage > 50) {
+            console.log("fully used,", usagePercentage, currentCredit + '/' + monthlyCredit);
+            return false;
+        } else {
+            console.log("fully empty,", usagePercentage, currentCredit + '/' + monthlyCredit);
+            return true;
+        }
+    } catch (error) {
+        // Handle any errors that occurred during the fetch
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+
+
+async function getOneAccountToBeUsed() {
+	var tempcount = 0
+	var loopTrueFalse = true
+	var checkedAccountForTodayStr;
+	var availableAccountsForToday;
+	
+    try {
+
+	while( loopTrueFalse )
+	{
+	tempcount = tempcount+1
+	//var availableAccountForTodayStr = getAvailableAccountsForToday( checkedAccountForTodayStr )
+	var returnedArray = getAvailableAccountsForToday( checkedAccountForTodayStr, availableAccountsForTodayArray )
+	var availableAccountForTodayStr = returnedArray[0]
+	var availableAccountsForTodayArray = returnedArray[1]
+	
+	var gotAccountDetailsObject = getAccountDetailsObject( availableAccountForTodayStr )
+	console.log(availableAccountForTodayStr, gotAccountDetailsObject );
+	
+	  var creditAvailOrNot = await checkApifyAccountCredit( gotAccountDetailsObject );
+	  if( creditAvailOrNot==true )
+	  {
+	  loopTrueFalse = false
+	   // console.log('Apify account credit status:', creditAvailOrNot);
+
+	  }
+	  else
+	  {
+		//creditAvailOrNot==true
+		checkedAccountForTodayStr = availableAccountForTodayStr
+	  }
+      
+	  //console.error('tempcount:', tempcount);
+	  
+	   if( tempcount==10 )
+	  {
+	  loopTrueFalse = false
+	  }
+	}
+      
+    } catch (error) {
+        console.error('Error:', error);
+    }
+	
+	console.log("got one account.. now we can start fetching data")
+	
+	
+}
+
+function saveObjectIntoGoogleDrive()
+{
+
+}
+
+getOneAccountToBeUsed();
+
+*/
+</script>
