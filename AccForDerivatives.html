@@ -14,20 +14,122 @@ body {
 
 <div>
 <br><br>
-
-nfilms30: Org (07 Aug (04:00:00 PM) Monday) <br>
-nfilms036: Org (01 Aug (04:00:00 PM) Tuesday) <br>
-newfilms71: Org (02 Aug (04:00:00 PM) Wednesday) <br>
-nfilms582: Org (03 Aug (04:00:00 PM) Thursday) <br>
-movieshub389: Org (04 Aug (04:00:00 PM) Friday) <br>
-movieshubs885: Org (05 Aug (04:00:00 PM) Saturday) <br>
-hubmovies62: Org (06 Aug (04:00:00 PM) Sunday) <br>
-
+<div id="accounts">
+nfilms30: Org0 (31 Jul (04:00:00 PM) Monday) <br>
+nfilms036: Org0 (01 Aug (04:00:00 PM) Tuesday) <br>
+newfilms71: Org0 (02 Aug (04:00:00 PM) Wednesday) <br>
+nfilms582: Org0 (03 Aug (04:00:00 PM) Thursday) <br>
+movieshub389: Org0 (04 Aug (04:00:00 PM) Friday) <br>
+movieshubs885: Org0 (05 Aug (04:00:00 PM) Saturday) <br>
+hubmovies62: Org0 (06 Aug (04:00:00 PM) Sunday) <br>
+</div>
 </div>
 
 <div id="ptag"></div>
 
 
+
+<script>
+var newAccounts = ''
+var accountsArray = document.getElementById('accounts').innerHTML.replace(/\n/g,'').split(' <br>')
+for(var i=0;i<accountsArray.length-1;i++)
+{
+	var accountStr = accountsArray[i]
+	var weeksPassed = calculateWeeks ( accountStr.split(' (')[1].split(' (')[0] + ' 2023' )
+	var newAccountStr ;
+	
+	var currentDay =  getCurrentDay()
+	if(  accountStr.includes(currentDay) ==true )
+	{
+		var str1 = 'Org' + weeksPassed + ' (' + getCurrentDate()  + ' (0' +  accountStr.split('0 (')[1].split('(0')[1]
+		var str2 = accountStr.split(':')[0] + ': <mark>' + str1+'</mark><br><br>'
+		var copyStr = 	 'navigator.clipboard.writeText(\''+str1+'\')'
+		newAccountStr = '<span onclick="'+copyStr+'">'+str2+'</span>'
+	}
+	else
+	{
+		var str1 = 'Org' + weeksPassed + ' (' + getCurrentDate()  + ' (0' +  accountStr.split('0 (')[1].split('(0')[1]
+		var str2 = accountStr.split(':')[0] + ': ' + str1+'<br><br>'
+		
+		//newAccountStr = accountStr.split(':')[0] + ': Org' + weeksPassed + ' (' + getCurrentDate()  + ' (0' +  accountStr.split('0 (')[1].split('(0')[1] +'<br>'
+		var copyStr = 	 'navigator.clipboard.writeText(\''+str1+'\')'
+		newAccountStr = '<span onclick="'+copyStr+'">'+str2+'</span>'
+	}
+	
+	newAccounts += newAccountStr 
+	console.log( newAccountStr )
+}
+
+document.getElementById('accounts').innerHTML = newAccounts
+
+function calculateWeeks( passedDateStr ) 
+{
+	// Define the specific date (July 31, 2023)
+//var specificDate = new Date('2023-07-31');
+var specificDate = new Date( passedDateStr );
+
+// Get the current date
+var currentDate = new Date();
+
+// Calculate the time difference in milliseconds
+var timeDiff = currentDate - specificDate;
+
+// Calculate the number of weeks
+var weeksPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24 * 7));
+
+//console.log(`Weeks passed since July 31, 2023: ${weeksPassed}`);
+
+return weeksPassed;
+}
+
+
+function getCurrentDate()
+{
+	function formatDate(date) {
+  var months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  var day = date.getDate();
+  var month = months[date.getMonth()];
+
+  return `${day < 10 ? '0' : ''}${day} ${month}`;
+}
+
+var currentDate = new Date();
+var formattedDate = formatDate(currentDate);
+//console.log(formattedDate); // Outputs something like "09 Aug"
+return formattedDate
+}
+
+function getCurrentDay()
+{
+function formatDate(date) {
+  var daysOfWeek = [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+  ];
+
+  var months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  var dayOfWeek = daysOfWeek[date.getDay()];
+  var day = date.getDate();
+  var month = months[date.getMonth()];
+
+  return `${dayOfWeek}, ${day < 10 ? '0' : ''}${day} ${month}`;
+}
+
+var currentDate = new Date();
+var formattedDate = formatDate(currentDate);
+formattedDate = formattedDate.split(',')[0]
+console.log(formattedDate); // Outputs something like "Monday, 09 Aug"
+return formattedDate
+}
+
+</script>
 
 <script>
 function capitalize(string) {
