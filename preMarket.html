@@ -161,6 +161,7 @@ async function getPreMarketData( passedValue )
 
 async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selectedTradingDate, selectedTimeValue, deliveryDataObj)
 {
+	console.log("deliveryDataObj",deliveryDataObj )
 	 document.getElementById('allPreOpenMarketColumnsContainer').innerHTML = "";
 
 	var preOpenMarketObject = dataObj
@@ -184,6 +185,8 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		var Symbol = sectorStockNamesObj['NIFTY_50'][s]
 		var stockValuesObj =preOpenMarketObject['data'] [ Symbol ]
 
+		if( deliveryDataObj["Symbols"][Symbol] != undefined )
+		{
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
 
@@ -199,6 +202,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+'</td><td>'
 		+ twentyDAV
 		+'</td></tr>'
+		}
 
 	}
 	NiftyTablesStr +=' </tbody> </table>    </div>  </div>'
@@ -212,6 +216,8 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 
 	for( var Symbol in preOpenMarketObject['data'] )
 	{
+		if( deliveryDataObj["Symbols"][Symbol] != undefined )
+		{
 		var stockValuesObj =preOpenMarketObject['data'] [ Symbol ]
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
@@ -229,7 +235,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+'</td><td>'
 		+ twentyDAV
 		+'</td></tr>'
-		
+		}
 
 
 
