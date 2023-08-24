@@ -142,6 +142,15 @@ body {
 
 <div class="row">
   <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="mostActiveFutStocksTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="mostActiveOptStocksTableContainer"></div> </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="column equityLeft" style="background-color:#aaa;">
     <div class="spaceBetweenTables">  	<div id="futuresDerivativesTableContainer"></div> </div>
   </div>
   <div class="column spurtsRight" style="background-color:#bbb;">
@@ -551,41 +560,15 @@ async function getAllDerivativesData( passedValue )
 async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj )
 {
 	
-	 document.getElementById('optOIGainersTableContainer').innerHTML = "";
-	 document.getElementById('optOILosersTableContainer').innerHTML = "";
-
-	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
-	//var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
-	//var niftyTotalMarketObject = equityDataObj ['data']
-
-
-	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
-	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
-	var theadStr = '<thead class="tableRowClass">   <tr>      '
-	+'<th>Symbol</th>'
-	+' <th>Type</th>'
-	+' <th>LTP</th>'
-	+'<th>Vol</th>   '
-	+'<th>Val</th>      '
-	+' <th>OI</th>'
-	+' <th>COI</th>      '
-	+' <th>%COI</th>      '
-	+' <th>PremTO</th>      '
-	//+' <th>TVol</th>      '
-	//+' <th>TO</th>      '
-
-	+' </tr></thead><tbody>'
-	var optOIGainersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optOIGainersTablesStr"><caption style="caption-side:top"> Option OI Gainers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
-	var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optOILosersTablesStr"><caption style="caption-side:top">Option OI Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
-	
-	
 	var optionsOIPerChngObj = {}
 	var optionsPricePerChngObj = {}
 	var optionsTurnoverObj = {}
+	var allOptionsTurnoverObj = {}
 	
 	var futuresOIPerChngObj = {}
 	var futuresPricePerChngObj = {}
 	var futuresTurnoverObj = {}
+	var allFuturesTurnoverObj = {}
 
 	for( var symbol in allDerivativesDataObj ) {
 
@@ -608,6 +591,17 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 		//optionsTurnoverObj [ symbol+'_'+identifier  ] = dataArray[8] // "totalTurnover/value"
 		optionsTurnoverObj [ symbol+'_'+identifier  ] = dataArray[7] // "numberOfContractsTraded/tradedVolume"
 		
+		if( allOptionsTurnoverObj [ symbol ]==undefined )
+		{
+			//allOptionsTurnoverObj [ symbol ] = Number( dataArray[7] )// "numberOfContractsTraded/tradedVolume"
+			allOptionsTurnoverObj [ symbol ] = Number( dataArray[8] )// "totalTurnover/value"
+		}
+		else{
+			//allOptionsTurnoverObj [ symbol ] += Number( dataArray[7] )// "numberOfContractsTraded/tradedVolume"
+			allOptionsTurnoverObj [ symbol ] += Number( dataArray[8] )// "totalTurnover/value"
+		}
+		
+		
 	}
 	else if( identifier.includes('FUTSTK')==true )
 	{
@@ -621,6 +615,16 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 		futuresPricePerChngObj [ symbol+'_'+identifier  ] = dataArray[5] // "pChange"
 		//futuresTurnoverObj [ symbol+'_'+identifier  ] = dataArray[8] // "totalTurnover/value"
 		futuresTurnoverObj [ symbol+'_'+identifier  ] = dataArray[7] // "numberOfContractsTraded/tradedVolume"
+
+		if( allFuturesTurnoverObj [ symbol ]==undefined )
+		{
+			//allFuturesTurnoverObj [ symbol ] = Number( dataArray[7] )// "numberOfContractsTraded/tradedVolume"
+			allFuturesTurnoverObj [ symbol ] = Number( dataArray[8] )// "totalTurnover/value"
+		}
+		else{
+			//allFuturesTurnoverObj [ symbol ] += Number( dataArray[7] )// "numberOfContractsTraded/tradedVolume"
+			allFuturesTurnoverObj [ symbol ] += Number( dataArray[8] )// "totalTurnover/value"
+		}
 		
 	}
 	}
@@ -641,6 +645,9 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	optionsTurnoverObj = Object.fromEntries( Object.entries(optionsTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
 	futuresTurnoverObj = Object.fromEntries( Object.entries(futuresTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
 	
+	allOptionsTurnoverObj = Object.fromEntries( Object.entries(allOptionsTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
+	allFuturesTurnoverObj = Object.fromEntries( Object.entries(allFuturesTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
+	
 	showOptOIGainersLosersStocks( selectedSpurtsTimeValue, selectedTradingDate, optionsOIPerChngObj )
 	showOptPricePerChngStocks( selectedSpurtsTimeValue, selectedTradingDate, optionsPricePerChngObj )
 	
@@ -650,12 +657,148 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	showOptMostActiveStocks( selectedSpurtsTimeValue, selectedTradingDate, optionsTurnoverObj )
 	showFutMostActiveStocks( selectedSpurtsTimeValue, selectedTradingDate, futuresTurnoverObj )
 	
+
+	showMostActiveOptStocks( selectedSpurtsTimeValue, selectedTradingDate, allOptionsTurnoverObj )
+	showMostActiveFutStocks( selectedSpurtsTimeValue, selectedTradingDate, allFuturesTurnoverObj )
+	
 	//console.log( optionsOIPerChngObj, futuresOIPerChngObj 	)
 	//console.log( optionsPricePerChngObj, futuresPricePerChngObj 	)
 	//console.log( optionsTurnoverObj, futuresTurnoverObj 	)
 	
 	// await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+
+async function showMostActiveOptStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	 document.getElementById('mostActiveOptStocksTableContainer').innerHTML = "";
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+	var allSymbolsLength = firestoreIndexObj[ selectedTradingDate ]['all_derivatives_index']['all_symbols'].length
+	var availableSymbolsLengthStr = Object.keys( passedDataObj ).length+' / '+allSymbolsLength
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>TO</th>'
+
+
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="mostActiveOptStocksTablesStr"><caption style="caption-side:top"> Most Active Opt Stocks | '+availableSymbolsLengthStr+' | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, data )
+	{
+
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ data.toFixed(0)
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		//var symbol = symbolStr.split('_')[0]
+		var symbol = symbolStr
+		//var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var data = passedDataObj[symbol]
+		//var identifier = symbolStr.split('_')[1]
+		//console.log( symbol )
+		optMostActiveTablesStr +=	returnDataStr( symbol, data )
+		
+		
+	}
+		
+
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('mostActiveOptStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+async function showMostActiveFutStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	 document.getElementById('mostActiveFutStocksTableContainer').innerHTML = "";
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+	var allSymbolsLength = firestoreIndexObj[ selectedTradingDate ]['all_derivatives_index']['all_symbols'].length
+	var availableSymbolsLengthStr = Object.keys( passedDataObj ).length+' / '+allSymbolsLength
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>TO</th>'
+
+
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="mostActiveFutStocksTablesStr"><caption style="caption-side:top"> Most Active Fut Stocks | '+availableSymbolsLengthStr+' | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, data )
+	{
+
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ data.toFixed(0)
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		//var symbol = symbolStr.split('_')[0]
+		var symbol = symbolStr
+		//var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var data = passedDataObj[symbol]
+		//var identifier = symbolStr.split('_')[1]
+		//console.log( symbol )
+		optMostActiveTablesStr +=	returnDataStr( symbol, data )
+		
+		
+	}
+		
+
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('mostActiveFutStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
 
 async function showOptMostActiveStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
 {
