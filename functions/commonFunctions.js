@@ -12,6 +12,7 @@ function saveSelectedValues()
 	"selectedCommonTimeValues":selectedCommonTimeValues,
 	}
 	
+	console.log( "saving seletced values",selectedValuesObj  )
 
 
 
@@ -73,6 +74,7 @@ function syncTimeValues( syncToTimeValuesArray, syncWith )
 			}
 			else if( timeToMinutes(timeValue) > timeToMinutes(syncWithTimeValue) )
 			{
+				//console.log( timeValue, syncWithTimeValue )
 				syncedTimeValue = tempPreviousTime
 				/*
 				document.getElementById("indices_performance_time").value = tempPreviousTime
