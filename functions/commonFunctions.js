@@ -12,7 +12,7 @@ function saveSelectedValues()
 	"selectedCommonTimeValues":selectedCommonTimeValues,
 	}
 	
-	console.log( "saving seletced values",selectedValuesObj  )
+	//console.log( "saving seletced values",selectedValuesObj  )
 
 
 
