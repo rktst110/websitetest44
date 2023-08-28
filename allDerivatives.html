@@ -677,7 +677,7 @@ async function showMostActiveOptStocks( selectedSpurtsTimeValue, selectedTrading
 
 	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
 
-	var allSymbolsLength = firestoreIndexObj[ selectedTradingDate ]['all_derivatives_index']['all_symbols'].length
+	var allSymbolsLength = firestoreIndexObj[ selectedTradingDate ]['all_derivatives_index']['all_symbols'].length-1
 	var availableSymbolsLengthStr = Object.keys( passedDataObj ).length+' / '+allSymbolsLength
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
@@ -742,7 +742,7 @@ async function showMostActiveFutStocks( selectedSpurtsTimeValue, selectedTrading
 
 	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
 
-	var allSymbolsLength = firestoreIndexObj[ selectedTradingDate ]['all_derivatives_index']['all_symbols'].length
+	var allSymbolsLength = firestoreIndexObj[ selectedTradingDate ]['all_derivatives_index']['all_symbols'].length-1
 	var availableSymbolsLengthStr = Object.keys( passedDataObj ).length+' / '+allSymbolsLength
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
