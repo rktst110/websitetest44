@@ -185,8 +185,9 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		var Symbol = sectorStockNamesObj['NIFTY_50'][s]
 		var stockValuesObj =preOpenMarketObject['data'] [ Symbol ]
 
-		if( deliveryDataObj["Symbols"][Symbol] != undefined )
+		if( deliveryDataObj["Symbols"][Symbol] != undefined && stockValuesObj != undefined )
 		{
+
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
 
@@ -218,6 +219,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 	{
 		if( deliveryDataObj["Symbols"][Symbol] != undefined )
 		{
+		
 		var stockValuesObj =preOpenMarketObject['data'] [ Symbol ]
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
