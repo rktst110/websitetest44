@@ -246,6 +246,7 @@ async function getIndicesData( passedValue )
 
 async function showIndicesPerformanceChart ( returnedDataObj )
 {
+	//console.log("indices data", returnedDataObj)
 	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
 	//var selectedValue = document.getElementById("indices_performance_time").value;
 		
@@ -584,7 +585,7 @@ async function getSectorsStocksData( passedValue )
 show_market_strength_charts_Data( JSON.parse( equityDataObj['data'] ), selectedTradingDate, selectedTimeValue )
 }
 
-
+var tempMyObj;
 async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, selectedTimeValue, deliveryDataObj )
 {
 
@@ -593,15 +594,16 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 	var selectedValue = selectedTimeValue;
 
 	var niftyTotalMarketObject = equityDataObj['data']
-	
-	
+	console.log( "niftyTotalMarketObject",niftyTotalMarketObject )
+	tempMyObj = niftyTotalMarketObject
 		var tempObj = {};
 		
 		if( sectorStockNamesObj !=undefined )
 		{
 			for (var sector in sectorStockNamesObj ) {
 				var sectorName = sector.replace(/ /g,'_') 
-				if( sectorName!='Template' )
+				//if( sectorName=='FnO' || sectorName!='Template' && sectorName!='NIFTY_TOTAL_MKT' && sectorStockNamesObj[sector].length<150  )
+				if( sectorName=='FnO' || sectorName=='NIFTY_50' || sectorName=='NIFTY_AUTO' || sectorName=='NIFTY_BANK' || sectorName=='NIFTY_COMMODITIES' || sectorName=='NIFTY_CONSR_DURBL' || sectorName=='NIFTY_ENERGY' || sectorName=='NIFTY_FINSRV25_50' || sectorName=='NIFTY_FIN_SERVICE' || sectorName=='NIFTY_FMCG' || sectorName=='NIFTY_HEALTHCARE' || sectorName=='NIFTY_INFRA' || sectorName=='NIFTY_IT' || sectorName=='NIFTY_MEDIA' || sectorName=='NIFTY_METAL' || sectorName=='NIFTY_MIDCAP_100' || sectorName=='NIFTY_MIDCAP_150' || sectorName=='NIFTY_MIDCAP_50' || sectorName=='NIFTY_MID_SELECT' || sectorName=='NIFTY_OIL_AND_GAS' || sectorName=='NIFTY_PHARMA' || sectorName=='NIFTY_PSE' || sectorName=='NIFTY_PSU_BANK' || sectorName=='NIFTY_PVT_BANK' || sectorName=='NIFTY_REALTY' || sectorName=='NIFTY_SERV_SECTOR' )
 				{
 					for (var s = 0; s < sectorStockNamesObj[sector].length; s++) {
 						var Symbol = sectorStockNamesObj[sector][s].replace(/&amp;/g,'&')
