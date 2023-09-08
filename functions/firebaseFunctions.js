@@ -287,6 +287,81 @@ async function fetchSectorStockNamesCollectionData( collectionPath ) {
   }
 }
 
+async function fetchIndicesSectorStockNamesCollectionData( collectionPath ) {
+
+	  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+
+	var localStorageForSectorStockNames = localStorage.getItem('sectorStockNames')
+	if( localStorageForSectorStockNames!=null && JSON.parse(localStorageForSectorStockNames) [collectionPath]!=undefined )
+	{
+		 var sectorStockNamesObj = {};
+		var allDocsDataObj = JSON.parse(localStorageForSectorStockNames) [collectionPath]
+		console.log("getting from localstorage")
+		/*
+		for( var sector in allDocsDataObj )
+		{
+			var symbolsArray = allDocsDataObj[sector]['Symbols']
+			if( symbolsArray==undefined )
+			{
+				symbolsArray = Object.keys( allDocsDataObj[sector]['data'] )
+			}
+		  sectorStockNamesObj[ sector ] = symbolsArray.sort() ;
+		  //console.log( symbolsArray )
+		}
+		*/
+		return allDocsDataObj;
+	}
+	else {
+  var collectionRef = db.collection(collectionPath);
+  var sectorStockNamesObj = {};
+
+  try {
+    const querySnapshot = await collectionRef.get();
+	var allDocsDataObj = {}
+    querySnapshot.forEach(function(doc) {
+		var docData = JSON.parse(doc.data()['data'])
+		var symbolsArray = docData['Symbols']
+		if( symbolsArray==undefined )
+		{
+			symbolsArray = Object.keys( docData['data'] )
+		}
+		allDocsDataObj [doc.id] = docData
+      //sectorStockNamesObj[doc.id] = symbolsArray.sort() ;
+      sectorStockNamesObj[doc.id] = docData;
+	  //console.log( symbolsArray )
+	  
+    });
+	
+  
+          // Attempt to update localStorage and handle quota exceeded error (Starts Here)
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+               //localStorage.setItem('sectorStockNames', JSON.stringify( {[collectionPath]:sectorStockNamesObj} ));
+               localStorage.setItem('sectorStockNames', JSON.stringify( {[collectionPath]:allDocsDataObj} ));
+              break; // Successfully stored the new entry
+            } catch (e) {
+				document.getElementById('messages').innerHTML = e;
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              currentAttempt++;
+            }
+          }
+		// Attempt to update localStorage and handle quota exceeded error (Ends Here)
+	
+    return sectorStockNamesObj;
+  } catch (error) {
+    console.log("Error getting documents: ", error);
+    return null;
+  }
+  }
+}
+
 async function fetchDeliveryDataDocData_Previous_28May2023(docPath) {
 
 	var localStorageForDeliveryData = localStorage.getItem('deliveryData')

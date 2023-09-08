@@ -302,7 +302,8 @@ function clickOnVolumeAutomatically()
 
 		if( tableId=='onlySpurtsOIUnderlyingsTableStr' ) 
 		{
-		if( th.innerText.includes('TO/OI') )
+		//if( th.innerText.includes('TO/OI') )
+		if( th.innerText.includes('EQ TO') )
 		{
 			th.click()
 		}
@@ -355,6 +356,15 @@ function clickOnVolumeAutomatically()
 		{
 			th.click()
 		}
+		
+		if( window.location.href.toLocaleLowerCase().includes('nseindices')==true ) 
+		{
+		if( th.innerText=='PTS' )
+		{
+			th.click()
+		}
+		}
+		
 		
 		
 		
