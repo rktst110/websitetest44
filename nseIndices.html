@@ -263,7 +263,9 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 	for (var symbol in indicesPerformanceObject) {
 		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
 		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
-		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY TOTAL MKT'  )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY 100' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' )
 		{
 		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
 		}
@@ -549,6 +551,7 @@ tempSectorStoreValue=searchStr
 
 <script>
 var sectorStockNamesObj;
+var IndicesSectorStockNamesObj ;
 function setEquitySelectorTimeValues( passedValue )
 {
 	var tradingDate = document.getElementById('tradingDate').value
@@ -576,6 +579,7 @@ async function getSectorsStocksData( passedValue )
 	
 	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
 	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	IndicesSectorStockNamesObj = await fetchIndicesSectorStockNamesCollectionData( collectioPath )
 	
 	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
 	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
@@ -584,6 +588,7 @@ async function getSectorsStocksData( passedValue )
 	showEquitySectorsStocksData ( JSON.parse( equityDataObj['data'] ), selectedTradingDate, selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
 show_market_strength_charts_Data( JSON.parse( equityDataObj['data'] ), selectedTradingDate, selectedTimeValue )
 }
+
 
 async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, selectedTimeValue, deliveryDataObj )
 {
@@ -597,15 +602,19 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 
 		var tempObj = {};
 		
-		if( sectorStockNamesObj !=undefined )
+		if( IndicesSectorStockNamesObj !=undefined )
 		{
-			for (var sector in sectorStockNamesObj ) {
+			for (var sector in IndicesSectorStockNamesObj ) {
 				var sectorName = sector.replace(/ /g,'_') 
+				console.log(sectorName )
 				//if( sectorName=='FnO' || sectorName!='Template' && sectorName!='NIFTY_TOTAL_MKT' && sectorStockNamesObj[sector].length<150  )
-				if( sectorName=='FnO' || sectorName=='NIFTY_50' || sectorName=='NIFTY_AUTO' || sectorName=='NIFTY_BANK' || sectorName=='NIFTY_COMMODITIES' || sectorName=='NIFTY_CONSR_DURBL' || sectorName=='NIFTY_ENERGY' || sectorName=='NIFTY_FINSRV25_50' || sectorName=='NIFTY_FIN_SERVICE' || sectorName=='NIFTY_FMCG' || sectorName=='NIFTY_HEALTHCARE' || sectorName=='NIFTY_INFRA' || sectorName=='NIFTY_IT' || sectorName=='NIFTY_MEDIA' || sectorName=='NIFTY_METAL' || sectorName=='NIFTY_MIDCAP_100' || sectorName=='NIFTY_MIDCAP_150' || sectorName=='NIFTY_MIDCAP_50' || sectorName=='NIFTY_MID_SELECT' || sectorName=='NIFTY_OIL_AND_GAS' || sectorName=='NIFTY_PHARMA' || sectorName=='NIFTY_PSE' || sectorName=='NIFTY_PSU_BANK' || sectorName=='NIFTY_PVT_BANK' || sectorName=='NIFTY_REALTY' || sectorName=='NIFTY_SERV_SECTOR' )
+				if(  sectorName=='NIFTY_50' || sectorName=='NIFTY_AUTO' || sectorName=='NIFTY_BANK' || sectorName=='NIFTY_COMMODITIES' || sectorName=='NIFTY_CONSR_DURBL' || sectorName=='NIFTY_ENERGY' || sectorName=='NIFTY_FIN_SERVICE' || sectorName=='NIFTY_FMCG' || sectorName=='NIFTY_HEALTHCARE' || sectorName=='NIFTY_INFRA' || sectorName=='NIFTY_IT' || sectorName=='NIFTY_MEDIA' || sectorName=='NIFTY_METAL' || sectorName=='NIFTY_NEXT_50' || sectorName=='NIFTY_MIDCAP_100' || sectorName=='NIFTY_MIDCAP_150' || sectorName=='NIFTY_MIDCAP_50' || sectorName=='NIFTY_MID_SELECT' || sectorName=='NIFTY_OIL_AND_GAS' || sectorName=='NIFTY_PHARMA' || sectorName=='NIFTY_PSE' || sectorName=='NIFTY_PSU_BANK' || sectorName=='NIFTY_PVT_BANK' || sectorName=='NIFTY_REALTY' || sectorName=='NIFTY_SERV_SECTOR' || sectorName=='NIFTY_MIDCAP_50' || sectorName=='NIFTY_MIDCAP_100' || sectorName=='NIFTY_SMLCAP_100' || sectorName=='NIFTY_MIDCAP_150' || sectorName=='NIFTY_SMLCAP_50' || sectorName=='NIFTY_SMLCAP_250' || sectorName=='NIFTY_LARGEMID250' || sectorName=='NIFTY_MICROCAP250')
+				//if(  sectorName=='NIFTY_50' || sectorName=='NIFTY_AUTO' || sectorName=='NIFTY_BANK' || sectorName=='NIFTY_COMMODITIES' || sectorName=='NIFTY_CONSR_DURBL' || sectorName=='NIFTY_ENERGY' || sectorName=='NIFTY_FIN_SERVICE' || sectorName=='NIFTY_FMCG' || sectorName=='NIFTY_HEALTHCARE' || sectorName=='NIFTY_INFRA' || sectorName=='NIFTY_IT' || sectorName=='NIFTY_MEDIA' || sectorName=='NIFTY_METAL' || sectorName=='NIFTY_MIDCAP_100' || sectorName=='NIFTY_MIDCAP_150' || sectorName=='NIFTY_MIDCAP_50' || sectorName=='NIFTY_MID_SELECT' || sectorName=='NIFTY_OIL_AND_GAS' || sectorName=='NIFTY_PHARMA' || sectorName=='NIFTY_PSE' || sectorName=='NIFTY_PSU_BANK' || sectorName=='NIFTY_PVT_BANK' || sectorName=='NIFTY_REALTY' || sectorName=='NIFTY_SERV_SECTOR' || sectorName=='NIFTY_NEXT_50' || sectorName=='NIFTY_100' || sectorName=='NIFTY_200' || sectorName=='NIFTY_500' || sectorName=='NIFTY_MIDCAP_50' || sectorName=='NIFTY_MIDCAP_100' || sectorName=='NIFTY_SMLCAP_100' || sectorName=='NIFTY_MIDCAP_150' || sectorName=='NIFTY_SMLCAP_50' || sectorName=='NIFTY_SMLCAP_250' || sectorName=='NIFTY_MIDSML_400' || sectorName=='NIFTY500_MULTICAP' || sectorName=='NIFTY_LARGEMID250' || sectorName=='NIFTY_MICROCAP250')
 				{
-					for (var s = 0; s < sectorStockNamesObj[sector].length; s++) {
-						var Symbol = sectorStockNamesObj[sector][s].replace(/&amp;/g,'&')
+				var symbolsArray = Object.keys(IndicesSectorStockNamesObj[ sector ]['data'])
+					//for (var s = 0; s < sectorStockNamesObj[sector].length; s++) {
+					for (var s = 0; s < symbolsArray.length; s++) {
+						var Symbol = symbolsArray[s].replace(/&amp;/g,'&')
 						var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
 						if ( symbolArray != undefined) // if sector name does not exist then create empty object with sector name
 						{
@@ -643,7 +652,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 			}
 		}
 	
-		//console.log( "Sector stocks in Total Equity Market", tempObj )
+		console.log( "Sector stocks in Total Equity Market", tempObj )
 	
 	var tablesStr=''
 	//for (var sector in niftyTotalMarketObject) {
@@ -661,7 +670,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 		+'">            <caption style="caption-side:top">'
 	 +sector
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            <th class="NiftyTotalMarketClass">PTS</th>			</tr> </thead>'
        +'<tbody>'
 		}
 		else
@@ -671,7 +680,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 		+'">            <caption style="caption-side:top">'
 	 +sector.replace(/NIFTY_/g,'')
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>                <th class="NiftyTotalMarketClass">PTS</th>            </tr> </thead>'
        +'<tbody>'
 		}
 	   
@@ -687,9 +696,14 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
-
+	
+	var indexDivisor = IndicesSectorStockNamesObj[ sector ]['indexDivisor']
+	var symbolSharesData = IndicesSectorStockNamesObj[ sector ]['data'][Symbol]
+	var pointsContribuation = ( symbolArray["change"] * symbolSharesData['sharesOutstanding'] * symbolSharesData['investableWeightFactor'] * symbolSharesData['cappingFactor'] ) / indexDivisor
+	//var pointsContribuation = ( symbolArray["change"] * symbolSharesData['sharesOutstanding'] * symbolSharesData['investableWeightFactor'] ) / indexDivisor
+		 //(data[i]['iislPtsChange']*data[i]['sharesOutstanding']*data[i]['investableWeightFactor']*data[i]['cappingFactor'] )/data[i]['indexDivisor'] 
 		
-			//if( symbolArray[4]>=60 )
+		//if( symbolArray[4]>=60 )
 			{
 			 tablesStr +='<tr class="item"><td>'
 			 +Symbol
@@ -699,7 +713,9 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 			 +symbolArray["lastPrice"] 
 			 //+(symbolArray["totalTradedValue"] / 100000).toFixed(0) //totalTradedVolume
 			  +'</td><td>'
-			+twentyDAV
+			+twentyDAV  
+			+'</td><td>'
+			+pointsContribuation.toFixed(2)
 			 +'</td></tr>'
 			}
 		}
