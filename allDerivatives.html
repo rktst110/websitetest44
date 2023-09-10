@@ -114,6 +114,11 @@ body {
 </select>
 
 &nbsp; | &nbsp;&nbsp;
+ <label> Spurts TimeValues:</label>
+<select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
  <label> Derivatives TimeValues:</label>
 <select id="derivativesTimeValues" onchange="getAllDerivativesData()">
 </select>
@@ -219,6 +224,7 @@ body {
 function fetchDataForAllSegments()
 {
 setIndicesSelectorTimeValues( "syncWithCommonTime" );
+setSpurtsSelectorTimeValues( "syncWithCommonTime" )
 setDerivativesSelectorTimeValues( "syncWithCommonTime" )
 }
 </script>
@@ -479,6 +485,626 @@ function onClick(e) {
 
 </script>
 <!-- Indices Code Ends Here -->
+
+
+
+<!-- Spurts-Equity Code Starts Here -->
+
+<style>    .spaceBetweenTables { border: 2px solid #4b4d4e;height: 518px;overflow-y: scroll;background-color: #32373a; }     .greenHeaderClass{   color: #ffffff;   background: #27ae60;   } .blueHeaderClass{   color: #ffffff;   background: #3a7dd4;    }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	</style>
+
+
+<script>
+var dataObjectForHeatChart={}
+var sectorStockNamesObj = {}
+var allBanksStocksObj ={}
+
+function setSpurtsSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['spurts_in_open_interest_by_underlyings']
+	var selectElementRef = document.getElementById("spurtsTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSpurtsEquityData )
+}
+
+
+async function getSpurtsEquityData( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	
+	var selectedSpurtsTimeRef = document.getElementById('spurtsTimeValues')
+	var selectedSpurtsTimeValue = selectedSpurtsTimeRef.value
+
+	var docPathForSpurts = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValue
+	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
+	
+	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
+	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	
+	
+	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
+	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedSpurtsTimeValue )
+	//var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/ALL/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	
+	//console.log( "docPathForEquity", docPathForEquity )
+	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
+	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	//console.log( "deliveryDataObj",JSON.parse( deliveryDataObj['data'] ) )
+	
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	//await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	
+	addEventListnerInTables()
+}
+
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
+{
+	 //document.getElementById('equityDataTableContainer').innerHTML = "";
+	
+	var selectedValue = selectedSpurtsTimeValue
+	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
+	
+	var niftyTotalMarketObject = equityDataObj['data']
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+
+//console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+
+		var tempObj = {};
+
+	
+	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Intraday Hike | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
+	  +'<th>Symbol</th>'
+	  +' <th>Chg%</th>'
+	   +' <th>LTP</th>'
+	  +' <th>T.O.</th>'
+	 +' <th>Money</th>'
+	  +' <th>20DAV</th>'
+	  +' </tr> </thead> <tbody>'
+
+		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
+		if( Symbol.includes('NIFTY')==false )
+		{
+		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+	
+	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
+	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
+	
+	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
+	 
+	  var rankForHeatMap = WFactor
+	  
+		//this block of code is for sectors heatMap chart. (START)
+		//this block adds stocks in a object with few values. this code was written on 7-Jan-2023
+		{
+			//dataObjectForHeatChart["selectedTime"] =selectedValue.value
+			dataObjectForHeatChart["selectedTime"] =selectedValue
+			dataObjectForHeatChart["selectedTradingDate"] =selectedTradingDate
+		   var colorValue;
+		   var dataLabelFontColor="white";
+		   
+		if(symbolArray["pChange"]>=0)
+	   {
+		   if( symbolArray["pChange"]>=0 && symbolArray["pChange"]<=0.5)
+		   {
+			   colorValue = '#7cb67e' 
+			  // dataLabelFontColor="black"
+		   }
+		   else if( symbolArray["pChange"]>0.5 && symbolArray["pChange"]<=1)
+		   {
+			   colorValue = '#6cac6e'
+		   } 
+		   else if( symbolArray["pChange"]>1 && symbolArray["pChange"]<=2)
+		   {
+			    colorValue = '#5ca35e'
+		   }
+		   else if( symbolArray["pChange"]>2)
+		   {
+			   colorValue = '#539355'
+		   }
+			   
+		  
+		   dataObjectForHeatChart[Symbol] ={
+			  parent: 'Green',
+			 name: Symbol,
+			 pChange:symbolArray["pChange"],
+			 value: Number(rankForHeatMap),
+			 //colorValue: Number(symbolArray["pChange"])
+			 color: colorValue,
+			 
+			 dataLabels: {
+				 shadow: false,
+				 color: dataLabelFontColor //data label font color
+				 //format: '{name pChange} %'
+			 }
+		 }
+		   
+		 
+	   }
+	   else
+	   {
+		   if( symbolArray["pChange"]>=-0.5 && symbolArray["pChange"]<0)
+		   {
+			   colorValue = '#d4777a'
+			   //dataLabelFontColor="black"
+		   }
+		   else if( symbolArray["pChange"]>-1 && symbolArray["pChange"]<=-0.5)
+		   {
+			   colorValue = '#ce6467'
+		   }
+		   else if( symbolArray["pChange"]>-2 && symbolArray["pChange"]<=-1)
+		   {
+			   colorValue = '#ca575a'
+		   }
+		   else if( symbolArray["pChange"]>-2)
+		   {
+			   colorValue = '#c85155'
+		   }
+			   
+			 dataObjectForHeatChart[Symbol] ={
+			  parent: 'Red',
+			 name: Symbol,
+			 pChange:symbolArray["pChange"],
+			 value: Number(rankForHeatMap),
+			 //colorValue: Number(symbolArray["pChange"])
+			 color: colorValue,
+			 
+			 dataLabels: {
+				  shadow: false,
+				 color: dataLabelFontColor, //data label font color
+				 //format: '{name pChange} %'
+			 }
+		 }
+		  
+		  
+	   }
+		
+		}	   	//this block of code is for sectors heatMap chart. (END)
+		  
+		  
+		  
+		{
+			onlyEquityTableStr +='<tr class="item"><td>'
+			 +Symbol
+			 +'</td><td>'
+			+ symbolArray['pChange']  //pchange
+			 +'</td><td>'
+			 +symbolArray['lastPrice']  //lastPrice
+			 +'</td><td>'
+			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		 +'</td><td>'
+		 + WFactor
+		+'</td><td>'
+		+ twentyDAV
+		+'</td></tr>'
+			
+		
+		}
+	}
+		} //for Loop ENDS HERE
+		
+		onlyEquityTableStr +=' </tbody> </table>    </div>  </div>'
+		
+	//document.getElementById('equityDataTableContainer').innerHTML = onlyEquityTableStr
+	 //addEventListnerInTables()
+	 add_Sectors_In_HeatMapSelector( )
+}	//	show_volume_value_spike_Data() Function ENDS HERE
+
+
+function add_Sectors_In_HeatMapSelector( )
+{
+	//console.log( "sectorStockNamesObj", sectorStockNamesObj)
+	
+	if( sectorStockNamesObj !=undefined)
+	{
+	if( document.getElementById("heatMapSectorSelector").getElementsByTagName('option').length <=1 )
+	{
+	document.getElementById("heatMapSectorSelector").innerHTML = "";
+	
+	var option = document.createElement("option");
+	option.value = "ALL BANKS";
+	option.text = "ALL BANKS";
+	document.getElementById("heatMapSectorSelector").add(option);
+	
+	
+	for ( var sectorName in sectorStockNamesObj ) {
+		
+		if( sectorName != 'Template' )
+		{
+		var option = document.createElement("option");
+		option.value = sectorName;
+		option.text = sectorName;
+		document.getElementById("heatMapSectorSelector").add(option);
+		}
+	}
+	//document.getElementById('heatMapSectorSelector').value=document.getElementById('heatMapSectorSelector').getElementsByTagName('option')[2].value
+	document.getElementById('heatMapSectorSelector').value="NIFTY_50"
+	}
+	
+	//showHeatMapChart(sectorStockNamesObj)
+	showHeatMapChart()
+	}
+	
+} // add_Sectors_In_HeatMapSelector() ENDS HERE
+
+async function showHeatMapChart( )
+{
+	await setHighChartsDarkTheme()
+	var sectorDataArrayForHeatChart=[{
+      id: 'Green',
+      //name: 'Green',
+      color: "#EC2500"
+    }, {
+      id: 'Red',
+      //name: 'Red',
+      color: "#ECE100"
+    }]
+	
+	var heatMapSectorSelected = document.getElementById("heatMapSectorSelector").value
+	var sectorStockArray;
+	if( heatMapSectorSelected=='ALL BANKS' )
+	{
+		
+		for( var sector in sectorStockNamesObj )
+		{
+			if( sector.includes('BANK')==true )
+			{
+				var sectorStockArray = sectorStockNamesObj [sector]
+				for( var s=0;s<sectorStockArray.length;s++)
+				{
+					var Symbol = sectorStockArray [s]
+					allBanksStocksObj [Symbol] = 1
+				}
+				
+			}
+		}
+		
+		sectorStockArray = Object.keys(allBanksStocksObj)
+	}
+	else {
+	sectorStockArray = sectorStockNamesObj [heatMapSectorSelected] 
+	}
+	for( var s=0;s<sectorStockArray.length;s++)
+	{
+		var Symbol = sectorStockArray [s]
+		//console.log(Symbol)
+		if( dataObjectForHeatChart[Symbol] !=undefined )
+		{
+			sectorDataArrayForHeatChart.push( dataObjectForHeatChart[Symbol] )
+		}
+	}
+	//console.log("sectorDataArrayForHeatChart", sectorDataArrayForHeatChart)
+	
+	
+var H = Highcharts
+H.addEvent(H.Legend, 'afterGetAllItems', function(e) {
+  e.allItems.splice(2, 6);
+});
+
+H.chart('heatMapContainer', {
+  colorAxis: {
+      stops: [
+       
+	  [0, '#ff0000'],//red
+      [0.5, '#fff'], // white
+      [1, '#02ff00']//green
+	  
+    ],
+  },
+  legend: {
+      enabled: false
+    },
+  series: [{
+	animation: false,
+	borderWidth: 0.25,
+    //borderColor: '#fff',
+    borderColor: '#4b4b4c',
+    colorAxis: 0,
+    legendType: 'point',
+    showInLegend: false,
+    type: "treemap",
+    layoutAlgorithm: 'squarified',
+    alternateStartingDirection: true,
+    levels: [{
+      level: 1,
+      layoutAlgorithm: 'sliceAndDice',
+      dataLabels: {
+        enabled: false,
+        align: 'left',
+        verticalAlign: 'top',
+        style: {
+          fontSize: '15px',
+          fontWeight: 'bold'
+        }
+      }
+    }],
+    data: sectorDataArrayForHeatChart,
+	
+  dataLabels: {
+		enabled: true,
+                format: '{point.name} <br> {point.value}',
+			 },
+			 
+			  events: {
+                    click: function (event) {
+                        //console.log(event.point.name);
+						copyHeatMapList( heatMapSectorSelected, event.point.parent )
+                    }
+                }
+  }],
+  tooltip: {
+            //headerFormat: 'Temperature<br/>',
+            pointFormat: '{point.name} <br> pChange: {point.pChange} <br> Rank: {point.value}'
+        },
+	
+  title: {
+    //text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTime"] +' | '+ mainOIDataObject['Date'],
+    text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTradingDate"] +' | '+ dataObjectForHeatChart["selectedTime"],
+	   style: {
+                    //color: 'red',
+                    fontSize:'15px'
+                }
+  }
+});
+
+}
+
+function setHighChartsDarkTheme()
+{
+
+	Highcharts.theme = {
+    colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
+        '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+    chart: {
+        backgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+            stops: [
+                [0, '#2a2a2b'],
+                [1, '#3e3e40']
+            ]
+        },
+        style: {
+     
+        },
+        plotBorderColor: '#606063'
+    },
+    title: {
+        style: {
+            color: '#E0E0E3',
+            textTransform: 'uppercase',
+            fontSize: '20px'
+        }
+    },
+    subtitle: {
+        style: {
+            color: '#E0E0E3',
+            textTransform: 'uppercase'
+        }
+    },
+    xAxis: {
+        gridLineColor: '#707073',
+        labels: {
+            style: {
+                color: '#E0E0E3'
+            }
+        },
+        lineColor: '#707073',
+        minorGridLineColor: '#505053',
+        tickColor: '#707073',
+        title: {
+            style: {
+                color: '#A0A0A3'
+            }
+        }
+    },
+    yAxis: {
+        gridLineColor: '#707073',
+        labels: {
+            style: {
+                color: '#E0E0E3'
+            }
+        },
+        lineColor: '#707073',
+        minorGridLineColor: '#505053',
+        tickColor: '#707073',
+        tickWidth: 1,
+        title: {
+            style: {
+                color: '#A0A0A3'
+            }
+        }
+    },
+    tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        style: {
+            color: '#F0F0F0'
+        }
+    },
+    plotOptions: {
+        series: {
+            dataLabels: {
+                color: '#F0F0F3',
+                style: {
+                    fontSize: '12px'
+                }
+            },
+            marker: {
+                lineColor: '#333'
+            }
+        },
+        boxplot: {
+            fillColor: '#505053'
+        },
+        candlestick: {
+          
+        },
+        errorbar: {
+            
+        }
+    },
+    legend: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        itemStyle: {
+            color: '#E0E0E3'
+        },
+        itemHoverStyle: {
+            color: '#FFF'
+        },
+        itemHiddenStyle: {
+            color: '#606063'
+        },
+        title: {
+            style: {
+                color: '#C0C0C0'
+            }
+        }
+    },
+    credits: {
+        style: {
+            color: '#666'
+        }
+    },
+    labels: {
+        style: {
+            color: '#707073'
+        }
+    },
+    drilldown: {
+        activeAxisLabelStyle: {
+            color: '#F0F0F3'
+        },
+        activeDataLabelStyle: {
+            color: '#F0F0F3'
+        }
+    },
+    navigation: {
+        buttonOptions: {
+            symbolStroke: '#DDDDDD',
+            theme: {
+                fill: '#505053'
+            }
+        }
+    },
+    // scroll charts
+    rangeSelector: {
+        buttonTheme: {
+            fill: '#505053',
+            stroke: '#000000',
+            style: {
+              
+            },
+            states: {
+                hover: {
+                    fill: '#707073',
+                    stroke: '#000000',
+                    style: {
+                      
+                    }
+                },
+                select: {
+                    fill: '#000003',
+                    stroke: '#000000',
+                    style: {
+                        
+                    }
+                }
+            }
+        },
+        inputBoxBorderColor: '#505053',
+        inputStyle: {
+            backgroundColor: '#333',
+            color: 'silver'
+        },
+        labelStyle: {
+            color: 'silver'
+        }
+    },
+    navigator: {
+        handles: {
+            backgroundColor: '#666',
+            borderColor: '#AAA'
+        },
+        outlineColor: '#CCC',
+        maskFill: 'rgba(255,255,255,0.1)',
+        series: {
+            color: '#7798BF',
+            lineColor: '#A6C7ED'
+        },
+        xAxis: {
+            gridLineColor: '#505053'
+        }
+    },
+    scrollbar: {
+        barBackgroundColor: '#808083',
+        barBorderColor: '#808083',
+        buttonArrowColor: '#CCC',
+        buttonBackgroundColor: '#606063',
+        buttonBorderColor: '#606063',
+        rifleColor: '#FFF',
+        trackBackgroundColor: '#404043',
+        trackBorderColor: '#404043'
+    }
+};
+	// Apply the theme
+	Highcharts.setOptions(Highcharts.theme);
+
+}
+
+
+function copyHeatMapList( heatMapSectorSelected, greenOrRed )
+{
+	var symbolObject ={}
+	var sectorStockArray;
+	if( heatMapSectorSelected=='ALL BANKS' )
+	{
+		sectorStockArray = Object.keys(allBanksStocksObj)
+	}
+	else {
+	sectorStockArray = sectorStockNamesObj[heatMapSectorSelected]
+	}
+	
+	for( var s=0;s<sectorStockArray.length;s++)
+	{
+		var Symbol = sectorStockArray [s]
+		//console.log(Symbol)
+		if( dataObjectForHeatChart[Symbol] !=undefined )
+		{
+			if( dataObjectForHeatChart[Symbol]["parent"]==greenOrRed )
+				symbolObject[Symbol] = dataObjectForHeatChart[Symbol]["value"] //symbol's rank
+		}
+	}
+	
+	var stockNames=''
+	stockNames= ( 'NSE:'+dataObjectForHeatChart["selectedTime"] +'_'+ heatMapSectorSelected+',' ).replace(/ /g,'_')
+	
+	Object.keys(symbolObject).sort((a,b) => symbolObject[b]-symbolObject[a]).forEach((symbol) => {    	//  descending sort
+		stockNames +='NSE:'+symbol.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +','
+	});
+
+	
+	
+	navigator.clipboard.writeText(stockNames);
+}
+
+
+</script>
+<!-- Spurts-Equity Code Ends Here -->
 
 
 
