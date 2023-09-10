@@ -9,11 +9,26 @@ async function fetchDerivativesCollectionDataOnly( collectionPath )
     var snapshot = await firebase.firestore().collection( collectionPath ).get()
     var documents = {};
    snapshot.forEach(doc => {
+	    var fetchedData = doc.data()
+	   //console.log("doc.data()",fetchedData)
+	  if(fetchedData['data']!=undefined)
+	  {
+		   documents[doc.id] = fetchedData;
+	  }
+	  else
+	  {
+		  for( var symbol in fetchedData )
+		  {
+			  documents[symbol] = {
+				  "data": fetchedData[symbol]
+			  }
+		  }
+	  }
       // var document = { [doc.id]: doc.data() };
        //documents.push(document);
-	   documents[doc.id] =doc.data() ;
+	  
     })
-    	console.log( documents )
+    	//console.log( documents )
     return documents;
 	
 }
