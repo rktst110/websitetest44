@@ -661,7 +661,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 		+'">            <caption style="caption-side:top">'
 	 +sector
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>               <th class="NiftyTotalMarketClass">RFac</th>            </tr> </thead>'
        +'<tbody>'
 		}
 		else
@@ -671,7 +671,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 		+'">            <caption style="caption-side:top">'
 	 +sector.replace(/NIFTY_/g,'')
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>			   <th class="NiftyTotalMarketClass">LTP</th>               <th class="NiftyTotalMarketClass">20DAV</th>               <th class="NiftyTotalMarketClass">RFac</th>            </tr> </thead>'
        +'<tbody>'
 		}
 	   
@@ -687,7 +687,8 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
-
+	var rFactor = Number (symbolArray["pChange"] )*( symbolArray["totalTradedValue"]  / average20DaysValue)
+	
 		
 			//if( symbolArray[4]>=60 )
 			{
@@ -699,7 +700,9 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 			 +symbolArray["lastPrice"] 
 			 //+(symbolArray["totalTradedValue"] / 100000).toFixed(0) //totalTradedVolume
 			  +'</td><td>'
-			+twentyDAV
+			+twentyDAV 
+			+'</td><td>'
+			+rFactor.toFixed(3)
 			 +'</td></tr>'
 			}
 		}
