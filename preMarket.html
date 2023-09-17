@@ -111,6 +111,28 @@ body {
 <br><br><br><br>
 <!--Content Ends Here-->
 
+
+
+<!--Indices Content Start From Here-->
+<div class="row">
+  <div class="column left" style="background-color:#aaa;">
+  
+ <div id="IndicesWith20DAVChart" style="min-height: 520px; height: auto;width: 100%;"></div>
+   <br>
+   </div>
+  <div class="column right" style="background-color:#bbb;">
+  
+  <div id="IndicesWithPChngChart" style="min-height: 520px; height: auto;width: 100%;"></div>
+  
+  </div>
+</div>
+
+<br><br>
+
+<!--Indices Content Ends Here-->
+
+
+
 <script>
 function fetchDataForAllSegments()
 {
@@ -155,6 +177,7 @@ async function getPreMarketData( passedValue )
 	
 	
 	show_pre_open_market_Data ( JSON.parse( dataObj['data'] ), sectorStockNamesObj, selectedTradingDate, selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
+	calculateIndicesData ( JSON.parse( dataObj['data'] ), sectorStockNamesObj, selectedTradingDate, selectedTimeValue, JSON.parse( deliveryDataObj['data'] ) )
 	
 	
 }
@@ -176,7 +199,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 	var tablesStr=''
 
 	var NiftyTablesStr = '<div class="column Left">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingNifty">'
-	+'<caption style="caption-side:top">Nifty 50 | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>    <thead class="greenHeaderClass">       <tr>               <th class="">Symbol</th>              <th class="">Chng%</th>               <th class="">LTP</th>			   <th class="">TO</th>    	<th>20DAV</th>        </tr>  </thead>'
+	+'<caption style="caption-side:top">Nifty 50 | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>    <thead class="greenHeaderClass">       <tr>               <th class="">Symbol</th>              <th class="">Chng%</th>               <th class="">LTP</th>			   <th class="">TO</th>    	<th>20DAV</th>    	<th>RFac</th>        </tr>  </thead>'
 	+'<tbody>'
 
 
@@ -190,7 +213,8 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
-
+		var rFactor = Number ( stockValuesObj['metadata']['pChange'] )*( twentyDAV )
+	
 		
 		NiftyTablesStr +='<tr class="item"><td>'
 		+ Symbol
@@ -202,6 +226,8 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+( stockValuesObj['metadata']['totalTurnover']  /  1000 ).toFixed(0)
 		+'</td><td>'
 		+ twentyDAV
+		+'</td><td>'
+		+ rFactor.toFixed(3)
 		+'</td></tr>'
 		}
 
@@ -212,7 +238,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 
 	
 	var FnOTablesStr = '<div class="column Right">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingFnO">'
-	+'<caption style="caption-side:top">FnO | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>     <thead class="greenHeaderClass">       <tr>               <th>Symbol</th>              <th>Chng%</th>               <th>LTP</th>			   <th>TO</th>   <th>20DAV</th>            </tr>   </thead> '
+	+'<caption style="caption-side:top">FnO | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>     <thead class="greenHeaderClass">       <tr>               <th>Symbol</th>              <th>Chng%</th>               <th>LTP</th>			   <th>TO</th>   <th>20DAV</th>      	<th>RFac</th>          </tr>   </thead> '
 	+'<tbody>'
 
 	for( var Symbol in preOpenMarketObject['data'] )
@@ -223,7 +249,8 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		var stockValuesObj =preOpenMarketObject['data'] [ Symbol ]
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
-
+		var rFactor = Number ( stockValuesObj['metadata']['pChange'] )*( twentyDAV )
+	
 	   
 		
 		FnOTablesStr +='<tr class="item"><td>'
@@ -236,6 +263,8 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+(stockValuesObj['metadata']['totalTurnover'] / 1000 ).toFixed(0)
 		+'</td><td>'
 		+ twentyDAV
+		+'</td><td>'
+		+ rFactor.toFixed(3)
 		+'</td></tr>'
 		}
 
@@ -257,6 +286,210 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 </script>
 <!-- Pre Market  Code Ends Here -->
 
+<!-- Indices Code Starts Here -->
+<script>
+
+async function calculateIndicesData ( dataObj, sectorStockNamesObj, selectedTradingDate, selectedTimeValue, deliveryDataObj)
+{
+	//console.log("deliveryDataObj",deliveryDataObj )
+	
+	var preOpenMarketObject = dataObj
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+
+	var calculatedDataObj = {}
+	
+	for( var sector in sectorStockNamesObj )
+	{
+	//if(  sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_COMMODITIES' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_NEXT_50' || sector=='NIFTY_MIDCAP_100' || sector=='NIFTY_MIDCAP_150' || sector=='NIFTY_MIDCAP_50' || sector=='NIFTY_MID_SELECT' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' || sector=='NIFTY_MIDCAP_50' || sector=='NIFTY_MIDCAP_100' || sector=='NIFTY_SMLCAP_100' || sector=='NIFTY_MIDCAP_150' || sector=='NIFTY_SMLCAP_50' || sector=='NIFTY_SMLCAP_250' || sector=='NIFTY_LARGEMID250' || sector=='NIFTY_MICROCAP250')
+	if(  sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
+	
+	{		
+	var totalPChng = 0
+	var total20DAV = 0
+	for( var s=0; s < sectorStockNamesObj[sector].length ; s++ )
+	{
+		var Symbol = sectorStockNamesObj[sector][s]
+		var stockValuesObj =preOpenMarketObject['data'] [ Symbol ]
+
+		if( deliveryDataObj["Symbols"][Symbol] != undefined && stockValuesObj != undefined )
+		{
+
+		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
+
+		totalPChng = totalPChng + Number(stockValuesObj['metadata']['pChange'] .toFixed(2))
+		total20DAV = total20DAV + Number(twentyDAV)
+		/*
+		NiftyTablesStr +='<tr class="item"><td>'
+		+ Symbol
+		+'</td><td>'
+		+stockValuesObj['metadata']['pChange'] .toFixed(2)
+		+'</td><td>'
+		+ stockValuesObj['metadata']['iep'] //lEP
+		+'</td><td>'
+		+( stockValuesObj['metadata']['totalTurnover']  /  1000 ).toFixed(0)
+		+'</td><td>'
+		+ twentyDAV
+		+'</td></tr>'
+		*/
+		
+		}
+
+	}
+	calculatedDataObj [ sector.replace(/_/g,' ') ]= {
+	"total20DAV":total20DAV,
+	"totalPChng":totalPChng,
+	
+	}
+	}
+	}
+	console.log( "calculatedDataObj", calculatedDataObj )
+	 showIndicesPerformanceChart ( "Indices With 20 DAV", "total20DAV", "IndicesWith20DAVChart", calculatedDataObj, selectedTradingDate, selectedTimeValue )
+	 showIndicesPerformanceChart ( "Indices With % Chng", "totalPChng", "IndicesWithPChngChart", calculatedDataObj, selectedTradingDate, selectedTimeValue )
+	  
+}	//	show_pre_open_market_Data() Function ENDS HERE
+
+async function showIndicesPerformanceChart ( indicesString, objectProperty, chartID, returnedDataObj, selectedTradingDate, selectedTimeValue )
+{
+	var selectedIndicesTimeValues = selectedTimeValue
+
+	var indicesPerformanceObject = returnedDataObj 
+	
+	// list updated on June 30, 2023 from https://archives.nseindia.com/content/indices/ind_nifty50.pdf
+	var sectorsWeightageInNifty50 = { "FIN SERVICE":37.59, "IT":12.65, "OIL AND GAS":11.99, "FMCG": 9.82, "AUTO":5.98, "PHARMA":3.86, "HEALTHCARE":3.86,"Construction":3.54, "METAL":3.52, "CONSR DURBL":3.30,"Telecommunication":2.61, "ENERGY":2.10,"INFRA":1.89, "SERV SECTOR":0.74, "Chemicals":0.41 }
+	
+	var dataPointsArray=[]
+	var dataPointsArrayAdvances=[]
+	var dataPointsArrayDeclines=[]
+	var dataPointsArrayUnchanged=[]
+	var dataPointsArrayPChangeAddition=[]
+	
+	var tempObj={}
+	for (var symbol in indicesPerformanceObject) {
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
+		{
+		//tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+		//tempObj[symbol]=indicesPerformanceObject[symbol]['total20DAV']
+		tempObj[symbol]=indicesPerformanceObject[symbol][objectProperty]
+		}
+	}
+	
+// tempObj is sorted by this code
+//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
+Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
+var temp={}
+if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=symbol.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=symbol
+}
+	
+	if( sectorsWeightageInNifty50[ temp["label"] ]!=undefined )
+	{
+		 temp["label"] =  temp["label"] +" ("+ sectorsWeightageInNifty50[ temp["label"] ] +")"
+	}
+	
+		//temp["y"]=tempObj[symbol]; 
+		temp["y"]= Math.abs( tempObj[symbol] ); 
+		if(tempObj[symbol]<0) 
+		{
+			temp["color"]="#cd5652"
+		}
+		else if(tempObj[symbol]>0) 
+		{
+			temp["color"]="#3a7dd4"
+		}
+		else if(tempObj[symbol]==0) 
+		{
+			temp["color"]="black"
+		}
+		
+		dataPointsArray.push(temp)
+	});
+	
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart(chartID, {
+	animationEnabled: true,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text:  indicesString+' | '+selectedTradingDate +' | '+ selectedIndicesTimeValues +' | ',
+			//verticalAlign: "top",
+
+			 //horizontalAlign: "right",
+	
+			 //fontSize: 15,
+			 fontSize: 13,
+			//dockInsidePlotArea: true
+			dockInsidePlotArea: false
+	}],
+	
+	toolTip: {
+			//fontSize: 19,
+			fontSize: 15,
+	},
+	axisY: {
+		//title: "Growth Rate (in %)",
+		//includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.03,
+		//labelFontSize: 18,
+		labelFontSize: 0, // bottom size for change%
+		 tickLength: 0,
+		 
+	},
+	axisX: {
+		interval: 1,
+		//title: "Countries"
+		includeZero: true,
+		 //labelFontSize: 17,
+		 labelFontSize: 11, // vertical axis size for text
+		 //labelFontWeight: "bold",
+		  lineThickness: 0.5,
+         lineColor: "#ccc",
+		 tickColor: "#555",
+		 tickLength: 0,
+		
+		 
+	},
+	dataPointWidth: 12,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		//click: onClick,
+		//type: "column",
+		type: "bar",
+		indexLabelPlacement: "auto",
+			indexLabel: "{y}",
+			indexLabelFontSize: 11,
+			indexLabelFontColor: "#ddd",
+		yValueFormatString: "#,##0.0#\"%\"",
+		dataPoints:dataPointsArray
+	}]
+});
+
+
+//console.log("dataPointsArray",dataPointsArray)
+chart.render();
+//chart2.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+
+
+</script>
+<!-- Indices Code Ends Here -->
 
 <script>
 // Example usage: generate month and year from April 2023 till now
