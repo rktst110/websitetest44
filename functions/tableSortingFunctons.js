@@ -303,7 +303,8 @@ function clickOnVolumeAutomatically()
 		if( tableId=='onlySpurtsOIUnderlyingsTableStr' ) 
 		{
 		//if( th.innerText.includes('TO/OI') )
-		if( th.innerText.includes('EQ TO') )
+		//if( th.innerText.includes('EQ TO') )
+		if( th.innerText.includes('Tot') || th.innerText.includes('EQ TO') )
 		{
 			th.click()
 		}
