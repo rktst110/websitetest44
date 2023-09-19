@@ -79,6 +79,8 @@ body {
 }
 </style>
 
+<style> .toggle {cursor: pointer;display: inline-block;}.toggle-switch {display: inline-block;background: #ccc;border-radius: 16px;width: 58px;height: 32px;position: relative;vertical-align: middle;transition: background 0.25s;}.toggle-switch:before, .toggle-switch:after {content: "";}.toggle-switch:before {display: block;background: linear-gradient(to bottom, #fff 0%, #eee 100%);border-radius: 50%;box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);width: 24px;height: 24px;position: absolute;top: 4px;left: 4px;transition: left 0.25s;}.toggle:hover .toggle-switch:before {background: linear-gradient(to bottom, #fff 0%, #fff 100%);box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);}.toggle-checkbox:checked + .toggle-switch {background: #56c080;}.toggle-checkbox:checked + .toggle-switch:before {left: 30px;}.toggle-checkbox {position: absolute;visibility: hidden;}.toggle-label {margin-left: 5px;position: relative;top: 2px;} </style>
+		
  <label>Month Year:</label>
 <select id="monthYear" onchange="getFirestoreData()">
 </select>
@@ -101,6 +103,10 @@ body {
  <label> Pre Market TimeValues:</label>
 <select id="preMarketTimeValues" onchange="getPreMarketData()">
 </select>
+
+
+&nbsp; | &nbsp;&nbsp;
+<span class="toggle-label">Indices With Money:  </span> <label class="toggle">  <input id="indicesWithMoneyOnOff" class="toggle-checkbox" type="checkbox" onchange="getPreMarketData()"> <div class="toggle-switch"></div> </label>   
 
 
 <!--Content Start From Here-->
@@ -318,9 +324,21 @@ async function calculateIndicesData ( dataObj, sectorStockNamesObj, selectedTrad
 
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
+		
+		var money = Number( ( Number( stockValuesObj['metadata']['pChange'] ) * Number(twentyDAV) ).toFixed(2) )
+	 
 
 		totalPChng = totalPChng + Number(stockValuesObj['metadata']['pChange'] .toFixed(2))
 		total20DAV = total20DAV + Number(twentyDAV)
+		
+		if( document.getElementById('indicesWithMoneyOnOff').checked==true )
+		{
+			total20DAV = total20DAV + Math.abs(money)
+		}
+		else
+		{
+			total20DAV = total20DAV + Number(twentyDAV)
+		}
 		/*
 		NiftyTablesStr +='<tr class="item"><td>'
 		+ Symbol
@@ -486,10 +504,18 @@ chart.render();
 
 } // showIndicesPerformanceChart ENDS HERE
 
-
-
 </script>
 <!-- Indices Code Ends Here -->
+
+
+
+
+<!-- Floating Buttons Code Starts Here -->
+<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
+<!-- Floating Buttons Code Ends Here -->
+
 
 <script>
 // Example usage: generate month and year from April 2023 till now

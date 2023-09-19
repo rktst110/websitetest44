@@ -606,6 +606,8 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	
 	var niftyTotalMarketObject = equityDataObj['data']
 	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+	
+	//console.log("spurtsInOIUnderlyingsObject",spurtsInOIUnderlyingsObject)
 
 //console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
 
@@ -775,7 +777,8 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 
-	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
+	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
+	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>Chg%</th> 	<th>EQ TO</th>  		<th>Fut</th>   <th>Opt</th>	 <th>Tot</th>     <th>OI%Chg</th>             </tr></thead><tbody>'
 		
 	for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
 
@@ -791,14 +794,20 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 		+( niftyTotalMarketObject[symbol]["totalTradedValue"] / 1000000).toFixed(0) // equity/NiftyTotalMarket totalTradedValue
 		+'</td><td>'
 		//+ spurtsInOIUnderlyingsObject[symbol][8] // underlyingValue
-		+ (spurtsInOIUnderlyingsObject[F]["total"] / spurtsInOIUnderlyingsObject[F]["latestOI"] ).toFixed(2)// underlyingValue
+		//+ (spurtsInOIUnderlyingsObject[F]["total"] / spurtsInOIUnderlyingsObject[F]["latestOI"] ).toFixed(2)// underlyingValue
+		//+'</td><td>'
+		+  spurtsInOIUnderlyingsObject[F]["futValue"].toFixed(0)  // futValue
+		+'</td><td>'
+		+  spurtsInOIUnderlyingsObject[F]["premValue"].toFixed(0)  // premValue=optionValue
+		+'</td><td>'
+		+  spurtsInOIUnderlyingsObject[F]["total"].toFixed(0)  // total = futValue + optionValue
 		+'</td><td>'
 	 	  + spurtsInOIUnderlyingsObject[F]["avgInOI"]  //"avgInOI/perChangeInOI
-		+'</td><td>'
+		//+'</td><td>'
 		//+ spurtsInOIUnderlyingsObject[symbol][4] //volume
-		+ spurtsInOIUnderlyingsObject[F]["latestOI"] //OI
-		+'</td><td>'
-		+ spurtsInOIUnderlyingsObject[F]["volume"] //Volume
+		//+ spurtsInOIUnderlyingsObject[F]["latestOI"] //OI
+		//+'</td><td>'
+		//+ spurtsInOIUnderlyingsObject[F]["volume"] //Volume
 		//+'</td><td>'
 		//+ (1/(spurtsInOIUnderlyingsObject[F]["latestOI"] / spurtsInOIUnderlyingsObject[F]["volume"])).toFixed(2) //OI/Volume
 		//+'</td><td>'
