@@ -115,7 +115,11 @@ body {
 
 
 &nbsp; | &nbsp;&nbsp;
- <span class="toggle-label">Indices With 20DAV:  </span> <label class="toggle">  <input id="indicesWith20DAVOnOff" class="toggle-checkbox" type="checkbox" onchange="getSpurtsEquityData()"> <div class="toggle-switch"></div> </label>   
+<select id="listForIndicesCalculation">
+<option>FnO</option>
+<option>ALL</option>
+</select>
+ <span class="toggle-label">Indices With 20DAV:  </span> <label class="toggle">  <input id="indicesWith20DAVOnOff" class="toggle-checkbox" type="checkbox" onchange="if( document.getElementById('indicesWith20DAVOnOff').checked==true )	{getSpurtsEquityData();}else{getIndicesData();}"> <div class="toggle-switch"></div> </label>   
 <span class="toggle-label">Or With Money:  </span> <label class="toggle">  <input id="indicesWithMoneyOnOff" class="toggle-checkbox" type="checkbox" onchange="getSpurtsEquityData()"> <div class="toggle-switch"></div> </label>   
 
 &nbsp; | &nbsp;&nbsp;
@@ -189,7 +193,7 @@ async function getIndicesData( passedValue )
 	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
-	console.log( "dataObj", JSON.parse( dataObj['data'] )  )
+	//console.log( "dataObj", JSON.parse( dataObj['data'] )  )
 	if( document.getElementById('indicesWith20DAVOnOff').checked==false )
 	{
 		showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
@@ -521,7 +525,7 @@ async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDat
 		}
 		}
 	
-	console.log("calculatedDataObj",calculatedDataObj)
+	//console.log("calculatedDataObj",calculatedDataObj)
 	showIndicesPerformanceChart ( calculatedDataObj )
 }	//	show_volume_value_spike_Data() Function ENDS HERE
 
@@ -572,7 +576,7 @@ async function getSpurtsEquityData( passedValue )
 	
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
-	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+	//console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
 
 	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
 	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
@@ -588,9 +592,18 @@ async function getSpurtsEquityData( passedValue )
 	
 	if( document.getElementById('indicesWith20DAVOnOff').checked==true )
 	{
-		console.log("indicesWith20DAVOnOff condiiotn checked")
-		var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/ALL/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
-		var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
+		//console.log("indicesWith20DAVOnOff condiiotn checked")
+		
+		var listForIndicesCalculation = document.getElementById('listForIndicesCalculation').value
+		if(listForIndicesCalculation=='ALL')
+		{
+			var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/'+listForIndicesCalculation+'/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+			equityDataObj = await fetchFirebaseDocData( docPathForEquity )
+		}
+		else{
+		//use already calculated equityDataObj
+		}
+		
 		calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
 	}
 	
@@ -711,7 +724,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		   {
 			   colorValue = '#ca575a'
 		   }
-		   else if( symbolArray["pChange"]>-2)
+		   else if( symbolArray["pChange"]<-2)
 		   {
 			   colorValue = '#c85155'
 		   }
