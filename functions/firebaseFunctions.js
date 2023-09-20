@@ -225,7 +225,7 @@ async function fetchSectorStockNamesCollectionData( collectionPath ) {
 	{
 		 var sectorStockNamesObj = {};
 		var allDocsDataObj = JSON.parse(localStorageForSectorStockNames) [collectionPath]
-		console.log("getting from localstorage")
+		//console.log("getting from localstorage")
 
 		for( var sector in allDocsDataObj )
 		{
