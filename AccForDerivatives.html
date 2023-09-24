@@ -19,7 +19,7 @@ nfilms30: Org0 (31 Jul (04:00:00 PM) Monday) <br>
 nfilms036: Org0 (01 Aug (04:00:00 PM) Tuesday) <br>
 newfilms71: Org0 (02 Aug (04:00:00 PM) Wednesday) <br>
 nfilms582: Org0 (03 Aug (04:00:00 PM) Thursday) <br>
-movieshub389: Org0 (04 Aug (04:00:00 PM) Friday) <br>
+movieshub389: Org0 (04 Aug (04:02:00 PM) Friday) <br>
 movieshubs885: Org0 (05 Aug (04:00:00 PM) Saturday) <br>
 hubmovies62: Org0 (06 Aug (04:00:00 PM) Sunday) <br>
 </div>
@@ -35,7 +35,13 @@ var accountsArray = document.getElementById('accounts').innerHTML.replace(/\n/g,
 for(var i=0;i<accountsArray.length-1;i++)
 {
 	var accountStr = accountsArray[i]
-	var weeksPassed = calculateWeeks ( accountStr.split(' (')[1].split(' (')[0] + ' 2023' )
+	var weeksPassed;
+	weeksPassed = calculateWeeks ( accountStr.split(' (')[1].split(' (')[0] + ' 2023' )
+	if(accountStr.split(':')[0]=='nfilms582' || accountStr.split(':')[0]=='movieshubs885')
+	{
+		weeksPassed = ( calculateWeeks ( accountStr.split(' (')[1].split(' (')[0] + ' 2023' ) - 1)
+	}
+	
 	var newAccountStr ;
 	
 	var currentDay =  getCurrentDay()
@@ -160,7 +166,7 @@ account 3 = moxafa5631
   },
   */
  
-  
+
 var accountsWithDetails = {
   'nfilms30': {
   'nfilms30': {
@@ -212,19 +218,19 @@ var accountsWithDetails = {
   },
   
   'org6': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '11 Sep (04:00:00 PM)',
+  'userName': 'L9p23hsj3',
+  'userID': 'xwS7xixtFPJXXWRvt',
+  'personalAPIToken': 'apify_api_oOQM8ZuBMdyilmSajjutyceTTJb1uY4adVvm',
+  'organizationAPIToken': 'apify_api_XRfy5XNMqdwMFMaBbwipP4RTn9pXeO3SGQpQ',
   },
   
   'org7': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '18 Sep (04:00:00 PM)',
+  'userName': 'dg54sdf2g',
+  'userID': 'ttpczRWuQ4nYDopLB',
+  'personalAPIToken': 'apify_api_ZFhjT7DbMKgxbw4bSzahxWgDxMMatm3dXQjn',
+  'organizationAPIToken': 'apify_api_Au54Aj1s00GrWaD2jnyVLfaasNf6K02Lorce',
   },
   
   'org8': {
@@ -290,7 +296,7 @@ var accountsWithDetails = {
   },
   
   'org4': {
-  'createdAt': '(29 Aug (04:00:00 PM)',
+  'createdAt': '29 Aug (04:00:00 PM)',
   'userName': 'L9p0uqs3r',
   'userID': 'xxJhNvyypWkwzTakn',
   'personalAPIToken': 'apify_api_6ftRLEdi1avJhiTKhR4Et7SGKEHmdT3DzlkE',
@@ -306,19 +312,19 @@ var accountsWithDetails = {
   },
   
   'org6': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '12 Sep (04:00:00 PM)',
+  'userName': 'U8ow06eh',
+  'userID': 'Yr7WuoX4G6K6aNxKL',
+  'personalAPIToken': 'apify_api_qd04fisg8CAZjjKB9YSJUkf8VZTTTJ3IaiZ5',
+  'organizationAPIToken': 'apify_api_K9K2Yk7OyvDVfcjW6ZIVu4PtKf5bFN2CHjRZ',
   },
   
   'org7': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '19 Sep (04:00:00 PM)',
+  'userName': 'sf45g321ash',
+  'userID': 'LymtD5aXYRWHkvDcW',
+  'personalAPIToken': 'apify_api_j0n4D9D4VSMBmbd4bBQiiBX0FWDJ3e0z74x4',
+  'organizationAPIToken': 'apify_api_nSTFPcuEjFZveasFAQcWCLmvdLrMWN1CewN8',
   },
   
   'org8': {
@@ -399,19 +405,19 @@ var accountsWithDetails = {
   },
   
   'org6': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '13 Sep (04:00:00 PM)',
+  'userName': 'Jwwj0ei4qs',
+  'userID': 'MGe5xeekG5RaKjiBk',
+  'personalAPIToken': 'apify_api_sS0Bjv0E4vfjZNMznlrYYLhDFaqcjn2zIcia',
+  'organizationAPIToken': 'apify_api_ZkCBWDy6nNxHap0OftbLGtbs1HnklW4ffhLY',
   },
   
   'org7': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '20 Sep (04:00:00 PM)',
+  'userName': 'f32d1a1sa2',
+  'userID': 'Bj52oke5nkRzet8Ro',
+  'personalAPIToken': 'apify_api_3ahtU7vhYEPZQFRB2NtGgJSg7LNBeZ2GT1WK',
+  'organizationAPIToken': 'apify_api_gRggKU8r8bqwON3j5tKgBubu0oTQg90JS1Oj',
   },
   
   'org8': {
@@ -491,11 +497,11 @@ var accountsWithDetails = {
   },
   
   'org6': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '14 Sep (04:00:00 PM)',
+  'userName': 'G73ind3y1u',
+  'userID': 'jvKmoTeiFS8MLNcen',
+  'personalAPIToken': 'apify_api_nBPgCJBiISZFSKcd3vyWIBwg8f1coV3w3FF2',
+  'organizationAPIToken': 'apify_api_EDZy4ZWFtLeCJ6K5eqUNpBk0l5Dl4Q3iBE0q',
   },
   
   'org7': {
@@ -584,19 +590,19 @@ var accountsWithDetails = {
   },
   
   'org6': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '15 Sep (04:00:00 PM)',
+  'userName': 'Ko304lse7h',
+  'userID': 'PJWMvXGunJSaTiTgi',
+  'personalAPIToken': 'apify_api_UsVwnqCeqE5j5pCzrAQ8dp8R7LQt5Q05tfMB',
+  'organizationAPIToken': 'apify_api_xCBqHb4Ns4mJkZnU1lBbiIS0tlkqVj2PvCCg',
   },
   
   'org7': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '22 Sep (04:00:00 PM)',
+  'userName': 'Jai3jsie2gu',
+  'userID': 'B7nboXhMqi6cpkS57',
+  'personalAPIToken': 'apify_api_rPkhpxVWRka6cXMjZZt0p9IQvVrQY62jcs7v',
+  'organizationAPIToken': 'apify_api_ejejPwtYLXrbFfYnajzXRY4OueAC3O1Vou7x',
   },
   
   'org8': {
@@ -677,11 +683,11 @@ var accountsWithDetails = {
   },
   
   'org6': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '16 Sep (04:00:00 PM)',
+  'userName': 'hj54hg205h',
+  'userID': 'nSL8fK8269emkaGmZ',
+  'personalAPIToken': 'apify_api_V0FWj5Il8Br6lyLGwcpBgRy22CZuTY2B7NiA',
+  'organizationAPIToken': 'apify_api_eRgoWOCVofgEWwP1oRlcIT8pjNBNfl1ZCRv3',
   },
   
   'org7': {
@@ -770,19 +776,19 @@ var accountsWithDetails = {
   },
   
   'org6': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '17 Sep (04:00:00 PM)',
+  'userName': 'sdf5ewf15f',
+  'userID': 'AQPuxMYAAMEciDaNi',
+  'personalAPIToken': 'apify_api_7DW89LPr6ZJhsrcbuv27FgvCUofiym0A9XES',
+  'organizationAPIToken': 'apify_api_Z3y6XcePPBilvo4c0H5iRqT2HPQ74R2G3U2f',
   },
   
   'org7': {
-  'createdAt': '',
-  'userName': '',
-  'userID': '',
-  'personalAPIToken': '',
-  'organizationAPIToken': '',
+  'createdAt': '24 Sep (04:00:00 PM)',
+  'userName': 'Snn930nesj',
+  'userID': 'mhwc4HrE5Ax3q8EFy',
+  'personalAPIToken': 'apify_api_BwNFhu4e1i0UlqwtKP36GSWMclcphe0kwPJv',
+  'organizationAPIToken': 'apify_api_DpLnO3S03HiXgb9mfN0bnQpklMlnqz1bhSaP',
   },
   
   'org8': {
@@ -813,7 +819,6 @@ var accountsWithDetails = {
   },
 
 };
-
 
   
 //code to convert accountsWithDetails into simple form (Starts Here)
