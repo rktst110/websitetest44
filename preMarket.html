@@ -220,7 +220,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
 		var rFactor = Number ( stockValuesObj['metadata']['pChange'] )*( twentyDAV )
-	
+		rFactor = Math.abs(rFactor)
 		
 		NiftyTablesStr +='<tr class="item"><td>'
 		+ Symbol
@@ -256,7 +256,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
 		var rFactor = Number ( stockValuesObj['metadata']['pChange'] )*( twentyDAV )
-	
+		rFactor = Math.abs(rFactor)
 	   
 		
 		FnOTablesStr +='<tr class="item"><td>'
@@ -309,7 +309,7 @@ async function calculateIndicesData ( dataObj, sectorStockNamesObj, selectedTrad
 	for( var sector in sectorStockNamesObj )
 	{
 	//if(  sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_COMMODITIES' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_NEXT_50' || sector=='NIFTY_MIDCAP_100' || sector=='NIFTY_MIDCAP_150' || sector=='NIFTY_MIDCAP_50' || sector=='NIFTY_MID_SELECT' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' || sector=='NIFTY_MIDCAP_50' || sector=='NIFTY_MIDCAP_100' || sector=='NIFTY_SMLCAP_100' || sector=='NIFTY_MIDCAP_150' || sector=='NIFTY_SMLCAP_50' || sector=='NIFTY_SMLCAP_250' || sector=='NIFTY_LARGEMID250' || sector=='NIFTY_MICROCAP250')
-	if(  sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
+	if( sector=='NIFTY_MID_SELECT' || sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
 	
 	{		
 	var totalPChng = 0
@@ -356,6 +356,12 @@ async function calculateIndicesData ( dataObj, sectorStockNamesObj, selectedTrad
 		}
 
 	}
+	
+	if(totalPChng<0)
+		{
+		total20DAV = (-1 * total20DAV)
+		}
+		
 	calculatedDataObj [ sector.replace(/_/g,' ') ]= {
 	"total20DAV":total20DAV,
 	"totalPChng":totalPChng,
