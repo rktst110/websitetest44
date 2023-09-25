@@ -454,7 +454,8 @@ async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDat
 	
 	for( var sector in sectorStockNamesObj )
 	{
-		if(  sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
+		//if(  sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
+		if(  sector=='NIFTY_MID_SELECT' || sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
 	
 	{
 	var totalPChng = 0
@@ -486,7 +487,7 @@ async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDat
 	{
 		total20DAV = total20DAV + Number(twentyDAV)
 	}
-
+	totalPChng = totalPChng + Number( symbolArray["pChange"] )
 
 		//totalPChng = totalPChng + Number(stockValuesObj['metadata']['pChange'] .toFixed(2))
 	
@@ -514,7 +515,10 @@ async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDat
 	}
 		} //for Loop ENDS HERE
 		
-		
+		if(totalPChng<0)
+		{
+		total20DAV = (-1 * total20DAV)
+		}
 		
 	calculatedDataObj["data"] [ sector.replace(/_/g,' ') ]= {
 	"percentChange":total20DAV,
