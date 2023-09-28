@@ -108,21 +108,24 @@ body {
 <select id="indicesTimeValues" onchange="getIndicesData()">
 </select>
 
-&nbsp; | &nbsp;&nbsp;
+&nbsp; | &nbsp;
  <label> Spurts TimeValues:</label>
 <select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
 </select>
 
 
-&nbsp; | &nbsp;&nbsp;
+&nbsp; | &nbsp;
 <select id="listForIndicesCalculation">
 <option>FnO</option>
 <option>ALL</option>
 </select>
  <span class="toggle-label">Indices With 20DAV:  </span> <label class="toggle">  <input id="indicesWith20DAVOnOff" class="toggle-checkbox" type="checkbox" onchange="if( document.getElementById('indicesWith20DAVOnOff').checked==true )	{getSpurtsEquityData();}else{getIndicesData();}"> <div class="toggle-switch"></div> </label>   
-<span class="toggle-label">Or With Money:  </span> <label class="toggle">  <input id="indicesWithMoneyOnOff" class="toggle-checkbox" type="checkbox" onchange="getSpurtsEquityData()"> <div class="toggle-switch"></div> </label>   
+<span class="toggle-label">Or With Money:  </span> <label class="toggle">  <input id="indicesWithMoneyOnOff" class="toggle-checkbox" type="checkbox"  onchange="if( document.getElementById('indicesWithMoneyOnOff').checked==true )	{getSpurtsEquityData();}else{getIndicesData();}"> <div class="toggle-switch"></div> </label>   
 
-&nbsp; | &nbsp;&nbsp;
+| 
+ <span class="toggle-label">Indices With OI/20DAV:  </span> <label class="toggle">  <input id="indicesWithOI20DAVOnOff" class="toggle-checkbox" type="checkbox" onchange="if( document.getElementById('indicesWithOI20DAVOnOff').checked==true )	{getSpurtsEquityData();}else{getIndicesData();}"> <div class="toggle-switch"></div> </label>   
+
+| 
  <span class="toggle-label">Heatmap With Money:  </span> <label class="toggle">  <input id="heatmapWithMoneyOnOff" class="toggle-checkbox" type="checkbox" onchange="getSpurtsEquityData()" checked> <div class="toggle-switch"></div> </label>   
 
 
@@ -194,7 +197,7 @@ async function getIndicesData( passedValue )
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
 	//console.log( "dataObj", JSON.parse( dataObj['data'] )  )
-	if( document.getElementById('indicesWith20DAVOnOff').checked==false )
+	if( document.getElementById('indicesWith20DAVOnOff').checked==false && document.getElementById('indicesWithOI20DAVOnOff').checked==false && document.getElementById('indicesWithMoneyOnOff').checked==false )
 	{
 		showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 	}
@@ -468,18 +471,22 @@ async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDat
 		if( Symbol.includes('NIFTY')==false && niftyTotalMarketObject[Symbol] !=undefined )
 		{
 		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
-        //var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
 	
-	//var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
+	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
 	
-	//var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
 	var money = Number( ( Number(symbolArray["pChange"] ) * Number(twentyDAV) ).toFixed(2) )
 	 
 	 var rankForHeatMap;
-	if( document.getElementById('indicesWithMoneyOnOff').checked==true )
+	if( document.getElementById('indicesWithOI20DAVOnOff').checked==true )
+	{
+		total20DAV = total20DAV + Math.abs(WFactor)
+	}
+	else if( document.getElementById('indicesWithMoneyOnOff').checked==true )
 	{
 		total20DAV = total20DAV + Math.abs(money)
 	}
@@ -594,7 +601,7 @@ async function getSpurtsEquityData( passedValue )
 	await show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
 	await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
 	
-	if( document.getElementById('indicesWith20DAVOnOff').checked==true )
+	if( document.getElementById('indicesWith20DAVOnOff').checked==true || document.getElementById('indicesWithOI20DAVOnOff').checked==true || document.getElementById('indicesWithMoneyOnOff').checked==true )
 	{
 		//console.log("indicesWith20DAVOnOff condiiotn checked")
 		
