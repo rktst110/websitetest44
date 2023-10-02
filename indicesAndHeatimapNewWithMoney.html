@@ -203,7 +203,7 @@ async function getIndicesData( passedValue )
 	}
 }
 
-async function showIndicesPerformanceChart ( returnedDataObj )
+async function showIndicesPerformanceChart ( returnedDataObj, indicesData )
 {
 	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
 	//var selectedValue = document.getElementById("indices_performance_time").value;
@@ -226,7 +226,16 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
 		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
 		{
-		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+			
+			if( document.getElementById('indicesWith20DAVOnOff').checked==true || document.getElementById('indicesWithOI20DAVOnOff').checked==true || document.getElementById('indicesWithMoneyOnOff').checked==true )
+			{
+				tempObj[symbol]= Math.abs( indicesPerformanceObject[symbol]['percentChange'] )
+			}
+			else
+			{
+				tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+			}			
+		
 		}
 	}
 	
@@ -250,17 +259,24 @@ else{
 	
 		//temp["y"]=tempObj[symbol]; 
 		temp["y"]= Math.abs( tempObj[symbol] ); 
-		if(tempObj[symbol]<0) 
+		var pChange;
+		pChange = Number( tempObj[symbol] )
+		if( document.getElementById('indicesWith20DAVOnOff').checked==true || document.getElementById('indicesWithOI20DAVOnOff').checked==true || document.getElementById('indicesWithMoneyOnOff').checked==true )
+		{
+			pChange = Number( indicesData[symbol]['percentChange'] )
+		}
+			
+		if(pChange<0) 
 		{
 			temp["color"]="#cd5652"
 		}
-		else if(tempObj[symbol]>0) 
+		else if(pChange>0) 
 		{
 			temp["color"]="#3a7dd4"
 		}
-		else if(tempObj[symbol]==0) 
+		else if(pChange==0) 
 		{
-			temp["color"]="black"
+			temp["color"]="#3a7dd4"
 		}
 		
 		dataPointsArray.push(temp)
@@ -439,6 +455,17 @@ function onClick(e) {
 async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
 {
 
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	//console.log( "dataObj", JSON.parse( dataObj['data'] )  )
+	var indicesData = JSON.parse( dataObj['data'] )['data']
+
+
 	var selectedValue = selectedSpurtsTimeValue
 	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
 	
@@ -482,6 +509,7 @@ async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDat
 	var money = Number( ( Number(symbolArray["pChange"] ) * Number(twentyDAV) ).toFixed(2) )
 	 
 	 var rankForHeatMap;
+
 	if( document.getElementById('indicesWithOI20DAVOnOff').checked==true )
 	{
 		total20DAV = total20DAV + Math.abs(WFactor)
@@ -494,6 +522,7 @@ async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDat
 	{
 		total20DAV = total20DAV + Number(twentyDAV)
 	}
+	
 	totalPChng = totalPChng + Number( symbolArray["pChange"] )
 
 		//totalPChng = totalPChng + Number(stockValuesObj['metadata']['pChange'] .toFixed(2))
@@ -537,7 +566,7 @@ async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDat
 		}
 	
 	//console.log("calculatedDataObj",calculatedDataObj)
-	showIndicesPerformanceChart ( calculatedDataObj )
+	showIndicesPerformanceChart ( calculatedDataObj, indicesData )
 }	//	show_volume_value_spike_Data() Function ENDS HERE
 
 </script>
