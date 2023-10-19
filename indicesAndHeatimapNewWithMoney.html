@@ -672,8 +672,9 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	  +' <th>Chg%</th>'
 	   +' <th>LTP</th>'
 	  +' <th>T.O.</th>'
-	 +' <th>Money</th>'
+	 +' <th>Fac</th>'
 	  +' <th>20DAV</th>'
+	  +' <th>Money</th>'
 	  +' </tr> </thead> <tbody>'
 
 		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
@@ -801,9 +802,11 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 			 +'</td><td>'
 			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
 		 +'</td><td>'
-		 + WFactor
+		 + Math.abs( twentyDAV * symbolArray['pChange'] ).toFixed(2)
 		+'</td><td>'
 		+ twentyDAV
+		+'</td><td>'
+		+ WFactor
 		+'</td></tr>'
 			
 		
