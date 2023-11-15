@@ -136,19 +136,28 @@ body {
  <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
    <br>
    </div>
-  <div class="column right" style="background-color:#bbb;">
+  <!--<div class="column right" style="background-color:#bbb;">-->
+  <div class="column right" style="background-color:#2c2c2d;">
   
-   <center> HeatMap Sectors: &nbsp;<select id="heatMapSectorSelector" aria-labelledby="expiryLbl" onchange="showHeatMapChart()"> <option value="">Select</option> </select></center>  <div id="heatMapContainer" style=" height:500px; width: auto; margin: 0 auto;"></div>
+   <center> 
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_50';showHeatMapChart()">Nifty 50</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='ALL BANKS';showHeatMapChart()">Banks</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_FIN_SERVICE';showHeatMapChart()">Finance</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_MIDCAP_150';showHeatMapChart()">Midcap</button>
+   HeatMap Sectors: &nbsp;<select id="heatMapSectorSelector" aria-labelledby="expiryLbl" onchange="showHeatMapChart()"> <option value="">Select</option> </select></center>  <div id="heatMapContainer" style=" height:500px; width: auto; margin: 0 auto;"></div>
 
   </div>
 </div>
 
-<br><br>
+<br>
 
 
 <!--Condition Selector Starts Here-->
-      
-<center> <span class="toggle-label">Condition On/Off:  </span> <label class="toggle">  <input id="pChngConditionOnOff" class="toggle-checkbox" type="checkbox"> <div class="toggle-switch"></div> </label>   </center>
+<center>
+<span class="toggle-label">Conditions Div On/Off:  </span> <label class="toggle">  <input id="conditionsDivOnOff" class="toggle-checkbox" type="checkbox" onchange="if(document.getElementById('conditionsDiv').style.display=='none'){document.getElementById('conditionsDiv').style.display='block';}else if(document.getElementById('conditionsDiv').style.display=='block'){document.getElementById('conditionsDiv').style.display='none';}"> <div class="toggle-switch"></div> </label> 
+</center>
+
+<div id="conditionsDiv" style="display: none;">
 
 <span class="toggle-label">Pre Opening On/Off:  </span> <label class="toggle">  <input id="preOpenConditionOnOff" class="toggle-checkbox" type="checkbox"> <div class="toggle-switch"></div> </label> 
 
@@ -158,7 +167,15 @@ body {
 		
 <br><br>
 
-    <label for="conditionSelect">% Chng:</label>
+ <span class="toggle-label">Condition On/Off:  </span> <label class="toggle">  <input id="pChngConditionOnOff" class="toggle-checkbox" type="checkbox"> <div class="toggle-switch"></div> </label> 
+ 
+    <label for="conditionSelect">Select:</label>
+	<select id="checkByInput">
+        <option value="% Chng"> % Chng </option>
+        <option value="Fac"> Fac </option>
+		<option value="20DAV"> 20DAV </option>
+		<option value="Money"> Money </option>
+    </select>
     <select id="positiveConditionSelect">
         <option value=">="> >= </option>
         <option value=">"> > </option>
@@ -182,8 +199,10 @@ body {
     <input type="number" min="0" id="negativePChngNumberInput" value="1" step="0.5">
 
 <button onclick="updateCondition()">GO</button>
-    <br><br>
-
+    <br>
+	
+</div>
+<br>
 <!--Condition Selector Ends Here-->
 
 <div class="row">
@@ -729,6 +748,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
 	var money = Number( ( Number(symbolArray["pChange"] ) * Number(twentyDAV) ).toFixed(2) )
+	var Fac = Math.abs( twentyDAV * symbolArray['pChange'] ).toFixed(2)
 	 
 	 var rankForHeatMap;
 	if( document.getElementById('heatmapWithMoneyOnOff').checked==true )
@@ -838,7 +858,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 			 +'</td><td>'
 			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
 		 +'</td><td>'
-		 + Math.abs( twentyDAV * symbolArray['pChange'] ).toFixed(2)
+		 + Fac
 		+'</td><td>'
 		+ twentyDAV
 		+'</td><td>'
@@ -849,13 +869,28 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		}
 
 		 var conditionResult
-		 if( document.getElementById('pChngConditionOnOff').checked==true )
-		{
-			conditionResult = checkCondition( Number(symbolArray['pChange']) )
-		}
 	
 		 if( document.getElementById('pChngConditionOnOff').checked==true )
 		 {
+		 var checkByInput = document.getElementById("checkByInput").value
+		 if( checkByInput=='% Chng' )
+		 {
+			conditionResult = checkCondition( Number(symbolArray['pChange']) )
+		 }
+		 else if( checkByInput=='Fac' )
+		 {
+			conditionResult = checkCondition( Number( Fac ) )
+		 }
+		 else if( checkByInput=='20DAV' )
+		 {
+			conditionResult = checkCondition( Number( twentyDAV ) )
+		 }
+		 else if( checkByInput=='Money' )
+		 {
+			conditionResult = checkCondition( Number( WFactor ) )
+		 }
+		 
+		 
 		 if( conditionResult==true )
 		 {
 		 printDataStr()
@@ -1322,6 +1357,7 @@ function copyHeatMapList( heatMapSectorSelected, greenOrRed )
 	sectorStockArray = sectorStockNamesObj[heatMapSectorSelected]
 	}
 	
+
 	for( var s=0;s<sectorStockArray.length;s++)
 	{
 		var Symbol = sectorStockArray [s]
@@ -1340,9 +1376,23 @@ function copyHeatMapList( heatMapSectorSelected, greenOrRed )
 		stockNames +='NSE:'+symbol.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +','
 	});
 
+	//console.log("stockNames",stockNames)
+	
+	var stockNamesArray = stockNames.split(',')
+	var stockNames2 = ''
+	
+	var copyListNumber = 22
+	if(stockNamesArray.length<22)
+	copyListNumber=stockNamesArray.length
+
+	for( var s=0;s<copyListNumber;s++)
+	{
+		stockNames2 += stockNamesArray[s]+',' 
+	}
 	
 	
-	navigator.clipboard.writeText(stockNames);
+	//navigator.clipboard.writeText(stockNames);
+	navigator.clipboard.writeText(stockNames2);
 }
 
 
