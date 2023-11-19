@@ -163,7 +163,7 @@ body {
 
     <label for="conditionSelect">Pre Opening:</label>
     <!--<label for="numberInput">Enter a number:</label>-->
-    <input type="number" min="0" id="preOpenPChng" value="1" step="0.5" style="width:50px;">
+    <input type="number" min="0" id="preOpenPChng" value="1.5" step="0.5" style="width:50px;">
 		
 <br><br>
 
@@ -205,7 +205,17 @@ body {
 <br>
 <!--Condition Selector Ends Here-->
 
+
 <div class="row">
+	<center>
+	<button onclick="document.getElementById('tableListSelector').value='FnO';getSpurtsEquityData()">FnO</button>
+	<button onclick="document.getElementById('tableListSelector').value='NIFTY_50';getSpurtsEquityData()">Nifty 50</button>
+   <button onclick="document.getElementById('tableListSelector').value='NIFTY_BANK';getSpurtsEquityData()">Banks</button>
+   <button onclick="document.getElementById('tableListSelector').value='NIFTY_FIN_SERVICE';getSpurtsEquityData()">Finance</button>
+   <button onclick="document.getElementById('tableListSelector').value='NIFTY_MIDCAP_150';getSpurtsEquityData()">Midcap</button>
+    | List:
+	<select id="tableListSelector" aria-labelledby="expiryLbl" onchange="getSpurtsEquityData()"> <option value="FnO">FnO</option> </select></center>
+	<br>
   <div class="column equityLeft" style="background-color:#aaa;">
     <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
   </div>
@@ -706,6 +716,7 @@ async function getSpurtsEquityData( passedValue )
 	addEventListnerInTables()
 }
 
+
 async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
 {
 	 document.getElementById('equityDataTableContainer').innerHTML = "";
@@ -732,14 +743,24 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	  +' <th>20DAV</th>'
 	  +' <th>Money</th>'
 	  +' </tr> </thead> <tbody>'
-
-		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
-		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		
+		var stocksListArray = []
+		stocksListArray = sectorStockNamesObj[ document.getElementById('tableListSelector').value ]
+		spurtsInOIUnderlyingsObject = convertSpurtsDataArrayIntoObj( spurtsInOIUnderlyingsObject )
+		//console.log("spurtsInOIUnderlyingsObject",spurtsInOIUnderlyingsObject)
+		
+		//for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		for (var S=0; S<stocksListArray.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		//var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		var Symbol=stocksListArray[S]
+		//console.log("Symbol",Symbol)
 		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
-		if( Symbol.includes('NIFTY')==false )
+		//if( Symbol.includes('NIFTY')==false )
+		if( Symbol.includes('NIFTY')==false && niftyTotalMarketObject[Symbol]!=undefined && spurtsInOIUnderlyingsObject[Symbol]!=undefined )
 		{
 		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
-        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+        //var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[Symbol] //for short-handing
 	
 	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
@@ -870,7 +891,35 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 
 		 var conditionResult
 	
-		 if( document.getElementById('pChngConditionOnOff').checked==true )
+		 if( document.getElementById('pChngConditionOnOff').checked==true && document.getElementById('preOpenConditionOnOff').checked==true )
+		 {
+		 var checkByInput = document.getElementById("checkByInput").value
+		 if( checkByInput=='% Chng' )
+		 {
+			conditionResult = checkCondition( Number(symbolArray['pChange']) )
+		 }
+		 else if( checkByInput=='Fac' )
+		 {
+			conditionResult = checkCondition( Number( Fac ) )
+		 }
+		 else if( checkByInput=='20DAV' )
+		 {
+			conditionResult = checkCondition( Number( twentyDAV ) )
+		 }
+		 else if( checkByInput=='Money' )
+		 {
+			conditionResult = checkCondition( Number( WFactor ) )
+		 }
+		 
+		 var preOpen = Math.abs (((symbolArray['open'] - symbolArray['previousClose'])/symbolArray['previousClose'])*100).toFixed(3)
+			 
+		 if( conditionResult==true && preOpen <= Number(preOpenPChng.value) )
+		 {
+		 printDataStr()
+		 //console.log("preopen + other conditions")
+		 }
+		}
+		else if( document.getElementById('pChngConditionOnOff').checked==true )
 		 {
 		 var checkByInput = document.getElementById("checkByInput").value
 		 if( checkByInput=='% Chng' )
@@ -895,7 +944,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		 {
 		 printDataStr()
 		 }
-		} 
+		}
 		else if( document.getElementById('preOpenConditionOnOff').checked==true )
 		 {
 		 //var preOpenConditionResult = checkCondition( Number(symbolArray['pChange']) )
@@ -907,10 +956,10 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		 printDataStr()
 		 }
 		}
-		
 		else{
 			 printDataStr()
 		}
+	
 	}
 		} //for Loop ENDS HERE
 		
@@ -935,13 +984,24 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 
 	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
 	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>Chg%</th> 	<th>EQ TO</th>  		<th>Fut</th>   <th>Opt</th>	 <th>Tot</th>     <th>OI%Chg</th>             </tr></thead><tbody>'
-		
-	for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
-
-	var symbol = spurtsInOIUnderlyingsObject[F]["symbol"]
 	
-		if( symbol.includes('NIFTY')==false ){
+	
+		var stocksListArray = []
+		stocksListArray = sectorStockNamesObj[ document.getElementById('tableListSelector').value ]
+		spurtsInOIUnderlyingsObject = convertSpurtsDataArrayIntoObj( spurtsInOIUnderlyingsObject )
+	
+	//for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
+	for( var F=0; F< stocksListArray.length; F++ ) {
 
+	//var symbol = spurtsInOIUnderlyingsObject[F]["symbol"]
+	var symbol = stocksListArray[F]
+	
+	if( symbol.includes('NIFTY')==false && spurtsInOIUnderlyingsObject[symbol]!=undefined )
+	{
+		var symbolArray = niftyTotalMarketObject[symbol] //for short-handing
+		
+		function printDataStr()
+		{
 		tablesStr +='<tr class="item"><td>'
 		+ symbol
 		+'</td><td>'
@@ -952,13 +1012,14 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 		//+ spurtsInOIUnderlyingsObject[symbol][8] // underlyingValue
 		//+ (spurtsInOIUnderlyingsObject[F]["total"] / spurtsInOIUnderlyingsObject[F]["latestOI"] ).toFixed(2)// underlyingValue
 		//+'</td><td>'
-		+  spurtsInOIUnderlyingsObject[F]["futValue"].toFixed(0)  // futValue
+		//+  spurtsInOIUnderlyingsObject[F]["futValue"].toFixed(0)  // futValue
+		+  spurtsInOIUnderlyingsObject[symbol]["futValue"].toFixed(0)  // futValue
 		+'</td><td>'
-		+  spurtsInOIUnderlyingsObject[F]["premValue"].toFixed(0)  // premValue=optionValue
+		+  spurtsInOIUnderlyingsObject[symbol]["premValue"].toFixed(0)  // premValue=optionValue
 		+'</td><td>'
-		+  spurtsInOIUnderlyingsObject[F]["total"].toFixed(0)  // total = futValue + optionValue
+		+  spurtsInOIUnderlyingsObject[symbol]["total"].toFixed(0)  // total = futValue + optionValue
 		+'</td><td>'
-	 	  + spurtsInOIUnderlyingsObject[F]["avgInOI"]  //"avgInOI/perChangeInOI
+	 	  + spurtsInOIUnderlyingsObject[symbol]["avgInOI"]  //"avgInOI/perChangeInOI
 		//+'</td><td>'
 		//+ spurtsInOIUnderlyingsObject[symbol][4] //volume
 		//+ spurtsInOIUnderlyingsObject[F]["latestOI"] //OI
@@ -969,9 +1030,88 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 		//+'</td><td>'
 		//+ returnedCandlestickPatternsStr //Candlestick Patterns
 		+'</td></tr>'
+			}
 			
+			
+	
+		 var conditionResult
+	
+		 if( document.getElementById('pChngConditionOnOff').checked==true && document.getElementById('preOpenConditionOnOff').checked==true )
+		 {
+		 var checkByInput = document.getElementById("checkByInput").value
+		 if( checkByInput=='% Chng' )
+		 {
+			conditionResult = checkCondition( Number(symbolArray['pChange']) )
+		 }
+		 else if( checkByInput=='Fac' )
+		 {
+			conditionResult = checkCondition( Number( Fac ) )
+		 }
+		 else if( checkByInput=='20DAV' )
+		 {
+			conditionResult = checkCondition( Number( twentyDAV ) )
+		 }
+		 else if( checkByInput=='Money' )
+		 {
+			conditionResult = checkCondition( Number( WFactor ) )
+		 }
+		 
+		 var preOpen = Math.abs (((symbolArray['open'] - symbolArray['previousClose'])/symbolArray['previousClose'])*100).toFixed(3)
+			 
+		 if( conditionResult==true && preOpen <= Number(preOpenPChng.value) )
+		 {
+		 printDataStr()
+		 //console.log("preopen + other conditions")
+		 }
+		}
+		else if( document.getElementById('pChngConditionOnOff').checked==true )
+		 {
+		 var checkByInput = document.getElementById("checkByInput").value
+		 if( checkByInput=='% Chng' )
+		 {
+			conditionResult = checkCondition( Number(symbolArray['pChange']) )
+		 }
+		 else if( checkByInput=='Fac' )
+		 {
+			conditionResult = checkCondition( Number( Fac ) )
+		 }
+		 else if( checkByInput=='20DAV' )
+		 {
+			conditionResult = checkCondition( Number( twentyDAV ) )
+		 }
+		 else if( checkByInput=='Money' )
+		 {
+			conditionResult = checkCondition( Number( WFactor ) )
+		 }
+		 
+		 
+		 if( conditionResult==true )
+		 {
+		 printDataStr()
+		 }
+		}
+		else if( document.getElementById('preOpenConditionOnOff').checked==true )
+		 {
+		 //var preOpenConditionResult = checkCondition( Number(symbolArray['pChange']) )
+		 //console.log(symbolArray)
+		 var preOpen = Math.abs (((symbolArray['open'] - symbolArray['previousClose'])/symbolArray['previousClose'])*100).toFixed(3)
+		 //console.log(Symbol,preOpen, Number(preOpenPChng.value) )
+		 if( preOpen <= Number(preOpenPChng.value) )
+		 {
+		 printDataStr()
+		 }
+		}
+		else{
+			 printDataStr()
+		}
+	
+	
 		
 	}
+	
+	
+	
+	
 	}
 	tablesStr +=' </tbody> </table>    </div>  </div>'
 
@@ -983,7 +1123,16 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 	// await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
 
-
+function convertSpurtsDataArrayIntoObj( dataArray )
+{
+	var dataObject={}
+	for (var S=0; S<dataArray.length ;S++ ) {
+	var Symbol=dataArray[S]['symbol']
+	dataObject [ Symbol ] = dataArray[S]
+	}
+	//console.log( "dataArray length", dataArray.length, "dataObject length", Object.keys(dataObject).length )
+	return dataObject
+}
 
 function add_Sectors_In_HeatMapSelector( )
 {
@@ -994,11 +1143,13 @@ function add_Sectors_In_HeatMapSelector( )
 	if( document.getElementById("heatMapSectorSelector").getElementsByTagName('option').length <=1 )
 	{
 	document.getElementById("heatMapSectorSelector").innerHTML = "";
+	document.getElementById("tableListSelector").innerHTML = "";
 	
 	var option = document.createElement("option");
 	option.value = "ALL BANKS";
 	option.text = "ALL BANKS";
 	document.getElementById("heatMapSectorSelector").add(option);
+	
 	
 	
 	for ( var sectorName in sectorStockNamesObj ) {
@@ -1009,10 +1160,16 @@ function add_Sectors_In_HeatMapSelector( )
 		option.value = sectorName;
 		option.text = sectorName;
 		document.getElementById("heatMapSectorSelector").add(option);
+		
+		var option = document.createElement("option");
+		option.value = sectorName;
+		option.text = sectorName;	
+		document.getElementById("tableListSelector").add(option);
 		}
 	}
 	//document.getElementById('heatMapSectorSelector').value=document.getElementById('heatMapSectorSelector').getElementsByTagName('option')[2].value
 	document.getElementById('heatMapSectorSelector').value="NIFTY_50"
+	document.getElementById('tableListSelector').value="FnO"
 	}
 	
 	//showHeatMapChart(sectorStockNamesObj)
