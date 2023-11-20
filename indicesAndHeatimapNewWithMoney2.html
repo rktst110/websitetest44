@@ -1019,7 +1019,8 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 		+'</td><td>'
 		+  spurtsInOIUnderlyingsObject[symbol]["total"].toFixed(0)  // total = futValue + optionValue
 		+'</td><td>'
-	 	  + spurtsInOIUnderlyingsObject[symbol]["avgInOI"]  //"avgInOI/perChangeInOI
+	 	  //+ spurtsInOIUnderlyingsObject[symbol]["avgInOI"]  //"avgInOI/perChangeInOI
+	 	  + Math.abs( spurtsInOIUnderlyingsObject[symbol]["avgInOI"] ) //"avgInOI/perChangeInOI
 		//+'</td><td>'
 		//+ spurtsInOIUnderlyingsObject[symbol][4] //volume
 		//+ spurtsInOIUnderlyingsObject[F]["latestOI"] //OI
