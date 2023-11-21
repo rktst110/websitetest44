@@ -210,8 +210,15 @@ function copyList(caption)
 	tempStr="NSE:"+caption.innerHTML.replace(/ /g,"_").replace(/\(/g,"").replace(/\)/g,"").replace(/\%/g,"").replace(/\-/g,"")+"," 
 	
 	var tablerows=document.getElementById(clicked_table_id).getElementsByTagName('tbody')[0].getElementsByTagName('tr')
+	
+	var copyListNumber = 22
+	if(tablerows.length<22)
+	copyListNumber=tablerows.length
+
+	
 	//for ( var tr=0; tr < tablerows.length; tr++ )
-	for ( var tr=0; tr < 22; tr++ )
+	//for ( var tr=0; tr < 22; tr++ )
+	for ( var tr=0; tr < copyListNumber; tr++ )
 	{
 		tempStr +="NSE:"+ tablerows[tr].getElementsByTagName('td')[0].innerText.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +"," 
 		//console.log(tablerows[tr].getElementsByTagName('td')[0])
