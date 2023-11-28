@@ -1,0 +1,2387 @@
+
+ <script src="functions/importFiles.js"></script>
+ <div id="importedContent"></div>
+ 
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+</style>
+
+<div>
+<br><br>
+<div id="accounts">
+
+Aagiatgyaan: Org1 (25 Nov (10:27:00 AM) Saturday) <br>
+employeeshdfilmshub: Org1 (21 Nov (02:08:00 PM) Tuesday) <br>
+accorg398: Org1 (25 Nov (12:26:00 PM) Saturday) <br>
+accorg410: Org1 (25 Nov (12:35:00 PM) Saturday) <br>
+orgacc72: Org1 (25 Nov (12:40:00 PM) Saturday) <br>
+groupshub: Org1 (22 Nov (08:18:00 AM) Wednesday) <br>
+orgacc6: Org1 (25 Nov (11:24:00 AM) Saturday) <br>
+orgacc97: Org1 (25 Nov (11:28:00 AM) Saturday) <br>
+Orgacc647: Org1 (25 Nov (11:32:00 AM) Saturday) <br>
+Accorg59: Org1 (25 Nov (11:35:00 AM) Saturday) <br>
+nehele8730: Org1 (27 Nov (10:16:00 PM) Monday) <br>
+cilet12649: Org1 (27 Nov (04:13:00 PM) Monday) <br>
+ronebe5787: Org1 (27 Nov (04:29:00 PM) Monday) <br>
+xipetam255: Org1 (27 Nov (08:05:00 PM) Monday) <br>
+fimaw38913: Org1 (27 Nov (09:16:00 PM) Monday) <br>
+teken29665: Org1 (27 Nov (09:27:00 PM) Monday) <br>
+nepekiw260: Org1 (27 Nov (09:42:00 PM) Monday) <br>
+copota8028: Org1 (27 Nov (09:57:00 PM) Monday) <br>
+
+
+
+
+<br>
+<br>
+nfilms036: Org1 (01 Aug (04:00:00 PM) Tuesday) <br>
+newfilms71: Org1 (02 Aug (04:00:00 PM) Wednesday) <br>
+nfilms582: Org1 (03 Aug (04:00:00 PM) Thursday) <br>
+movieshub389: Org1 (04 Aug (04:02:00 PM) Friday) <br>
+movieshubs885: Org1 (05 Aug (04:40:00 PM) Saturday) <br>
+hubmovies62: Org1 (06 Aug (04:00:00 PM) Sunday) <br>
+</div>
+</div>
+
+<div id="ptag"></div>
+
+
+
+<script>
+var newAccounts = ''
+var accountsArray = document.getElementById('accounts').innerHTML.replace(/\n/g,'').split(' <br>')
+for(var i=0;i<accountsArray.length-1;i++)
+{
+	var accountStr = accountsArray[i]
+	var weeksPassed;
+	weeksPassed = calculateWeeks ( accountStr.split(' (')[1].split(' (')[0] + ' 2023' )
+	if(accountStr.split(':')[0]=='nfilms582' || accountStr.split(':')[0]=='movieshubs885')
+	{
+		weeksPassed = ( calculateWeeks ( accountStr.split(' (')[1].split(' (')[0] + ' 2023' ) - 1)
+	}
+	
+	var newAccountStr ;
+	
+	var currentDay =  getCurrentDay()
+	if(  accountStr.includes(currentDay) ==true )
+	{
+		var str1 = 'Org' + (weeksPassed+1) + ' (' + getCurrentDate()  + ' (0' +  accountStr.split('1 (')[1].split('(0')[1]
+		var str2 = accountStr.split(':')[0] + ': <mark>' + str1+'</mark><br><br>'
+		var copyStr = 	 'navigator.clipboard.writeText(\''+str1+'\')'
+		newAccountStr = '<span onclick="'+copyStr+'">'+str2+'</span>'
+	}
+	else
+	{
+		var str1 = 'Org' +  (weeksPassed+1)  + ' (' + getCurrentDate()  + ' (0' +  accountStr.split('1 (')[1].split('(0')[1]
+		var str2 = accountStr.split(':')[0] + ': ' + str1+'<br><br>'
+		
+		//newAccountStr = accountStr.split(':')[0] + ': Org' + weeksPassed + ' (' + getCurrentDate()  + ' (0' +  accountStr.split('0 (')[1].split('(0')[1] +'<br>'
+		var copyStr = 	 'navigator.clipboard.writeText(\''+str1+'\')'
+		newAccountStr = '<span onclick="'+copyStr+'">'+str2+'</span>'
+	}
+	
+	newAccounts += newAccountStr 
+	console.log( newAccountStr )
+}
+
+document.getElementById('accounts').innerHTML = newAccounts
+
+function calculateWeeks( passedDateStr ) 
+{
+	// Define the specific date (July 31, 2023)
+//var specificDate = new Date('2023-07-31');
+var specificDate = new Date( passedDateStr );
+
+// Get the current date
+var currentDate = new Date();
+
+// Calculate the time difference in milliseconds
+var timeDiff = currentDate - specificDate;
+
+// Calculate the number of weeks
+var weeksPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24 * 7));
+
+//console.log(`Weeks passed since July 31, 2023: ${weeksPassed}`);
+
+return weeksPassed;
+}
+
+
+function getCurrentDate()
+{
+	function formatDate(date) {
+  var months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  var day = date.getDate();
+  var month = months[date.getMonth()];
+
+  return `${day < 10 ? '0' : ''}${day} ${month}`;
+}
+
+var currentDate = new Date();
+var formattedDate = formatDate(currentDate);
+//console.log(formattedDate); // Outputs something like "09 Aug"
+return formattedDate
+}
+
+function getCurrentDay()
+{
+function formatDate(date) {
+  var daysOfWeek = [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+  ];
+
+  var months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  var dayOfWeek = daysOfWeek[date.getDay()];
+  var day = date.getDate();
+  var month = months[date.getMonth()];
+
+  return `${dayOfWeek}, ${day < 10 ? '0' : ''}${day} ${month}`;
+}
+
+var currentDate = new Date();
+var formattedDate = formatDate(currentDate);
+formattedDate = formattedDate.split(',')[0]
+console.log(formattedDate); // Outputs something like "Monday, 09 Aug"
+return formattedDate
+}
+
+</script>
+
+<script>
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}
+
+</script>
+
+<script>
+/*
+rakeshkumarfb: Org 9 (Sunday 18-Jun-2023 08:49:34 PM)
+moxafa5631: Org 6 (Tuesday 13-Jun-2023 08:51:10 AM)
+moxafa5631: Org 8 (Tuesday 27-Jun-2023 08:53:00 PM)
+coyisi4601: Org 9 (Tuesday 13-Jun-2023 08:52:40 AM)
+
+account 1 = rakeshkumarfb
+account 2 = coyisi4601
+account 3 = moxafa5631
+*/
+
+/*
+
+  'Template': {
+ 'org': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+ 
+  
+  */
+  
+var accountsWithDetails = {
+  'Aagiatgyaan': {
+ 'Aagiatgyaan': {
+  'createdAt': 'Aagiatgyaan (25 Nov (10:27:00 AM) Saturday)',
+  'userName': 'loveable_nugget',
+  'userID': 'ob8aN4FXBRTBtkaBA',
+  'personalAPIToken': 'apify_api_OR8fOFPXdt6IXfFwLZuAHMfIpMMTQk269twW',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org1 (25 Nov (10:27:00 AM) Saturday)',
+  'userName': 'dfgdfg5656',
+  'userID': '7iEM9ZqqB4C67HqwC',
+  'personalAPIToken': 'apify_api_ln3iqklbpndnCHFbvjfAhjXrnFYzzt0UL9M2',
+  'organizationAPIToken': 'apify_api_Brqd7ipgcebgwgdrMF8ZJ0ZpB9xdUc0BLylI',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'employeeshdfilmshub': {
+ 'employeeshdfilmshub': {
+  'createdAt': 'employeeshdfilmshub (21 Nov (02:08:00 PM) Tuesday)',
+  'userName': 'limitless_zodiac',
+  'userID': 'c3uJpQKKz6NyDRNJq',
+  'personalAPIToken': 'apify_api_xIpRjDhVwkcqhajKJmEgEgxnfOlT573DoOJy',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org1 (21 Nov (02:08:00 PM) Tuesday)',
+  'userName': 'fgf54grf54',
+  'userID': 'jjWYkYkaszdMRm6bP',
+  'personalAPIToken': 'apify_api_xuCAdUbZ9QE6ByIgcDD7G8qFUTUdcW2P5LXK',
+  'organizationAPIToken': 'apify_api_rltIV2YskpThHXXYbqaa69QczFuEeN2kdFz8',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'groupshub': {
+ 'groupshub': {
+  'createdAt': 'groupshub (22 Nov (08:18:00 AM) Wednesday)',
+  'userName': 'russet_inhabitant',
+  'userID': 'LxGt65b73gTBdQQmG',
+  'personalAPIToken': 'apify_api_Ejok8RQyRobBDgNtLZuAN5TcMMMHmb0wrKJQ',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org1 (22 Nov (08:18:00 AM) Wednesday)',
+  'userName': 'gfhj6780df',
+  'userID': 'YCpMQ4L9pCgDz76fm',
+  'personalAPIToken': 'apify_api_51G9Xw7aTCALIYASX7MnYLwyL6IiqT2QtmAq',
+  'organizationAPIToken': 'apify_api_sW6UXu1ZAcp6W0o2hcXVopdH1YEFuj3PFDyl',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+ 
+   'nehele8730': {
+ 'nehele8730': {
+  'createdAt': 'nehele8730 (24 Nov (10:35:00 PM) Friday)',
+  'userName': 'dulcet_map',
+  'userID': '4sn2jAJvZj2eX5dNW',
+  'personalAPIToken': 'apify_api_EyMWbCqr5pCFtqsB63fCS8bRw9tPKg0cgxf1',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org 1 (27 Nov (10:16:00 PM) Monday)',
+  'userName': 'dg4g43w2f',
+  'userID': '3xJbhsrfxf2mbXfGc',
+  'personalAPIToken': 'apify_api_32xU7cCvY8yJbQefDVrd9rFpJvt8U73yLrII',
+  'organizationAPIToken': 'apify_api_3pRhRDbmYRHXbSAs6XXaT9Or4ehVR03grIms',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'orgacc6': {
+ 'orgacc6': {
+  'createdAt': 'orgacc6 (25 Nov (11:24:00 AM) Saturday)',
+  'userName': 'rewarding_treasure',
+  'userID': '9QFNRuWSkadfJ9Dy6',
+  'personalAPIToken': 'apify_api_K1gULi8az0bFdBllxWmsSmfgbMLKZK4yLLJP',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org1 (25 Nov (11:24:00 AM) Saturday)',
+  'userName': 'Sgs41bcd',
+  'userID': 'YnD3Bo2dzCbmd2b7j',
+  'personalAPIToken': 'apify_api_UgtXwBjHFeYklFz4gFsLB9Zt5H0OXJ449hMM',
+  'organizationAPIToken': 'apify_api_qEL4UOk0EZEIZUJkvg2zpjIeUbVBQg0xUhto',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+ 
+  'orgacc97': {
+ 'orgacc97': {
+  'createdAt': 'orgacc97 (25 Nov (11:28:00 AM) Saturday)',
+  'userName': 'vicarious_yapoks',
+  'userID': 'ZvsXKgHKk2iXmcsXm',
+  'personalAPIToken': 'apify_api_kFzhDxiTdTrEmXT1rh9CaWU1ijalZS2gaoum',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org1 (25 Nov (11:28:00 AM) Saturday)',
+  'userName': 'Xhdjo47479',
+  'userID': 'jbLnBevHovMsQWF8S',
+  'personalAPIToken': 'apify_api_lbyUdnY6jlU9bTRqAWWsxwh19Eadtl3qDVg7',
+  'organizationAPIToken': 'apify_api_zJirPx8JMTUI7xq9hauinHjTQIieFC0S5sY3',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+ 
+  'Orgacc647': {
+ 'Orgacc647': {
+  'createdAt': 'Orgacc647 (25 Nov (11:32:00 AM) Saturday)',
+  'userName': 'monumental_verse',
+  'userID': 'y7sLwoqPuPsRgf8c8',
+  'personalAPIToken': 'apify_api_qnUaNgawbbB5rY88IAlHsfzZpwNiWz3wxWSH',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org1 (25 Nov (11:32:00 AM) Saturday)',
+  'userName': 'Wfeho3773',
+  'userID': 'GEjrQvKe7uRxhwrNs',
+  'personalAPIToken': 'apify_api_qgN7ZTKn4TAiEUIWLRSpxt3Rh0eBG13HRvcz',
+  'organizationAPIToken': 'apify_api_4uj5ssgtOIbKGbdbkKxeFuzE1zw3O91dnPrX',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+ 
+  'Accorg59': {
+ 'Accorg59': {
+  'createdAt': 'Accorg59 (25 Nov (11:35:00 AM) Saturday)',
+  'userName': 'journalistic_xylulose',
+  'userID': 'EPnHSzuk8KvNsxbdf',
+  'personalAPIToken': 'apify_api_pPUv4bkSYlhOiT4gz3XacQDDlpqMTl3KdTHg',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org1 (25 Nov (11:35:00 AM) Saturday)',
+  'userName': 'Sjhdri838',
+  'userID': 'omfgjm7h6fFnFZXo3',
+  'personalAPIToken': 'apify_api_aY8XMWpRMcMmw9bQoWgEymKg70Pd9q3aSsoA',
+  'organizationAPIToken': 'apify_api_aCgwjFddSab71qY2Nm8r45g2UWqaj73WjEOS',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+ 
+  'accorg398': {
+ 'accorg398': {
+  'createdAt': 'accorg398 (25 Nov (12:25:00 PM) Saturday)',
+  'userName': 'peaceful_float',
+  'userID': 'AszfBRSm6tSWx7YCu',
+  'personalAPIToken': 'apify_api_HzzPlJUWhgO89EOhaxbheF6z0J0z5X18rlf6',
+  'organizationAPIToken': '',
+  },
+  
+  'org1': {
+  'createdAt': 'org1 (25 Nov (12:25:00 PM) Saturday)',
+  'userName': 'fdgw3gd34',
+  'userID': 'NPmZ3dDtRAuqbdRCf',
+  'personalAPIToken': 'apify_api_ONJ95ZDaf8qzyIO91UH3Fv7a7aMBwg1ksMHl',
+  'organizationAPIToken': 'apify_api_WbrQTdUSR7TMhvhzWceRgcs7FXNagR2tmYHz',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+   'accorg410': {
+ 
+  'accorg410': {
+  'createdAt': 'accorg410 (25 Nov (12:35:00 PM) Saturday)',
+  'userName': 'coveted_timer',
+  'userID': 'qGCBG29g4jvTkePyX',
+  'personalAPIToken': 'apify_api_avbuCWUk0OkifZFZJLByxbcWhQLj993zUHFr',
+  'organizationAPIToken': '',
+  },
+  
+  'org1': {
+  'createdAt': 'Org1 (25 Nov (12:35:00 PM) Saturday)',
+  'userName': 'sdg2q32ge',
+  'userID': 'hLr4CM3oeJsJpe8rH',
+  'personalAPIToken': 'apify_api_tJ8TOvvpWleUTl82hokW1t4caBJT111G6sqS',
+  'organizationAPIToken': 'apify_api_TAYch3a0hXSFtG4ck64obN9KFKhivb1yxTDK',
+  },
+ 
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+   'orgacc72': {
+ 
+  'orgacc72': {
+  'createdAt': 'orgacc72 (25 Nov (12:40:00 PM) Saturday)',
+  'userName': 'earnest_linear',
+  'userID': 'qcfTyyJfbgdGvzscu',
+  'personalAPIToken': 'apify_api_layIo8aYii6HvSH02qwHU3yjxJdXcj2Vqtgb',
+  'organizationAPIToken': '',
+  },
+    
+  'org1': {
+  'createdAt': 'org1 (25 Nov (12:41:00 PM) Saturday)',
+  'userName': 'gfg97568f',
+  'userID': 'hNrRa5h2iwzrkmafX',
+  'personalAPIToken': 'apify_api_riz0TVlJLWRcTKda6yX73Ff4GIvRcb0Q09La',
+  'organizationAPIToken': 'apify_api_dRdtfuAVap8TdycGsZvH41cm94NIRU3PVQtO',
+  },
+  
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'cilet12649': {
+ 'cilet12649': {
+  'createdAt': 'cilet12649 (27 Nov (04:09:00 PM) Monday)',
+  'userName': 'yodeling_taste',
+  'userID': 'DeGGxPASCqbdQHQaq',
+  'personalAPIToken': 'apify_api_0ChWFMKhHdSBSBegb75EvaevnQ3hX10cG59V',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org 1 (27 Nov (04:13:00 PM) Monday)',
+  'userName': 'Hw2bs27gs',
+  'userID': 'Qgu7cGA2fK9jofbK6',
+  'personalAPIToken': 'apify_api_fSpEWQX9NrnfuLBrA2AEZKW6ijutqt0Kc3cx',
+  'organizationAPIToken': 'apify_api_VlqH5KogwKxfyGU9fsyhDv6eWqemlI04cjra',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'ronebe5787': {
+ 'ronebe5787': {
+  'createdAt': 'ronebe5787 (27 Nov (04:26:00 PM) Monday)',
+  'userName': 'vehement_shell',
+  'userID': 'Zr2wAsuEY4mXWQGWF',
+  'personalAPIToken': 'apify_api_p1YzwGfHX9N51utuEleaKB4O0oYGrV3c97cn',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org 1 (27 Nov (04:29:00 PM) Monday)',
+  'userName': 'Je3bs7rb',
+  'userID': '9CCTzCvzEExXvz5kT',
+  'personalAPIToken': 'apify_api_e7KmKeOR6mlczcNMnp4wzuwngGbQXG2kOrzt',
+  'organizationAPIToken': 'apify_api_B6pSLbYjoEihIr01hUu3u9h2wQJ0331QH2Uc',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'xipetam255': {
+ 'xipetam255': {
+  'createdAt': 'xipetam255 (27 Nov (08:02:00 PM) Monday)',
+  'userName': 'zany_robot',
+  'userID': 'JbHXahuErvGAwP2FA',
+  'personalAPIToken': 'apify_api_ldd0IaVPsYhwM0ReLFgqwmP2eanMxc1ulLgK',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org 1 (27 Nov (08:05:00 PM) Monday)',
+  'userName': 'He3bsj2jz7',
+  'userID': 'vXZ67CwkwsKNkf7uJ',
+  'personalAPIToken': 'apify_api_rshueb3Rmm0J1k2BO3cflhIWlB8UYJ1KQUye',
+  'organizationAPIToken': 'apify_api_p1o0m4KAa1pk1W9fM7wQldAJVquN4V1Jei5I',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'fimaw38913': {
+ 'fimaw38913': {
+  'createdAt': 'fimaw38913 (27 Nov (09:12:00 PM) Monday)',
+  'userName': 'worried_narrator',
+  'userID': 'GvASGXZyXQ3ZHXPpa',
+  'personalAPIToken': 'apify_api_sZjP9gR5VfAymwkXR6UzI3Q9PNO2Hs4os3GE',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org 1 (27 Nov (09:16:00 PM) Monday)',
+  'userName': 'Nb3u4bsu3h',
+  'userID': 'akrB8Kovc8xMupqhD',
+  'personalAPIToken': 'apify_api_Mr0i5RhYYByaPu8fA4b8gE9RJk5xBZ3SAwE5',
+  'organizationAPIToken': 'apify_api_yTVwbkbgxe1lP495h3FOQn8o1IEMZJ0lNCv9',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'teken29665': {
+ 'teken29665': {
+  'createdAt': 'teken29665 (27 Nov (09:23:00 PM) Monday)',
+  'userName': 'chirpy_scanner',
+  'userID': 'tRC6c7HmhTMBdq9uL',
+  'personalAPIToken': 'apify_api_406LFaMCf79y3NWLf7bIppCKhHWr9I2Toz2f',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org 1 (27 Nov (09:27:00 PM) Monday)',
+  'userName': 'Nsu7dbs3h',
+  'userID': 'fdH5tmwEXwWf5QojY',
+  'personalAPIToken': 'apify_api_n5SdOfKzglw3TRfi8JO7kR5qNF6aC63lyTsb',
+  'organizationAPIToken': 'apify_api_jYtYaczgHTUecavsPLwiJUNHeaieRw1A6SjW',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'nepekiw260': {
+ 'nepekiw260': {
+  'createdAt': 'nepekiw260 (27 Nov (09:40:00 PM) Monday)',
+  'userName': 'ritzy_quarter',
+  'userID': 'zmJjqdyihAGRh5WAL',
+  'personalAPIToken': 'apify_api_Xou1fNuNVg7hwQwSO2mT3vvxFdQ4Zf1Tn6Pj',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org 1 (27 Nov (09:42:00 PM) Monday)',
+  'userName': 'Hd3ixhd3j',
+  'userID': '7d5zGWqEyhg4sWt9c',
+  'personalAPIToken': 'apify_api_Wnfw8ZgzuR3rLnFFYxZ3BntyI4pcWj4BHBVp',
+  'organizationAPIToken': 'apify_api_ZgKRscoOe8jU4HR2LaWftakSf7DeJn33CwcP',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+  
+  'copota8028': {
+ 'copota8028': {
+  'createdAt': 'copota8028 (27 Nov (09:55:00 PM) Monday)',
+  'userName': 'rambunctious_bungalow',
+  'userID': 'g4btbBWyeXZCRygDA',
+  'personalAPIToken': 'apify_api_980CgOIykURBWCftJYK4ukaCpT3ant0WbYfg',
+  'organizationAPIToken': '',
+  },
+  
+   'org1': {
+  'createdAt': 'Org 1 (27 Nov (09:57:00 PM) Monday)',
+  'userName': 'Ns3hjs3kf8',
+  'userID': 'DGv5x97XYEyTeaEbe',
+  'personalAPIToken': 'apify_api_OzX7MIq3XLcBdwxul2Z8fcvxbrROxh1Nj8gU',
+  'organizationAPIToken': 'apify_api_nb6EhsabfLrEioCgDkh5U5xxjUOdCL0lgD3F',
+  },
+    
+  'org2': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org3': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org4': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org5': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org6': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org7': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org8': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org9': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  'org10': {
+  'createdAt': '',
+  'userName': '',
+  'userID': '',
+  'personalAPIToken': '',
+  'organizationAPIToken': '',
+  },
+  
+  },
+
+};
+
+  
+//code to convert accountsWithDetails into simple form (Starts Here)
+var simplifiedAccountsObj = {}
+for( var email in accountsWithDetails )
+{
+	var organizations = accountsWithDetails[email] 
+	simplifiedAccountsObj [ email ] ={}
+	for( var org in organizations )
+	{
+		var orgObject = organizations[org]
+		var createdAt =  orgObject['createdAt']
+		
+		if( createdAt !='' )
+		{
+			createdAt =  createdAt.split( createdAt.split('(')[0]+'(' )[1].replace(/\).*/,')')
+			
+			console.log(org)
+			var date =  createdAt.split(' ')[0] + ' '+createdAt.split(' ')[1]
+			//simplifiedAccountsObj [ email ] [date] = org + createdAt.split(date)[1]
+			
+			if( simplifiedAccountsObj [ email ] [date] ==undefined)
+			{
+				simplifiedAccountsObj [ email ] [date] = [ org + createdAt.split(date)[1] ]
+			}
+			else
+			{
+				(simplifiedAccountsObj [ email ] [date]).push( org + createdAt.split(date)[1] )
+			}
+			
+			
+			
+		}
+		
+	}
+}
+//code to convert accountsWithDetails into simple form (Ends Here)
+
+var accounts = simplifiedAccountsObj
+
+/*
+
+accounts = {
+  "rakeshkumar": {
+    '09 Jun': 'Rakesh (01:13:22 PM)',
+    '22 Jun': 'org2 (02:00:23 PM)',
+    '01 Jul': 'org3 (12:44:26 PM)',
+    '14 Jun': 'org4 (09:55:57 AM)',
+    '21 Jun': 'org5 (08:28:37 PM)',
+    '28 Jun': 'org6 (08:48 PM)',
+    '04 Jul': 'org7 (08:49 PM)',
+    '11 Jul': 'org8 (08:49:30 PM)',
+    '18 Jul': 'org9 (08:49:34 PM)',
+    '25 Jul': 'org10 (08:49:35 PM) ',
+  },
+  "coyisi4601": {
+    '10 Jun': 'temp (09:09:00 PM)',
+    '11 Jun': 'org1 (11:00:34 AM)',
+    '22 Jun': 'org2 (9:55:30 PM)',
+    '01 Jul': 'org3 (12:45:44 PM)',
+    '08 Jul': 'org4 (01:53:07 PM)',
+    '15 Jun': 'org5 (10:00:53 PM)',
+    '23 Jun': 'org6 (08:24 AM)',
+    '30 Jun': 'org7 (08:52 AM)',
+    '06 Jul': 'org8 (08:52 AM)',
+    '13 Jul': 'org9 (08:52:40 AM)',
+    '20 Jul': 'org10 (08:52:40 AM)',
+  },
+  "moxafa5631": {
+    '07 Jul': 'temp (12:41:31 PM)',
+    '07 Jul': 'org1 (03:13:52 PM)',
+    '15 Jun': 'org2 (10:02:18 PM)',
+    '23 Jun': 'org3 (08:26 AM)',
+    '30 Jun': 'org4 (08:50 AM)',
+    '06 Jul': 'org5 (08:50 AM)',
+    '13 Jul': 'org6 (08:51:10 AM)',
+    '20 Jul': 'org7 (08:51:10 AM)',
+    '27 Jul': 'org8 (08:53:00 PM)',
+    '04 Aug': 'org9 (08:53:00 PM)',
+    '11 Aug': 'org10 (08:53:00 PM)',
+
+  },
+};
+*/
+
+
+
+var accountsByMonthWeek = {};
+var accountsByMonthWeekArray = [];
+
+var currentDate = new Date(); // Get the current date
+//var currentDate = new Date("03 Jul"); // Get the current date
+
+for (var account in accounts) {
+
+  var transactions = accounts[account];
+  for (var date in transactions) {
+  for( var i=0;i<transactions[date].length;i++ )
+  {
+  const nextRenewal = getNextRenewalDate( date );
+  
+    var transactionDate = new Date(nextRenewal);
+    var week = getWeekNumber(transactionDate);
+    var month = transactionDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+    var weekRange = getWeekRange(transactionDate);
+    if (!accountsByMonthWeek[month]) {
+      accountsByMonthWeek[month] = {};
+    }
+    if (!accountsByMonthWeek[month][weekRange]) {
+      accountsByMonthWeek[month][weekRange] = [];
+    }
+	
+    //var transactionInfo = date + '-' + transactions[date] + ' ' + account;
+    //var transactionInfo = date.split(' ')[0] + ' '+ capitalize(month) + '-' + transactions[date] + ' ' + account;
+    var transactionInfo = date.split(' ')[0] + ' '+ capitalize(month) + '-' + transactions[date][i] + '_' + account;
+    
+	accountsByMonthWeekArray.push(transactionInfo);
+	
+	if (isCurrentWeek(week, currentDate)) {
+      transactionInfo = '<mark>' + transactionInfo + '</mark>'; // Highlight current week's accounts
+    }
+    accountsByMonthWeek[month][weekRange].push(transactionInfo);
+	
+  }
+  }
+}
+
+console.log("accountsByMonthWeek",accountsByMonthWeek)
+
+var output = '';
+for (var month in accountsByMonthWeek) {
+  output += '<p>' + month.toUpperCase() + ':</p>';
+  var sortedWeekRanges = Object.keys(accountsByMonthWeek[month]).sort(sortWeekRange);
+  for (var i = 0; i < sortedWeekRanges.length; i++) {
+    var weekRange = sortedWeekRanges[i];
+    var sortedTransactions = accountsByMonthWeek[month][weekRange].sort();
+    var sortedTransactionsStr = sortedTransactions.toString().replace(/,/g,'<br>	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')
+	//console.log(sortedTransactions)
+	//console.log(sortedTransactionsStr)
+//    output += '<p>' + weekRange + ': ' + sortedTransactions.join(', ')+ '</p>';
+    output += '<div>' + weekRange + ': ' + sortedTransactionsStr+ '</div>';
+  }
+}
+
+document.getElementById("ptag").innerHTML = (output);
+
+// Function to get the week number from a date
+function getWeekNumber(date) {
+  var onejan = new Date(date.getFullYear(), 0, 1);
+  var week = Math.ceil(((date - onejan) / 86400000 + onejan.getDay() + 1) / 7);
+  return week;
+}
+
+// Function to get the week range for a given date
+function getWeekRange(date) {
+  var startDate = new Date(date);
+  startDate.setDate(startDate.getDate() - startDate.getDay() + 1); // Set to the first day of the week
+  var endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 6); // Set to the last day of the week
+  var startDay = startDate.getDate();
+  var endDay = endDate.getDate();
+  var startMonth = startDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+  var endMonth = endDate.toLocaleString('default', { month: 'short' }).toLowerCase();
+  var weekRange = startDay + ' ' + startMonth + '-' + endDay + ' ' + endMonth;
+  return weekRange;
+}
+
+// Function to check if a given week is the current week
+function isCurrentWeek(week, currentDate) {
+  var currentWeek = getWeekNumber(currentDate);
+  return week === currentWeek;
+}
+
+// Function to sort the week ranges in ascending order
+function sortWeekRange(a, b) {
+  var startA = parseInt(a.split(' ')[0]);
+  var startB = parseInt(b.split(' ')[0]);
+  return startA - startB;
+}
+//This modified code should provide the correct output with accurate week ranges and sorted transactions within each week range.
+
+
+
+
+function getNextRenewalDate(passedRenewalDate) {
+  const currentDate = new Date();
+  //const currentDate = new Date("1 Aug");
+  const currentDay = currentDate.getDate();
+  const currentMonth = currentDate.getMonth() + 1; // Adding 1 because month index starts from 0
+
+  // Set the renewal day and month
+  //var renewalDate = new Date( "28 Jun" );
+  var renewalDate = new Date( passedRenewalDate );
+  //const renewalDay = 16;
+  const renewalDay = renewalDate.getDate()
+  //const renewalMonth = 7; // July (index 7-1=6)
+  const renewalMonth = renewalDate.getMonth() + 1; // July (index 7-1=6)
+
+  // Calculate the next renewal month and year
+  let nextRenewalMonth = currentMonth;
+  let nextRenewalYear = currentDate.getFullYear();
+
+  if (currentDay > renewalDay || (currentDay === renewalDay && currentMonth !== renewalMonth)) {
+    nextRenewalMonth += 1;
+    if (nextRenewalMonth > 12) {
+      nextRenewalMonth = 1;
+      nextRenewalYear += 1;
+    }
+  }
+
+  // Create the next renewal date
+  const nextRenewalDate = new Date(nextRenewalYear, nextRenewalMonth - 1, renewalDay);
+
+  return nextRenewalDate;
+}
+
+
+/*
+
+function getAvaliableDate( specificDate )
+{
+
+//var array1 = ["6 aug 2023","2 Jul 2023", "5 aug 2023", "3 aug 2023","3 aug 2023","1 sep 2023"];
+//var array1 = ["6 aug","2 Jul", "5 aug", "3 aug","3 aug","1 sep"];
+//var array1 = [    "06 Aug-org8 (08:53:00 PM) moxafa5631",    "04 Aug-org9 (08:53:00 PM) moxafa5631", "11 Aug-org10 (08:53:00 PM) moxafa5631"];
+
+var dateMonthArray = []
+for (var i = 0; i < accountsByMonthWeekArray.length; i++) {
+	var dateMonthStr = accountsByMonthWeekArray[i].split('-')[0]
+        dateMonthArray.push( dateMonthStr )
+    
+}
+
+
+var currentDate;
+if( specificDate!=undefined )
+{//if checking for specific date then run this block
+currentDate = specificDate
+}
+else
+{// otherwise check for current date & run this block
+
+//var currentDate = "01 Aug 2023";
+//currentDate = "04 Aug";
+currentDate = formatDate( new Date() ) ;
+}
+
+function formatDate(date) {
+  var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var day = date.getDate().toString().padStart(2, '0');
+  var month = months[date.getMonth()];
+  return `${day} ${month}`;
+}
+
+
+// Step 1: Convert dates to JavaScript Date objects
+var currentDateObj = new Date(currentDate);
+var array1Dates = dateMonthArray.map(dateStr => new Date(dateStr));
+
+// Step 2: Filter out dates greater than the currentDate
+var filteredDates = array1Dates.filter(date => date > currentDateObj);
+
+// Step 3: Sort the filtered dates in ascending order
+filteredDates.sort((a, b) => a - b);
+
+// Step 4: Get the first date from the sorted array as the next date
+//var nextDate = filteredDates.length > 0 ? filteredDates[0].toDateString() : "No next date found";
+var nextDate = filteredDates.length > 0 ? filteredDates[0].toDateString() : "Null";
+
+console.log(nextDate);
+return nextDate;
+}
+
+function getAvailableAccountsForToday_Previous()
+{
+var nextDate = getAvaliableDate()
+var availableAccountsForToday = []
+for (var i = 0; i < accountsByMonthWeekArray.length; i++) {
+	var dateMonthStr = accountsByMonthWeekArray[i].split('-')[0]
+    if (new Date( dateMonthStr ).getTime() === new Date( nextDate ).getTime()) {
+        availableAccountsForToday.push(accountsByMonthWeekArray[i])
+    }
+}
+console.log("availableAccountsForToday", availableAccountsForToday);
+
+return availableAccountsForToday;
+}
+
+function getAvailableAccountsForToday( checkedAccountForTodayStr, passedAvailableAccountsForTodayArray )
+{
+
+console.log("checkedAccountForTodayStr",checkedAccountForTodayStr)
+var nextDate = getAvaliableDate()
+var availableAccountsForToday = []
+for (var i = 0; i < accountsByMonthWeekArray.length; i++) {
+	var dateMonthStr = accountsByMonthWeekArray[i].split('-')[0]
+    if (new Date( dateMonthStr ).getTime() === new Date( nextDate ).getTime()) {
+        availableAccountsForToday.push(accountsByMonthWeekArray[i])
+    }
+}
+
+if( passedAvailableAccountsForTodayArray!=undefined )
+{
+	availableAccountsForToday = passedAvailableAccountsForTodayArray
+}
+
+if( checkedAccountForTodayStr==undefined )
+{ // if getting getAvailableAccountsForToday for first time then run this block
+
+console.log("availableAccountsForToday", availableAccountsForToday);
+
+//return availableAccountsForToday[0];
+return [ availableAccountsForToday[0], availableAccountsForToday ];
+}
+
+
+else if( checkedAccountForTodayStr!=undefined )
+{ // if getting getAvailableAccountsForToday for second or more time then run this block
+
+//console.log("availableAccountsForToday", availableAccountsForToday);
+var indexOfCheckedAccountForTodayStr = availableAccountsForToday.indexOf(checkedAccountForTodayStr)
+var nextAccount = availableAccountsForToday[ indexOfCheckedAccountForTodayStr +1 ]
+if( indexOfCheckedAccountForTodayStr !=-1 && availableAccountsForToday.length > 1 && nextAccount!=undefined )
+{// if availableAccountsForToday are more than 1, then return next account after increasing index to checking for apify credit
+
+//return nextAccount;
+return [ nextAccount, availableAccountsForToday ];
+}
+else
+{
+
+var upcomingDate = checkedAccountForTodayStr.split('-')[0]
+//console.log('fetch next date accounts')
+console.log('now checking for upcomingDate', upcomingDate)
+var nextDate = getAvaliableDate( upcomingDate )
+var availableAccountsForToday = []
+for (var i = 0; i < accountsByMonthWeekArray.length; i++) {
+	var dateMonthStr = accountsByMonthWeekArray[i].split('-')[0]
+    if (new Date( dateMonthStr ).getTime() === new Date( nextDate ).getTime()) {
+        availableAccountsForToday.push(accountsByMonthWeekArray[i])
+    }
+}
+
+
+console.log("availableAccountsForUpcomingDate", upcomingDate, availableAccountsForToday);
+//return availableAccountsForToday[0];
+return [ availableAccountsForToday[0], availableAccountsForToday ];
+
+}
+
+
+
+
+
+}
+
+
+}
+
+function getAccountDetailsObject( availableAccountStr )
+{
+	//availableAccountStr = '04 Aug-org9 (08:53:00 PM) moxafa5631'
+	var org = availableAccountStr.split('-')[1].split(' ')[0] 
+	var email = availableAccountStr.split('_')[1]
+	var accountDetailsObject = accountsWithDetails[ email ][ org ]
+	return accountDetailsObject;
+}
+
+
+
+	//var apifyURL = 'https://api.apify.com/v2/users/me/limits?token=apify_api_miYNvXi5huhwqWuSRP06rkqf5duqKK3u0tcL'
+	
+async function checkApifyAccountCredit(accountDetailsObject) {
+    var personalAPIToken = accountDetailsObject['personalAPIToken'];
+    var apifyURL = 'https://api.apify.com/v2/users/me/limits?token=' + personalAPIToken;
+
+    try {
+        // Fetch data using the Fetch API
+        const response = await fetch(apifyURL);
+
+        // Check if the response was successful
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        // Parse the response body as JSON
+        const data = await response.json();
+
+        // checking if apify account credit is used or not
+        var currentCredit = data['data']['current']['monthlyUsageUsd'].toFixed(2);
+        var monthlyCredit = data['data']['limits']['maxMonthlyUsageUsd'];
+        var usagePercentage = (currentCredit / monthlyCredit) * 100;
+
+        if (usagePercentage > 50) {
+            console.log("fully used,", usagePercentage, currentCredit + '/' + monthlyCredit);
+            return false;
+        } else {
+            console.log("fully empty,", usagePercentage, currentCredit + '/' + monthlyCredit);
+            return true;
+        }
+    } catch (error) {
+        // Handle any errors that occurred during the fetch
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+
+
+async function getOneAccountToBeUsed() {
+	var tempcount = 0
+	var loopTrueFalse = true
+	var checkedAccountForTodayStr;
+	var availableAccountsForToday;
+	
+    try {
+
+	while( loopTrueFalse )
+	{
+	tempcount = tempcount+1
+	//var availableAccountForTodayStr = getAvailableAccountsForToday( checkedAccountForTodayStr )
+	var returnedArray = getAvailableAccountsForToday( checkedAccountForTodayStr, availableAccountsForTodayArray )
+	var availableAccountForTodayStr = returnedArray[0]
+	var availableAccountsForTodayArray = returnedArray[1]
+	
+	var gotAccountDetailsObject = getAccountDetailsObject( availableAccountForTodayStr )
+	console.log(availableAccountForTodayStr, gotAccountDetailsObject );
+	
+	  var creditAvailOrNot = await checkApifyAccountCredit( gotAccountDetailsObject );
+	  if( creditAvailOrNot==true )
+	  {
+	  loopTrueFalse = false
+	   // console.log('Apify account credit status:', creditAvailOrNot);
+
+	  }
+	  else
+	  {
+		//creditAvailOrNot==true
+		checkedAccountForTodayStr = availableAccountForTodayStr
+	  }
+      
+	  //console.error('tempcount:', tempcount);
+	  
+	   if( tempcount==10 )
+	  {
+	  loopTrueFalse = false
+	  }
+	}
+      
+    } catch (error) {
+        console.error('Error:', error);
+    }
+	
+	console.log("got one account.. now we can start fetching data")
+	
+	
+}
+
+function saveObjectIntoGoogleDrive()
+{
+
+}
+
+getOneAccountToBeUsed();
+
+*/
+</script>
