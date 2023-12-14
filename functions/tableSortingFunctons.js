@@ -327,13 +327,25 @@ function clickOnVolumeAutomatically()
 		}
 		
 			
-		if( window.location.href.toLocaleLowerCase().includes('indicesandintradayhike')==false ) 
+		
+		
+		
+		if( window.location.href.toLocaleLowerCase().includes('indicesandintradayhike')==false && window.location.href.toLocaleLowerCase().includes('indicesandheatimapnewwithmoney2')==false ) 
 		{
 		if( th.innerText=='Money' )
+		//if( th.innerText=='20DAV' )
 		{
 			th.click()
 		}
-	}
+		}
+		
+		if( window.location.href.toLocaleLowerCase().includes('indicesandheatimapnewwithmoney2')==true ) 
+		{
+		if( th.innerText=='20DAV' )
+		{
+			th.click()
+		}
+		}	
 		
 		if( tableId !='onlyEquityTableStr' && window.location.href.toLocaleLowerCase().includes('momentumspike')==false ) 
 		{
@@ -371,7 +383,7 @@ function clickOnVolumeAutomatically()
 		{
 			th.click()
 		}
-		}
+		}		
 		
 		
 		
