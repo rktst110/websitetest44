@@ -325,9 +325,9 @@ async function getIndicesData( passedValue )
 	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
-	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	
 	showIndicesAdvDecUncChart ( JSON.parse( dataObj['data'] ) )
-
+	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 }
 
 async function showIndicesPerformanceChart ( returnedDataObj )
@@ -365,7 +365,7 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 	for (var symbol in indicesPerformanceObject) {
 		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
 		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
-		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' && symbol !='NIFTY PSE' && symbol !='NIFTY SERV SECTOR' && symbol !='NIFTY COMMODITIES' && symbol !='NIFTY HEALTHCARE' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' && symbol !='NIFTY PSE' && symbol !='NIFTY SERV SECTOR' && symbol !='NIFTY COMMODITIES' && symbol !='NIFTY HEALTHCARE' ) //&& symbol !='NIFTY MIDCAP 50'
 		{
 		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
 		
@@ -402,11 +402,19 @@ indiceSymbol = symbol.replace('NIFTY ','')
 	
 	onlyEquityTableStr +=' </tbody> </table>    </div>  </div>'
 	
-			
-if( document.getElementById('showTablesOnOff').checked==true )
-{ 
-	document.getElementById("IndicesPerformanceChart").innerHTML = onlyEquityTableStr
+	
+	
+	document.getElementById("MarketSentiment").innerHTML = onlyEquityTableStr
 	addEventListnerInTables()
+	
+	
+	
+//if( document.getElementById('showTablesOnOff').checked==true )
+if( false==true )
+{ 
+	//document.getElementById("IndicesPerformanceChart").innerHTML = onlyEquityTableStr
+	//document.getElementById("MarketSentiment").innerHTML = onlyEquityTableStr
+	//addEventListnerInTables()
 }
 else
 {
@@ -1008,7 +1016,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 		+'">            <caption style="caption-side:top">'
 	 +sector
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>  <th class="NiftyTotalMarketClass">Level</th>	   <th class="NiftyTotalMarketClass">pLevel</th>           <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>  <th class="NiftyTotalMarketClass">Level</th>	   <th class="NiftyTotalMarketClass">PLevel</th>           <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
        +'<tbody>'
 		}
 		else
@@ -1018,7 +1026,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 		+'">            <caption style="caption-side:top">'
 	 +sector.replace(/NIFTY_/g,'')
 	 //+' (% Change-Wise)</caption>     <thead>       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>               <th class="NiftyTotalMarketClass">VPC</th>              <th class="NiftyTotalMarketClass">Change(%)</th>			   <th class="NiftyTotalMarketClass">T.O.</th>            </tr> </thead>'
-	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>		<th class="NiftyTotalMarketClass">Level</th>		   <th class="NiftyTotalMarketClass">pLevel</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
+	 +' | '+selectedTradingDate+' | '+selectedValue+'</caption>     <thead class="tableRowClass">       <tr>               <th class="NiftyTotalMarketClass">Symbol</th>              <th class="NiftyTotalMarketClass">Cng%</th>		<th class="NiftyTotalMarketClass">Level</th>		   <th class="NiftyTotalMarketClass">PLevel</th>               <th class="NiftyTotalMarketClass">20DAV</th>            </tr> </thead>'
        +'<tbody>'
 		}
 	   
@@ -1028,7 +1036,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 
 	   var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
 	
-		if( symbolArray!=undefined && deliveryDataObj["Symbols"][Symbol]!=undefined ){
+		if( symbolArray!=undefined && deliveryDataObj["Symbols"][Symbol]!=undefined && deliveryDataObj["Symbols"][Symbol]["deliveryData"]!=undefined ){
 		//if( symbolArray!=undefined  ){
 	//console.log(sector,Symbol)
 
@@ -1038,12 +1046,12 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
     var DayHigh = symbolArray['dayHigh'] 
 	 var DayLow = symbolArray['dayLow'] 
 	 var LastPrice = symbolArray['lastPrice'] 
-	 
-	 var pDayHigh = deliveryDataObj["Symbols"][Symbol]["deliveryData"][3] 
+	// console.log(Symbol, deliveryDataObj)
+  var pDayHigh = deliveryDataObj["Symbols"][Symbol]["deliveryData"][3] 
 	var pDayLow = deliveryDataObj["Symbols"][Symbol]["deliveryData"][4]
 	
 	  var pDayRange =( ( (pDayHigh - pDayLow) / pDayLow) )
-	  var pLevel =  ( ( ( (LastPrice - pDayLow) / pDayLow) *10) / pDayRange)
+	var pLevel =  ( ( ( (LastPrice - pDayLow) / pDayLow) *10) / pDayRange)
 	
 	var rFactor = Number (symbolArray["pChange"] )*( symbolArray["totalTradedValue"]  / average20DaysValue)
 	 
@@ -1061,7 +1069,7 @@ async function showEquitySectorsStocksData( equityDataObj, selectedTradingDate, 
 			 +'</td><td>'
 			 +Level.toFixed(0)
 			 +'</td><td>'
-			 +pLevel.toFixed(0) //symbolArray["lastPrice"] 
+			 +pLevel.toFixed(0) //rFactor.toFixed(2) //symbolArray["lastPrice"] 
 			 //+(symbolArray["totalTradedValue"] / 100000).toFixed(0) //totalTradedVolume
 			  +'</td><td>'
 			+twentyDAV.toFixed(2)
