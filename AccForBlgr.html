@@ -16,7 +16,7 @@ body {
 <br><br>
 <hr>
 <div id="accountStr" onclick="generateOrgName()" onmouseover="">
-Org0 (09 Jan (21:47:00 PM) Tuesday)
+Org1 (09 Jan (21:47:00 PM) Tuesday)
 </div>
 <hr>
 <a href="https://console.apify.com/">https://console.apify.com/</a>
@@ -48,7 +48,7 @@ function generateFormattedDateString() {
     const formattedString = `(${day} ${month} (${hours}:${minutes}:${seconds} ${ampm}) ${dayOfWeek})`;
 	
 	var formattedDateString = formattedString
-	var str= "Org" + '0 '+formattedDateString
+	var str= "Org" + '1 '+formattedDateString
 	document.getElementById('accountStr').innerText = str
     //return formattedString;
     return str;
