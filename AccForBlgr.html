@@ -43,6 +43,9 @@ P Name (09 Jan (21:47:00 PM) Tuesday)
 
 <script>
 
+function sleep(milliseconds){
+return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
 
 function generateFormattedDateString() {
     const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -76,8 +79,11 @@ function copyAll()
 {
 	
 	generateOrgName()
+	await sleep(200)
 	generateRandomString()
+	await sleep(200)
 	generateApiName()
+	await sleep(200)
 	generatePName()
 	
 }
