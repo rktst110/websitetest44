@@ -19,8 +19,20 @@ body {
 Org1 (09 Jan (21:47:00 PM) Tuesday)
 </div>
 <hr>
+<div id="accountStr" onclick="generateRandomString()" onmouseover="">
+Random Str (09 Jan (21:47:00 PM) Tuesday)
+</div>
+<hr>
+<div id="accountStr" onclick="generateApiName()" onmouseover="">
+API Name (09 Jan (21:47:00 PM) Tuesday)
+</div>
+<hr>
 <div id="accountStr" onclick="generatePName()" onmouseover="">
-P Name
+P Name (09 Jan (21:47:00 PM) Tuesday)
+</div>
+<hr>
+<div id="accountStr" onclick="copyAll()" onmouseover="">
+(09 Jan (21:47:00 PM) Tuesday) ALL
 </div>
 <hr>
 <a href="https://console.apify.com/">https://console.apify.com/</a>
@@ -30,6 +42,7 @@ P Name
 
 
 <script>
+
 
 function generateFormattedDateString() {
     const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -59,6 +72,16 @@ function generateFormattedDateString() {
 }
 
 
+function copyAll()
+{
+	
+	generateOrgName()
+	generateRandomString()
+	generateApiName()
+	generatePName()
+	
+}
+
 function generateOrgName()
 {
 	navigator.clipboard.writeText( generateFormattedDateString() )
@@ -67,6 +90,25 @@ function generateOrgName()
 function generatePName()
 {
 	navigator.clipboard.writeText( "0rg4ccap1@api" )
+}
+
+function generateApiName()
+{
+	navigator.clipboard.writeText( "data@4apify" )
+}
+
+
+function generateRandomString() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let randomString = '';
+
+    for (let i = 0; i < 9; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomString += characters.charAt(randomIndex);
+    }
+
+    //return randomString;
+	navigator.clipboard.writeText( randomString )
 }
 
 generateFormattedDateString() 
