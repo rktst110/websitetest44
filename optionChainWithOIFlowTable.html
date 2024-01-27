@@ -2645,9 +2645,184 @@ console.log( "aboveATM",aboveATM )
 
 <!-- Floating Buttons Code Starts Here -->
 <style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	     <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	     <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/> <br/><button onclick="hideShowcalcu()">Cal</button>	</div>
 <!-- Floating Buttons Code Ends Here -->
+<!-- Calculator Starts here -->
+<style>
+#mydiv {
+  position: absolute;
+  z-index: 9;
+  background-color: #f1f1f1;
+  text-align: center;
+  border: 1px solid #d3d3d3;
+ color: black;
+ display: none;
+}
 
+#mydivheader {
+  padding: 10px;
+  cursor: move;
+  z-index: 10;
+  background-color: #2196F3;
+  color: #fff;
+}
+</style>
+<body>
+
+
+<div id="mydiv">
+  <div id="mydivheader">Click here to move</div>
+  <center>
+ATM Strike: <input id="ATM" type="number">
+<div class="row">
+ Buy : Leg 1 Price  <input id="CEBuy" type="number"> <br>
+ Leg 2 Price <input id="PEBuy" type="number"> 
+
+
+<br/><br/>
+
+ Sell :: Leg 1 Price  <input id="CESell" type="number"> <br>
+ Leg 2 Price<input id="PESell" type="number">
+  <br/>
+  Leg 1 Points : <div id=L1p"></div> Leg 2 Points : <div id=L2p"></div>
+
+<br/>
+ Qty : <input id="Qty" type="number" value="50">
+<br/>
+  <button id="qtycounter" class="zerobtn" onclick="calculate();"><b>Calculate</b></button><br/>
+
+<br/>
+
+   <table id="content">
+ <tr >
+    <th id="PLTab" style="text-align: center;  font-size: 22px; color: black;"> PNL :</th>
+     </tr>
+   </table>
+   
+  </div>
+</center>
+</div>
+
+<script>
+//Make the DIV element draggagle:
+dragElement(document.getElementById("mydiv"));
+
+function dragElement(elmnt) {
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  if (document.getElementById(elmnt.id + "header")) {
+    /* if present, the header is where you move the DIV from:*/
+    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+  } else {
+    /* otherwise, move the DIV from anywhere inside the DIV:*/
+    elmnt.onmousedown = dragMouseDown;
+  }
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // get the mouse cursor position at startup:
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    // call a function whenever the cursor moves:
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // calculate the new cursor position:
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    // set the element's new position:
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    /* stop moving when mouse button is released:*/
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+</script>
+
+<script>
+   
+var input = document.getElementById("PESell");
+input.addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+   event.preventDefault();
+    document.getElementById("qtycounter").click();
+   
+      }
+});
+</script>
+
+<script>
+   
+var input = document.getElementById("CEBuy");
+input.addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+   event.preventDefault();
+    document.getElementById("qtycounter").click();
+    document.getElementById("PEBuy").focus();
+      }
+});
+</script>
+<script>
+   
+var input = document.getElementById("PEBuy");
+input.addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+   event.preventDefault();
+    document.getElementById("qtycounter").click();
+    document.getElementById("CESell").focus();
+      }
+});
+</script>
+<script>
+   
+var input = document.getElementById("CESell");
+input.addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+   event.preventDefault();
+    document.getElementById("qtycounter").click();
+    document.getElementById("PESell").focus();
+      }
+});
+</script>
+
+<script>
+function calculate(){
+  
+var CEBuy = document.getElementById("CEBuy").value;
+var PEBuy = document.getElementById("PEBuy").value;
+ var CESell = document.getElementById("CESell").value;
+  var PESell = document.getElementById("PESell").value;
+    var qty = document.getElementById("Qty").value;
+	
+	var CEresult = (CESell - CEBuy) * qty;
+	var PEresult = (PESell - PEBuy) * qty;
+	var result = CEresult + PEresult;
+  document.getElementById("PLTab").innerHTML = result.toFixed(2);
+  }
+</script>
+
+<script>
+function hideShowcalcu() {
+  var x = document.getElementById("mydiv");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+</script>
+
+<!-- Calculator Ends here -->
 
 <script>
 // Example usage: generate month and year from April 2023 till now
