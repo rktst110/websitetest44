@@ -2672,16 +2672,18 @@ console.log( "aboveATM",aboveATM )
 <div id="mydiv">
   <div id="mydivheader">Click here to move</div>
   <center>
-    ATM Strike: <input id="ATM" type="number">
+    ATM Strike: <input id="ATM" type="number"  size="10">
     <div class="row">
-      Buy : Leg 1 Price  <input id="CEBuy" type="number"> <br>
-      Leg 2 Price <input id="PEBuy" type="number"> <br/><br/>
-      Sell :: Leg 1 Price  <input id="CESell" type="number"> <br>
-      Leg 2 Price <input id="PESell" type="number">
+      Buy : Leg 1 Price  <input id="CEBuy" type="number" size="10"> <br>
+      Leg 2 Price <input id="PEBuy" type="number" size="10"> <br/><br/>
+      Sell : Leg 1 Price  <input id="CESell" type="number" size="10"> <br>
+      Leg 2 Price <input id="PESell" type="number" size="10">
       <br/>
-      Leg 1 Points : <div id="L1p"></div> Leg 2 Points : <div id="L2p"></div>
+      Leg 1 Points : <span id="L1p"></span> Leg 2 Points : <span id="L2p"></span>
+            <br/>
+			Capital : <span id="Capital"></span>  ROI : <span id="ROI"></span>
       <br/>
-      Qty : <input id="Qty" type="number" value="50">
+      Qty : <input id="Qty" type="number" value="50" size="10">
       <br/>
       <button id="qtycounter" class="zerobtn" onclick="calculate();"><b>Calculate</b></button><br/>
       <br/>
@@ -2752,7 +2754,16 @@ var PEBuy = document.getElementById("PEBuy").value;
 	var CEresult = (CESell - CEBuy) * qty;
 	var PEresult = (PESell - PEBuy) * qty;
 	var result = CEresult + PEresult;
+	var capital = ( Number(CEBuy) + Number(PEBuy) ) *qty;
+	var roi = (( result / capital ) *100).toFixed(0);
+	var l1p = Number(CESell)  - Number(CEBuy) ;
+	var l2p = Number(PESell)  - Number(PEBuy) ;
   document.getElementById("PLTab").innerHTML = result.toFixed(2);
+  document.getElementById("Capital").innerHTML = capital + "       ";
+  document.getElementById("ROI").innerHTML = roi + " %";
+  document.getElementById("L1p").innerHTML = l1p + "   ";
+  document.getElementById("L2p").innerHTML = l2p ;
+  
   }
 </script>
 
