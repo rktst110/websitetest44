@@ -389,7 +389,7 @@ function clickOnVolumeAutomatically()
 		if( tableId =='eodDeliveryDataTableStr' && window.location.href.toLocaleLowerCase().includes('deliverydataeod')==true ) 
 		{
 		//if( th.innerText.includes('T.O.') )
-		if( th.innerText=='Avg' )
+		if( th.innerText=='AvgD' )
 		{
 			th.click()
 			
