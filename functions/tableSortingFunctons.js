@@ -354,7 +354,7 @@ function clickOnVolumeAutomatically()
 		{
 			th.click()
 		}
-		}	
+		}
 		
 		if( window.location.href.toLocaleLowerCase().includes('premarket')==true ) 
 		{
@@ -383,8 +383,18 @@ function clickOnVolumeAutomatically()
 		{
 			th.click()
 		}
-		}		
+		}
 		
+		
+		if( tableId =='eodDeliveryDataTableStr' && window.location.href.toLocaleLowerCase().includes('deliverydataeod')==true ) 
+		{
+		//if( th.innerText.includes('T.O.') )
+		if( th.innerText=='Avg' )
+		{
+			th.click()
+			
+		}
+		}
 		
 		
 		
