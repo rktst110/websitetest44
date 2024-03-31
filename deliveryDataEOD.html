@@ -823,10 +823,11 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 	  +'<th>Symbol</th>'
 	  +'<th>Avg</th>'
 	  +' <th>Chg%</th>'
+	  +' <th>Delivery%</th>'
 	  +' <th>Traded Qty</th>'
 	  +' <th>TO</th>'
 	  +' <th>Del. Qty</th>'
-	  +' <th>Delivery%</th>'
+	  
 	   
 	  +' </tr> </thead> <tbody>'
 	
@@ -881,13 +882,14 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 		+'</td><td>'
 		+ perChange 
 		+'</td><td>'
+		+symbolObj['deliverable_percentage']
+		+'</td><td>'
 		+( symbolObj['volume'] / 1000 ).toFixed(0) 
 		+'</td><td>'
 		+( symbolObj['turnover'] / 100000 ).toFixed(0)
 		+'</td><td>'
 		+symbolObj['deliverable_quantity']
-		+'</td><td>'
-		+symbolObj['deliverable_percentage']
+		
 		+'</td></tr>'
 			}
 			
@@ -954,10 +956,11 @@ async function showPerticularStocksDeliveryDataInTable()
 	  +'<th>Date</th>'
 	  +'<th>Avg</th>'
 	  +' <th>Chg%</th>'
+	  +' <th>Delivery%</th>'
 	  +' <th>Traded Qty</th>'
 	  +' <th>TO</th>'
 	  +' <th>Del. Qty</th>'
-	  +' <th>Delivery%</th>'
+	  
 	   
 	  +' </tr> </thead> <tbody>'
 	
@@ -1031,13 +1034,14 @@ async function showPerticularStocksDeliveryDataInTable()
 		+'</td><td>'
 		+ perChange 
 		+'</td><td>'
+		+symbolObj['deliverable_percentage']
+		+'</td><td>'
 		+( symbolObj['volume'] / 1000 ).toFixed(0) 
 		+'</td><td>'
 		+( symbolObj['turnover'] / 100000 ).toFixed(0)
 		+'</td><td>'
 		+symbolObj['deliverable_quantity']
-		+'</td><td>'
-		+symbolObj['deliverable_percentage']
+		
 		+'</td></tr>'
 			}
 			
