@@ -428,7 +428,7 @@ async function getDeliveryData( passedValue )
 	add_Sectors_In_HeatMapSelector( )
 	
 	var returnedDateWiseObj = await previousTradingDateObj( Number(selectedAvgDays)+1, selectedTradingDate)
-	console.log("returnedDateWiseObj",returnedDateWiseObj)
+	//console.log("returnedDateWiseObj",returnedDateWiseObj)
 	
 	await show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, selectedAvgDays, returnedDateWiseObj )
 	
@@ -798,11 +798,18 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 					//11: "deliverable_quantity"
 					if( aggergatedDeliveryQntyObj[ stockName ] ==undefined )
 					{
-						aggergatedDeliveryQntyObj[ stockName ] = symbolObj[ 'deliverable_quantity' ]
+						//aggergatedDeliveryQntyObj[ stockName ] = symbolObj[ 'deliverable_quantity' ]
+						aggergatedDeliveryQntyObj[ stockName ] = {
+							'deliverable_quantity': symbolObj[ 'deliverable_quantity' ],
+							'deliverable_percentage': symbolObj[ 'deliverable_percentage' ]
+						}
+						
 					}
 					else
 					{
-						aggergatedDeliveryQntyObj[ stockName ] += symbolObj[ 'deliverable_quantity' ]
+						//aggergatedDeliveryQntyObj[ stockName ] += symbolObj[ 'deliverable_quantity' ]
+						aggergatedDeliveryQntyObj[ stockName ]['deliverable_quantity'] += symbolObj[ 'deliverable_quantity' ]
+						aggergatedDeliveryQntyObj[ stockName ]['deliverable_percentage'] += symbolObj[ 'deliverable_percentage' ]
 					}
 					
 				}
@@ -812,7 +819,7 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 		
 	}
 	
-	console.log( "aggergatedDeliveryQntyObj", aggergatedDeliveryQntyObj )
+	//console.log( "aggergatedDeliveryQntyObj", aggergatedDeliveryQntyObj )
 	
 
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
@@ -821,7 +828,8 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
 	var tablesStr =  ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="eodDeliveryDataTableStr"> <caption style="caption-side:top"> EOD Delivery Data | '+selectedTradingDate+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Symbol</th>'
-	  +'<th>Avg</th>'
+	  +'<th>AvgD</th>'
+	  +'<th>AvgD%</th>'
 	  +' <th>Chg%</th>'
 	  +' <th>Delivery%</th>'
 	  +' <th>Traded Qty</th>'
@@ -878,7 +886,9 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 		tablesStr +='<tr class="item"><td>'
 		+ symbol
 		+'</td><td>'
-		+ (  symbolObj['deliverable_quantity'] / ( aggergatedDeliveryQntyObj[ symbol ] / Number(selectedAvgDays) ) ).toFixed(2)
+		+ (  symbolObj['deliverable_quantity'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_quantity'] / Number(selectedAvgDays) ) ).toFixed(2)
+		+'</td><td>'
+		+ (  symbolObj['deliverable_percentage'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_percentage'] / Number(selectedAvgDays) ) ).toFixed(2)
 		+'</td><td>'
 		+ perChange 
 		+'</td><td>'
@@ -954,7 +964,8 @@ async function showPerticularStocksDeliveryDataInTable()
 	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
 	var tablesStr =  ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="perticularStocksDeliveryDataTableStr"> <caption style="caption-side:top"> Perticular Stock | '+selectedDeliveryStockSymbol+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Date</th>'
-	  +'<th>Avg</th>'
+	  +'<th>AvgD</th>'
+	  +'<th>AvgD%</th>'
 	  +' <th>Chg%</th>'
 	  +' <th>Delivery%</th>'
 	  +' <th>Traded Qty</th>'
@@ -979,6 +990,7 @@ async function showPerticularStocksDeliveryDataInTable()
 	
 		//var aggergatedDeliveryQntyObj = {}
 		var aggergatedDeliveryQnty = 0
+		var aggergatedDeliveryPrcntg = 0
 		for ( var date2 in returnedDateWiseObj2 )
 		{
 			if( date2!=date && date!= undefined && date2!= undefined)
@@ -988,10 +1000,12 @@ async function showPerticularStocksDeliveryDataInTable()
 				if( aggergatedDeliveryQnty==0 )
 				{
 					aggergatedDeliveryQnty = symbolObj[ 'deliverable_quantity' ]
+					aggergatedDeliveryPrcntg = symbolObj[ 'deliverable_percentage' ]
 				}
 				else
 				{
 					aggergatedDeliveryQnty += symbolObj[ 'deliverable_quantity' ]
+					aggergatedDeliveryPrcntg += symbolObj[ 'deliverable_percentage' ]
 				}
 			}
 			
@@ -1031,6 +1045,8 @@ async function showPerticularStocksDeliveryDataInTable()
 		+ date
 		+'</td><td>'
 		+ (  symbolObj['deliverable_quantity'] / ( aggergatedDeliveryQnty / Number(selectedAvgDays) ) ).toFixed(2)
+		+'</td><td>'
+		+ (  symbolObj['deliverable_percentage'] / ( aggergatedDeliveryPrcntg / Number(selectedAvgDays) ) ).toFixed(2)
 		+'</td><td>'
 		+ perChange 
 		+'</td><td>'
