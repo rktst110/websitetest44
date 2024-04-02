@@ -743,7 +743,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Intraday Hike | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Symbol</th>'
 	  +' <th>Chg%</th>'
-	   +' <th>LTP</th>'
+	  // +' <th>LTP</th>'
 	  +' <th>T.O.</th>'
 	 +' <th>Fac</th>'
 	  +' <th>20DAV</th>'
@@ -882,8 +882,8 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 			 +Symbol
 			 +'</td><td>'
 			+ symbolArray['pChange']  //pchange
-			 +'</td><td>'
-			 +symbolArray['lastPrice']  //lastPrice
+			 //+'</td><td>'
+			 //+symbolArray['lastPrice']  //lastPrice
 			 +'</td><td>'
 			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
 		 +'</td><td>'
