@@ -20,11 +20,11 @@
  <script src="functions/importFiles.js"></script>
  <script src="functions/firebase.js"></script>
  <script src="functions/firebaseFunctions.js"></script>
- <script src="functions/indexedDBFunctions.js"></script>
+<script src="functions/indexedDBFunctions.js"></script>
 
  <div id="importedContent"></div>
  
- <title>Delivery Data</title>
+ <title>Indices + HeatMap</title>
  
  
 
@@ -84,10 +84,8 @@ body {
 </style>
 
 <style> .toggle {cursor: pointer;display: inline-block;}.toggle-switch {display: inline-block;background: #ccc;border-radius: 16px;width: 58px;height: 32px;position: relative;vertical-align: middle;transition: background 0.25s;}.toggle-switch:before, .toggle-switch:after {content: "";}.toggle-switch:before {display: block;background: linear-gradient(to bottom, #fff 0%, #eee 100%);border-radius: 50%;box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);width: 24px;height: 24px;position: absolute;top: 4px;left: 4px;transition: left 0.25s;}.toggle:hover .toggle-switch:before {background: linear-gradient(to bottom, #fff 0%, #fff 100%);box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);}.toggle-checkbox:checked + .toggle-switch {background: #56c080;}.toggle-checkbox:checked + .toggle-switch:before {left: 30px;}.toggle-checkbox {position: absolute;visibility: hidden;}.toggle-label {margin-left: 5px;position: relative;top: 2px;} </style>
-	
-
-<style> .toggle {cursor: pointer;display: inline-block;}.toggle-switch {display: inline-block;background: #ccc;border-radius: 16px;width: 58px;height: 32px;position: relative;vertical-align: middle;transition: background 0.25s;}.toggle-switch:before, .toggle-switch:after {content: "";}.toggle-switch:before {display: block;background: linear-gradient(to bottom, #fff 0%, #eee 100%);border-radius: 50%;box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);width: 24px;height: 24px;position: absolute;top: 4px;left: 4px;transition: left 0.25s;}.toggle:hover .toggle-switch:before {background: linear-gradient(to bottom, #fff 0%, #fff 100%);box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);}.toggle-checkbox:checked + .toggle-switch {background: #56c080;}.toggle-checkbox:checked + .toggle-switch:before {left: 30px;}.toggle-checkbox {position: absolute;visibility: hidden;}.toggle-label {margin-left: 5px;position: relative;top: 2px;} </style>
 		
+
  <label>Month Year:</label>
 <select id="monthYear" onchange="getFirestoreData()">
 </select>
@@ -105,30 +103,109 @@ body {
 <button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
 &nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
 
-
-
-&nbsp; | &nbsp;&nbsp;
-<span class="toggle-label">Current Delivery:  </span> <label class="toggle">  <input id="useCurrentDateDelivery" class="toggle-checkbox" type="checkbox"> <div class="toggle-switch"></div> </label> 
-
 <hr>
 
  <label> Indices TimeValues:</label>
 <select id="indicesTimeValues" onchange="getIndicesData()">
 </select>
 
-&nbsp; | &nbsp;&nbsp;
+&nbsp; | &nbsp;
  <label> Spurts TimeValues:</label>
 <select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
 </select>
 
-&nbsp; | &nbsp;&nbsp;
- <label> Delivery Dates:</label>
-<select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
+
+&nbsp; | &nbsp;
+<select id="listForIndicesCalculation">
+<option>FnO</option>
+<option>ALL</option>
 </select>
+ <span class="toggle-label">Indices With 20DAV:  </span> <label class="toggle">  <input id="indicesWith20DAVOnOff" class="toggle-checkbox" type="checkbox" onchange="if( document.getElementById('indicesWith20DAVOnOff').checked==true )	{getSpurtsEquityData();}else{getIndicesData();}"> <div class="toggle-switch"></div> </label>   
+<span class="toggle-label">Or With Money:  </span> <label class="toggle">  <input id="indicesWithMoneyOnOff" class="toggle-checkbox" type="checkbox"  onchange="if( document.getElementById('indicesWithMoneyOnOff').checked==true )	{getSpurtsEquityData();}else{getIndicesData();}"> <div class="toggle-switch"></div> </label>   
+
+| 
+ <span class="toggle-label">Indices With OI/20DAV:  </span> <label class="toggle">  <input id="indicesWithOI20DAVOnOff" class="toggle-checkbox" type="checkbox" onchange="if( document.getElementById('indicesWithOI20DAVOnOff').checked==true )	{getSpurtsEquityData();}else{getIndicesData();}"> <div class="toggle-switch"></div> </label>   
+
+| 
+ <span class="toggle-label">Heatmap With Money:  </span> <label class="toggle">  <input id="heatmapWithMoneyOnOff" class="toggle-checkbox" type="checkbox" onchange="getSpurtsEquityData()" checked> <div class="toggle-switch"></div> </label>   
+
 
 <!--Content Start From Here-->
+<div class="row">
+  <div class="column left" style="background-color:#aaa;">
+  
+ <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
+   <br>
+   </div>
+  <!--<div class="column right" style="background-color:#bbb;">-->
+  <div class="column right" style="background-color:#2c2c2d;">
+  
+   <center> 
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_50';showHeatMapChart()">Nifty 50</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='ALL BANKS';showHeatMapChart()">Banks</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_FIN_SERVICE';showHeatMapChart()">Finance</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_MIDCAP_150';showHeatMapChart()">Midcap</button>
+   HeatMap Sectors: &nbsp;<select id="heatMapSectorSelector" aria-labelledby="expiryLbl" onchange="showHeatMapChart()"> <option value="">Select</option> </select></center>  <div id="heatMapContainer" style=" height:500px; width: auto; margin: 0 auto;"></div>
+
+  </div>
+</div>
+
 <br>
+
+
+<!--Condition Selector Starts Here-->
+<center>
+<span class="toggle-label">Conditions Div On/Off:  </span> <label class="toggle">  <input id="conditionsDivOnOff" class="toggle-checkbox" type="checkbox" onchange="if(document.getElementById('conditionsDiv').style.display=='none'){document.getElementById('conditionsDiv').style.display='block';}else if(document.getElementById('conditionsDiv').style.display=='block'){document.getElementById('conditionsDiv').style.display='none';}"> <div class="toggle-switch"></div> </label> 
+</center>
+
+<div id="conditionsDiv" style="display: none;">
+
+<span class="toggle-label">Pre Opening On/Off:  </span> <label class="toggle">  <input id="preOpenConditionOnOff" class="toggle-checkbox" type="checkbox"> <div class="toggle-switch"></div> </label> 
+
+    <label for="conditionSelect">Pre Opening:</label>
+    <!--<label for="numberInput">Enter a number:</label>-->
+    <input type="number" min="0" id="preOpenPChng" value="1.5" step="0.5" style="width:50px;">
+		
+<br><br>
+
+ <span class="toggle-label">Condition On/Off:  </span> <label class="toggle">  <input id="pChngConditionOnOff" class="toggle-checkbox" type="checkbox"> <div class="toggle-switch"></div> </label> 
+ 
+    <label for="conditionSelect">Select:</label>
+	<select id="checkByInput">
+        <option value="% Chng"> % Chng </option>
+        <option value="Fac"> Fac </option>
+		<option value="20DAV"> 20DAV </option>
+		<option value="Money"> Money </option>
+    </select>
+    <select id="positiveConditionSelect">
+        <option value=">="> >= </option>
+        <option value=">"> > </option>
+		<option value="=="> = </option>
+        
+    </select>
+
+    <!--<label for="numberInput">Enter a number:</label>-->
+    <input type="number" max="0" id="positivePChngNumberInput" value="-1" step="0.5" style="width:50px;">
+
+    <label for="conditionSelect">&&</label>
+    <select id="negativeConditionSelect">
+        <option value="<="> <= </option>
+		<option value="<"> < </option>
+        <option value="=="> = </option>
+
+    </select>
+
+
+    <!--<label for="numberInput">Enter a number:</label>-->
+    <input type="number" min="0" id="negativePChngNumberInput" value="1" step="0.5" style="width:50px;">
+
+<button onclick="updateCondition()">GO</button>
+    <br>
+	
+</div>
 <br>
+<!--Condition Selector Ends Here-->
+
 
 <div class="row">
 	<center>
@@ -137,28 +214,30 @@ body {
    <button onclick="document.getElementById('tableListSelector').value='NIFTY_BANK';getSpurtsEquityData()">Banks</button>
    <button onclick="document.getElementById('tableListSelector').value='NIFTY_FIN_SERVICE';getSpurtsEquityData()">Finance</button>
    <button onclick="document.getElementById('tableListSelector').value='NIFTY_MIDCAP_150';getSpurtsEquityData()">Midcap</button>
-    | List:	<select id="tableListSelector" aria-labelledby="expiryLbl" onchange="getDeliveryData()"> </select> 
-	| Avg Days: 		 <input id="avgDays" type="number" value="10"  size="3">
-	<br> Symbols:	<select id="deliveryStockSymbol" onchange="showPerticularStocksDeliveryDataInTable()"></select>
-	| Prev Trading Days: 		 <input id="previousTradingDays" type="number" value="10"  size="3">
-	</center><br>
+    | List:
+	<select id="tableListSelector" aria-labelledby="expiryLbl" onchange="getSpurtsEquityData()"> <option value="FnO">FnO</option> </select></center>
+	<br>
   <div class="column equityLeft" style="background-color:#aaa;">
-    <div class="spaceBetweenTables">  	<div id="perticularStockDeliveryTableContainer"></div> </div>
+    <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
   </div>
   <div class="column spurtsRight" style="background-color:#bbb;">
-    <div class="spaceBetweenTables">  	<div id="deliveryDataTableContainer"></div> </div>
+    <div class="spaceBetweenTables">  	<div id="spurtsDataTableContainer"></div> </div>
   </div>
 </div>
 
 
+<!--<div class="tableRow"> <center> Spurts Time: &nbsp;<select id="spurts_time_for_both" aria-labelledby="expiryLbl" onchange="adjust_equity_spurts_timeValues()"> <option value="">Select</option> </select> &nbsp; &nbsp;  | &nbsp; &nbsp; No. of Comparison Stocks : &nbsp; <input id="noOfComparisonStocks" type="number" value="30" size="3"> <button onclick="compareEquitySpurtsStocks(\'compareEquityWithSpurts\')">Cmp EquitySpurts</button> <button onclick="compareEquitySpurtsStocks(\'compareSpurtsWithEquity\')">Cmp SpurtsEquity</button>   </center> <br> <div class="tableColumn" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Equity Time: &nbsp;<select id="only_equity_time" aria-labelledby="expiryLbl" onchange="show_only_equity_Data()"> <option value="">Select</option> </select> </center>  <div id="equityDataTableContainer"></div> </div> </div> <div class="tableColumn" style="border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Spurts Time: &nbsp;<select id="only_spurts_time" aria-labelledby="expiryLbl" onchange="show_only_Spurts_Data()"> <option value="">Select</option> </select> </center>  <div id="spurtsDataTableContainer"></div> </div> </div> -->
+
+
+<br><br><br><br><br><br>
 <!--Content Ends Here-->
 
 
 <script>
 function fetchDataForAllSegments()
 {
-//setIndicesSelectorTimeValues( "syncWithCommonTime" );
-setDeliverySelectorTimeValues( "syncWithCommonTime" );
+setIndicesSelectorTimeValues( "syncWithCommonTime" );
+setSpurtsSelectorTimeValues( "syncWithCommonTime" )
 }
 </script>
 
@@ -179,25 +258,29 @@ async function getIndicesData( passedValue )
 {
 	var selectedMonthYear = document.getElementById('monthYear').value
 	var selectedTradingDate = document.getElementById('tradingDate').value
-	var selectedTimeValue = document.getElementById('indicesTimeValues').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
 	
-	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedTimeValue
-	//var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/pre_open_market/FnO/'+selectedTimeValue+'/'+selectedTimeValue
-	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
 	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
 	var dataObj = await fetchFirebaseDocData( docPath )
-	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
-
+	//console.log( "dataObj", JSON.parse( dataObj['data'] )  )
+	if( document.getElementById('indicesWith20DAVOnOff').checked==false && document.getElementById('indicesWithOI20DAVOnOff').checked==false && document.getElementById('indicesWithMoneyOnOff').checked==false )
+	{
+		showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	}
 }
 
-async function showIndicesPerformanceChart ( returnedDataObj )
+async function showIndicesPerformanceChart ( returnedDataObj, indicesData )
 {
 	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
 	//var selectedValue = document.getElementById("indices_performance_time").value;
 		
 	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
 	var indicesPerformanceObject = returnedDataObj ['data']
-		
+	
+	// list updated on June 30, 2023 from https://archives.nseindia.com/content/indices/ind_nifty50.pdf
+	var sectorsWeightageInNifty50 = { "FIN SERVICE":37.59, "IT":12.65, "OIL AND GAS":11.99, "FMCG": 9.82, "AUTO":5.98, "PHARMA":3.86, "HEALTHCARE":3.86,"Construction":3.54, "METAL":3.52, "CONSR DURBL":3.30,"Telecommunication":2.61, "ENERGY":2.10,"INFRA":1.89, "SERV SECTOR":0.74, "Chemicals":0.41 }
+	
 	var dataPointsArray=[]
 	var dataPointsArrayAdvances=[]
 	var dataPointsArrayDeclines=[]
@@ -206,11 +289,20 @@ async function showIndicesPerformanceChart ( returnedDataObj )
 	
 	var tempObj={}
 	for (var symbol in indicesPerformanceObject) {
-		//if(symbol !='INDIA VIX' && symbol !='NIFTY PSU BANK' && symbol !='NIFTY PVT BANK' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-			
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
 		{
-		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+			
+			if( document.getElementById('indicesWith20DAVOnOff').checked==true || document.getElementById('indicesWithOI20DAVOnOff').checked==true || document.getElementById('indicesWithMoneyOnOff').checked==true )
+			{
+				tempObj[symbol]= Math.abs( indicesPerformanceObject[symbol]['percentChange'] )
+			}
+			else
+			{
+				tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+			}			
+		
 		}
 	}
 	
@@ -227,19 +319,31 @@ else{
 	temp["label"]=symbol
 }
 	
+	if( sectorsWeightageInNifty50[ temp["label"] ]!=undefined )
+	{
+		 temp["label"] =  temp["label"] +" ("+ sectorsWeightageInNifty50[ temp["label"] ] +")"
+	}
+	
 		//temp["y"]=tempObj[symbol]; 
 		temp["y"]= Math.abs( tempObj[symbol] ); 
-		if(tempObj[symbol]<0) 
+		var pChange;
+		pChange = Number( tempObj[symbol] )
+		if( document.getElementById('indicesWith20DAVOnOff').checked==true || document.getElementById('indicesWithOI20DAVOnOff').checked==true || document.getElementById('indicesWithMoneyOnOff').checked==true )
+		{
+			pChange = Number( indicesData[symbol]['percentChange'] )
+		}
+			
+		if(pChange<0) 
 		{
 			temp["color"]="#cd5652"
 		}
-		else if(tempObj[symbol]>0) 
+		else if(pChange>0) 
 		{
 			temp["color"]="#3a7dd4"
 		}
-		else if(tempObj[symbol]==0) 
+		else if(pChange==0) 
 		{
-			temp["color"]="black"
+			temp["color"]="#3a7dd4"
 		}
 		
 		dataPointsArray.push(temp)
@@ -309,7 +413,7 @@ else{
 	*/
 // this section is for plotting indices chart for simple perchange change of single column bar
 var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
-	animationEnabled: false,
+	animationEnabled: true,
 	theme: "dark2", // "light1", "light2", "dark1", "dark2"
 	title: {
 		//text: "GDP Growth Rate - 2016"
@@ -336,9 +440,11 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 		//title: "Growth Rate (in %)",
 		//includeZero: true,
 		//suffix: "%",
-		gridThickness: 0.1,
+		gridThickness: 0.03,
 		//labelFontSize: 18,
-		labelFontSize: 11, // bottom size for change%
+		labelFontSize: 0, // bottom size for change%
+		 tickLength: 0,
+		 
 	},
 	axisX: {
 		interval: 1,
@@ -347,31 +453,194 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 		 //labelFontSize: 17,
 		 labelFontSize: 11, // vertical axis size for text
 		 //labelFontWeight: "bold",
+		  lineThickness: 0.5,
+         lineColor: "#ccc",
+		 tickColor: "#555",
+		 tickLength: 0,
+		
+		 
 	},
-	dataPointWidth: 9,
+	dataPointWidth: 12,
 	data: [{
 		//indexLabel: "{y}",
 		//indexLabelFontSize: 18,
-		//click: onClick,
+		click: onClick,
 		//type: "column",
 		type: "bar",
+		indexLabelPlacement: "auto",
+			indexLabel: "{y}",
+			indexLabelFontSize: 11,
+			indexLabelFontColor: "#ddd",
 		yValueFormatString: "#,##0.0#\"%\"",
-		dataPoints: dataPointsArray
+		dataPoints:dataPointsArray
 	}]
 });
 
 
-console.log("dataPointsArray",dataPointsArray)
+//console.log("dataPointsArray",dataPointsArray)
 chart.render();
 //chart2.render();
 
 } // showIndicesPerformanceChart ENDS HERE
 
+
+
+
+function onClick(e) {
+
+		//var label=e.dataPoint.label
+		var label=e.dataPoint.label.replace(/ \(.*/g, '')
+		var labelToScroll;
+		{
+			if( label=='NIFTY 50' || label=='NIFTY BANK')
+			{
+				labelToScroll = label.replace(/ /g, '_')
+				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
+				showHeatMapChart();
+				document.getElementById("heatMapSectorSelector").scrollIntoView();
+			}
+			else
+			{
+				labelToScroll = 'NIFTY_'+label.replace(/ /g, '_')
+				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
+				showHeatMapChart();
+				document.getElementById("heatMapSectorSelector").scrollIntoView();
+			}
+		}
+
+		
+}
+
+
 </script>
 <!-- Indices Code Ends Here -->
 
 
-<!-- Delivery EOD Code Starts Here -->
+<!-- Calculate Indices with 20DAV Code Starts Here -->
+<script>
+
+async function calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
+{
+
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	//console.log( "dataObj", JSON.parse( dataObj['data'] )  )
+	var indicesData = JSON.parse( dataObj['data'] )['data']
+
+
+	var selectedValue = selectedSpurtsTimeValue
+	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
+	
+	var niftyTotalMarketObject = equityDataObj['data']
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+//console.log("niftyTotalMarketObject",niftyTotalMarketObject)
+//console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+
+		var tempObj = {};
+	
+		
+	var calculatedDataObj = {
+	"timestamp":equityDataObj["timestamp"],
+	"data":{}
+	}
+	
+	for( var sector in sectorStockNamesObj )
+	{
+		//if(  sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
+		if(  sector=='NIFTY_MID_SELECT' || sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
+	
+	{
+	var totalPChng = 0
+	var total20DAV = 0
+	
+		for (var S=0; S<sectorStockNamesObj[sector].length;S++ ) 
+		{ // loop for accessing all stocks of 754 stocks
+		var Symbol= sectorStockNamesObj[sector][S]
+		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
+		if( Symbol.includes('NIFTY')==false && niftyTotalMarketObject[Symbol] !=undefined )
+		{
+		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+	
+	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
+	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
+	
+	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
+	var money = Number( ( Number(symbolArray["pChange"] ) * Number(twentyDAV) ).toFixed(2) )
+	 
+	 var rankForHeatMap;
+
+	if( document.getElementById('indicesWithOI20DAVOnOff').checked==true )
+	{
+		total20DAV = total20DAV + Math.abs(WFactor)
+	}
+	else if( document.getElementById('indicesWithMoneyOnOff').checked==true )
+	{
+		total20DAV = total20DAV + Math.abs(money)
+	}
+	else
+	{
+		total20DAV = total20DAV + Number(twentyDAV)
+	}
+	
+	totalPChng = totalPChng + Number( symbolArray["pChange"] )
+
+		//totalPChng = totalPChng + Number(stockValuesObj['metadata']['pChange'] .toFixed(2))
+	
+		  /*
+		{
+			onlyEquityTableStr +='<tr class="item"><td>'
+			 +Symbol
+			 +'</td><td>'
+			+ symbolArray['pChange']  //pchange
+			 +'</td><td>'
+			 +symbolArray['lastPrice']  //lastPrice
+			 +'</td><td>'
+			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		 +'</td><td>'
+		 + WFactor
+		+'</td><td>'
+		+ twentyDAV
+		+'</td></tr>'
+			
+		
+		}
+		
+		*/
+		
+	}
+		} //for Loop ENDS HERE
+		
+		if(totalPChng<0)
+		{
+		total20DAV = (-1 * total20DAV)
+		}
+		
+	calculatedDataObj["data"] [ sector.replace(/_/g,' ') ]= {
+	"percentChange":total20DAV,
+	//"totalPChng":totalPChng,
+	
+	}
+		
+		}
+		}
+	
+	//console.log("calculatedDataObj",calculatedDataObj)
+	showIndicesPerformanceChart ( calculatedDataObj, indicesData )
+}	//	show_volume_value_spike_Data() Function ENDS HERE
+
+</script>
+<!-- Calculate Indices with 20DAV Code Ends Here -->
+
+
+<!-- Spurts-Equity Code Starts Here -->
 
 <style>    .spaceBetweenTables { border: 2px solid #4b4d4e;height: 518px;overflow-y: scroll;background-color: #32373a; }     .greenHeaderClass{   color: #ffffff;   background: #27ae60;   } .blueHeaderClass{   color: #ffffff;   background: #3a7dd4;    }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	</style>
 
@@ -381,27 +650,22 @@ var dataObjectForHeatChart={}
 var sectorStockNamesObj = {}
 var allBanksStocksObj ={}
 
-function setDeliverySelectorTimeValues( passedValue )
+function setSpurtsSelectorTimeValues( passedValue )
 {
-	/*
 	var tradingDate = document.getElementById('tradingDate').value
 	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['spurts_in_open_interest_by_underlyings']
 	var selectElementRef = document.getElementById("spurtsTimeValues");
 	
 	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSpurtsEquityData )
-	
-	*/
-	getDeliveryData()
 }
 
 
-async function getDeliveryData( passedValue )
+async function getSpurtsEquityData( passedValue )
 {
-	//var tradingDate = document.getElementById('tradingDate').value
+	var tradingDate = document.getElementById('tradingDate').value
 	var selectedMonthYear = document.getElementById('monthYear').value
 	var selectedTradingDate = document.getElementById('tradingDate').value
-	var selectedAvgDays = Number( document.getElementById("avgDays").value )
-	/*
+	
 	var selectedSpurtsTimeRef = document.getElementById('spurtsTimeValues')
 	var selectedSpurtsTimeValue = selectedSpurtsTimeRef.value
 
@@ -411,6 +675,7 @@ async function getDeliveryData( passedValue )
 	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
 	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
 	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	
 	
 	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
 	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedSpurtsTimeValue )
@@ -426,22 +691,16 @@ async function getDeliveryData( passedValue )
 	//console.log( "deliveryDataObj",JSON.parse( deliveryDataObj['data'] ) )
 	
 	
-	*/
-	var collectionPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
-	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectionPath )
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
 	
-	add_Sectors_In_HeatMapSelector( )
 	
-	var returnedDateWiseObj  = await previousTradingDateObj( Number(selectedAvgDays)+1, selectedTradingDate, ( document.getElementById('useCurrentDateDelivery').checked==true ))
-	//var collectionPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/'
-	//var returnedDateWiseObj  = await fetchCalculatedEODDeliveryData( collectionPath )
-
-	//console.log("returnedDateWiseObj",returnedDateWiseObj)
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/'
+	var calculatedEODDeliveryDataObj = await fetchCalculatedEODDeliveryData( collectioPath )
 	
-	await show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, selectedAvgDays, returnedDateWiseObj )
 	
-	/*
-	await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ), calculatedEODDeliveryDataObj )
+	await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ), calculatedEODDeliveryDataObj )
 	
 	if( document.getElementById('indicesWith20DAVOnOff').checked==true || document.getElementById('indicesWithOI20DAVOnOff').checked==true || document.getElementById('indicesWithMoneyOnOff').checked==true )
 	{
@@ -459,99 +718,12 @@ async function getDeliveryData( passedValue )
 		
 		calculateIndicesData( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
 	}
-	*/
+	
 	addEventListnerInTables()
 }
 
 
-
-async function previousTradingDateObj( passedPrevDays=1, passedDate, useCurrentDateDelivery=false )
-{
-	//var returnedDataObj = await previousTradingDateObj2( 1, '29-Dec-2023' )
-	 var loopCondition = true
-	 var numberCounter = 0
-	 var retryCounter = 0 // retry for any date only 3 times to exit from infinite loop
-	 var specifiedPreviousDatesObj = {}
-	 var selectedDate = passedDate; 
-	 while( loopCondition )
-	 {
-		 /*
-		 if( numberCounter==0 && retryCounter ==0 && useCurrentDateDelivery==false )
-		 { // 		 
-			 selectedDate = passedDate; 
-			 //retryCounter = 0
-		 }
-		 else if(  numberCounter!=0 || retryCounter >2 ) { // if already retried 3 times then use next trading date
-			 //selectedDate = formatDate(new Date(new Date('02-Feb-2023')-1)) ; 
-			 selectedDate = formatDate(new Date(new Date(selectedDate)-1)); 
-			 retryCounter = 0 
-		 }
-		 
-		 */
-		 if( useCurrentDateDelivery==false || numberCounter!=0 || retryCounter >1 ) { // if already retried 3 times then use next trading date
-			 //selectedDate = formatDate(new Date(new Date('02-Feb-2023')-1)) ; 
-			 selectedDate = formatDate(new Date(new Date(selectedDate)-1)); 
-			 retryCounter = 0 
-		 }
-		 
-		 //console.log("selectedDate",selectedDate)
-		 var monthYear = getMonthYearFromDate(selectedDate); // Output: "December 2023"
-		 
-		 //var docPath = '/December 2023/Delivery_Data/29-Dec-2023'
-		 var docPath = '/'+monthYear+'/Delivery_Data/'+selectedDate
-		 
-		 //var allDerivativesDataArray = await fetchDerivativesCollectionData( docPathForSpurts )
-		 var deliveryDataObj = await fetchAndSaveDataIDB( docPath );
-		 //console.log(deliveryDataObj)
-		 
-		 if( Object.keys(deliveryDataObj).length>0 )
-		 {
-			 deliveryDataObj = JSON.parse(deliveryDataObj[ selectedDate ]['data'])
-			 specifiedPreviousDatesObj[ selectedDate ] = deliveryDataObj
-			 
-			 if( ( Number(passedPrevDays) -1 )==numberCounter )
-			 { // if got specifed previous trading days data then exit from loop
-				 loopCondition = false
-			 }
-			 
-			 numberCounter++;
-		 }
-		 
-		 retryCounter ++;
-		 if( 2*Number( passedPrevDays )==retryCounter )
-		 {
-			// if we don't get data after so many retries then then exit from loop
-				 loopCondition = false
-		 }
-		//console.log("retryCounter",retryCounter, selectedDate )
-		
-	 }
-	 //console.log("specifiedPreviousDatesObj", specifiedPreviousDatesObj)
-	 return specifiedPreviousDatesObj;
-	 
-	 
-function formatDate(date) {
-	date = new Date(date)
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-}
-
-function getMonthYearFromDate(date) {
-	date = new Date(date)
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    return `${month} ${year}`;
-}
-
-	// await sleep(200)
- } //  async function previousTradingDateObj( passedPrevDays=1 ) ENDS HERE
- 
-	
-async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj, calculatedEODDeliveryDataObj )
 {
 	 document.getElementById('equityDataTableContainer').innerHTML = "";
 	
@@ -575,6 +747,8 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	  +' <th>T.O.</th>'
 	 +' <th>Fac</th>'
 	  +' <th>20DAV</th>'
+	  +' <th>D%</th>'
+	  +' <th>D</th>'
 	  +' <th>Money</th>'
 	  +' </tr> </thead> <tbody>'
 		
@@ -606,9 +780,14 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	var Fac = Math.abs( twentyDAV * symbolArray['pChange'] ).toFixed(2)
 	 
 	 var rankForHeatMap;
-
+	if( document.getElementById('heatmapWithMoneyOnOff').checked==true )
+	{
 		rankForHeatMap = Math.abs( money )
-	
+	}
+	else
+	{
+		rankForHeatMap = WFactor
+	}
 	
 		//this block of code is for sectors heatMap chart. (START)
 		//this block adds stocks in a object with few values. this code was written on 7-Jan-2023
@@ -712,6 +891,10 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		+'</td><td>'
 		+ twentyDAV
 		+'</td><td>'
+		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
+		+'</td><td>'
+		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
+		+'</td><td>'
 		+ WFactor
 		+'</td></tr>'
 			
@@ -799,86 +982,25 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	 add_Sectors_In_HeatMapSelector( )
 }	//	show_volume_value_spike_Data() Function ENDS HERE
 
-async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, selectedAvgDays, returnedDateWiseObj )
+async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
 {
-	 document.getElementById('deliveryDataTableContainer').innerHTML = "";
+	 document.getElementById('spurtsDataTableContainer').innerHTML = "";
 
-	//var onlySpurtsSelectedTime = selectedSpurtsTimeValue
-	//var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
-	//var niftyTotalMarketObject = equityDataObj ['data']
-	var selectedDeliveryTradingDate =  Object.keys(returnedDateWiseObj)[0]
-	//var selectedDateDeliveryObj = returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[0] ]['Symbols']
-	var selectedDateDeliveryObj = returnedDateWiseObj[ selectedDeliveryTradingDate ]['Symbols']
-	
-	
-	
-	var aggergatedDeliveryQntyObj = {}
-	for ( var date in returnedDateWiseObj )
-	{
-		//if( date!=selectedTradingDate && date!= undefined)
-		if( date!=selectedDeliveryTradingDate && date!= undefined)
-		{
-			var dateObj = returnedDateWiseObj[ date ]['Symbols']
-			for( var stockName in dateObj )
-			{
-				var symbolObj = dateObj[ stockName ] //for short-handing
-				if( symbolObj != undefined )
-				{
-					//11: "deliverable_quantity"
-					if( aggergatedDeliveryQntyObj[ stockName ] ==undefined )
-					{
-						//aggergatedDeliveryQntyObj[ stockName ] = symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ] = {
-							'deliverable_quantity': symbolObj[ 'deliverable_quantity' ],
-							'deliverable_percentage': symbolObj[ 'deliverable_percentage' ]
-						}
-						
-					}
-					else
-					{
-						//aggergatedDeliveryQntyObj[ stockName ] += symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ]['deliverable_quantity'] += symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ]['deliverable_percentage'] += symbolObj[ 'deliverable_percentage' ]
-					}
-					
-				}
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+	var niftyTotalMarketObject = equityDataObj ['data']
 
-			}
-		}
-		
-	}
-	
-	//console.log( "aggergatedDeliveryQntyObj", aggergatedDeliveryQntyObj )
-	
+
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 
 	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
-	var tablesStr =  ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="eodDeliveryDataTableStr"> <caption style="caption-side:top"> EOD Delivery Data | '+selectedDeliveryTradingDate+'</caption> <thead> <tr class="tableRowClass">'
-	  +'<th>Symbol</th>'
-	  +'<th>AvgD</th>'
-	  +'<th>AvgD%</th>'
-	  +' <th>Chg%</th>'
-	  +' <th>Delivery%</th>'
-	 // +' <th>Traded Qty</th>'
-	 // +' <th>TO</th>'
-	  //+' <th>Del. Qty</th>'
-	  
-	   
-	  +' </tr> </thead> <tbody>'
+	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>Chg%</th> 	<th>EQ TO</th>  		<th>Fut</th>   <th>Opt</th>	 <th>Tot</th>     <th>OI%Chg</th>             </tr></thead><tbody>'
+	
 	
 		var stocksListArray = []
-		if( document.getElementById('tableListSelector').value=='ALL' )
-		{
-			stocksListArray = Object.keys(selectedDateDeliveryObj) 
-		}
-		else
-		{
-			stocksListArray = sectorStockNamesObj[ document.getElementById('tableListSelector').value ]
-		}
-		
-		//spurtsInOIUnderlyingsObject = convertSpurtsDataArrayIntoObj( spurtsInOIUnderlyingsObject )
-	//console.log( 'stocksListArray', stocksListArray )
+		stocksListArray = sectorStockNamesObj[ document.getElementById('tableListSelector').value ]
+		spurtsInOIUnderlyingsObject = convertSpurtsDataArrayIntoObj( spurtsInOIUnderlyingsObject )
 	
 	//for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
 	for( var F=0; F< stocksListArray.length; F++ ) {
@@ -886,52 +1008,116 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 	//var symbol = spurtsInOIUnderlyingsObject[F]["symbol"]
 	var symbol = stocksListArray[F]
 	
-	if( symbol.includes('NIFTY')==false && selectedDateDeliveryObj[symbol]!=undefined )
+	if( symbol.includes('NIFTY')==false && spurtsInOIUnderlyingsObject[symbol]!=undefined )
 	{
-		var symbolObj = selectedDateDeliveryObj[symbol] //for short-handing
-		
-		var perChange = ( ( ( symbolObj['close_price'] - symbolObj['prev_close'] ) / symbolObj['prev_close'] ) * 100 ).toFixed(2)
-		
-		/*
-		var perChangeStr = ( ( ( symbolObj['close_price'] - symbolObj['prev_close'] ) / symbolObj['prev_close'] ) * 100 ).toFixed(2)
-		if ( perChangeStr < 0 )// % change in red
-		{
-			perChangeStr ='<td class="redClass">'
-			+perChangeStr // % change
-			 +'</td><td>'
-		}
-		else // % change in green
-		{
-			perChangeStr ='<td class="greenClass">'
-			+perChangeStr // % change
-			 +'</td><td>'
-		}
-		*/
-		
+		var symbolArray = niftyTotalMarketObject[symbol] //for short-handing
 		
 		function printDataStr()
 		{
 		tablesStr +='<tr class="item"><td>'
 		+ symbol
 		+'</td><td>'
-		+ (  symbolObj['deliverable_quantity'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_quantity'] / Number(selectedAvgDays) ) ).toFixed(2)
+		+ niftyTotalMarketObject[symbol]["pChange"] // equity/NiftyTotalMarket pchange
 		+'</td><td>'
-		+ (  symbolObj['deliverable_percentage'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_percentage'] / Number(selectedAvgDays) ) ).toFixed(2)
+		+( niftyTotalMarketObject[symbol]["totalTradedValue"] / 1000000).toFixed(0) // equity/NiftyTotalMarket totalTradedValue
 		+'</td><td>'
-		+ perChange 
+		//+ spurtsInOIUnderlyingsObject[symbol][8] // underlyingValue
+		//+ (spurtsInOIUnderlyingsObject[F]["total"] / spurtsInOIUnderlyingsObject[F]["latestOI"] ).toFixed(2)// underlyingValue
+		//+'</td><td>'
+		//+  spurtsInOIUnderlyingsObject[F]["futValue"].toFixed(0)  // futValue
+		+  spurtsInOIUnderlyingsObject[symbol]["futValue"].toFixed(0)  // futValue
 		+'</td><td>'
-		+symbolObj['deliverable_percentage']
+		+  spurtsInOIUnderlyingsObject[symbol]["premValue"].toFixed(0)  // premValue=optionValue
+		+'</td><td>'
+		+  spurtsInOIUnderlyingsObject[symbol]["total"].toFixed(0)  // total = futValue + optionValue
+		+'</td><td>'
+	 	  //+ spurtsInOIUnderlyingsObject[symbol]["avgInOI"]  //"avgInOI/perChangeInOI
+	 	  + Math.abs( spurtsInOIUnderlyingsObject[symbol]["avgInOI"] ) //"avgInOI/perChangeInOI
 		//+'</td><td>'
-		//+( symbolObj['volume'] / 1000 ).toFixed(0) 
+		//+ spurtsInOIUnderlyingsObject[symbol][4] //volume
+		//+ spurtsInOIUnderlyingsObject[F]["latestOI"] //OI
 		//+'</td><td>'
-		//+( symbolObj['turnover'] / 100000 ).toFixed(0)
+		//+ spurtsInOIUnderlyingsObject[F]["volume"] //Volume
 		//+'</td><td>'
-		//+symbolObj['deliverable_quantity']
-		
+		//+ (1/(spurtsInOIUnderlyingsObject[F]["latestOI"] / spurtsInOIUnderlyingsObject[F]["volume"])).toFixed(2) //OI/Volume
+		//+'</td><td>'
+		//+ returnedCandlestickPatternsStr //Candlestick Patterns
 		+'</td></tr>'
 			}
 			
-	printDataStr()
+			
+	
+		 var conditionResult
+	
+		 if( document.getElementById('pChngConditionOnOff').checked==true && document.getElementById('preOpenConditionOnOff').checked==true )
+		 {
+		 var checkByInput = document.getElementById("checkByInput").value
+		 if( checkByInput=='% Chng' )
+		 {
+			conditionResult = checkCondition( Number(symbolArray['pChange']) )
+		 }
+		 else if( checkByInput=='Fac' )
+		 {
+			conditionResult = checkCondition( Number( Fac ) )
+		 }
+		 else if( checkByInput=='20DAV' )
+		 {
+			conditionResult = checkCondition( Number( twentyDAV ) )
+		 }
+		 else if( checkByInput=='Money' )
+		 {
+			conditionResult = checkCondition( Number( WFactor ) )
+		 }
+		 
+		 var preOpen = Math.abs (((symbolArray['open'] - symbolArray['previousClose'])/symbolArray['previousClose'])*100).toFixed(3)
+			 
+		 if( conditionResult==true && preOpen <= Number(preOpenPChng.value) )
+		 {
+		 printDataStr()
+		 //console.log("preopen + other conditions")
+		 }
+		}
+		else if( document.getElementById('pChngConditionOnOff').checked==true )
+		 {
+		 var checkByInput = document.getElementById("checkByInput").value
+		 if( checkByInput=='% Chng' )
+		 {
+			conditionResult = checkCondition( Number(symbolArray['pChange']) )
+		 }
+		 else if( checkByInput=='Fac' )
+		 {
+			conditionResult = checkCondition( Number( Fac ) )
+		 }
+		 else if( checkByInput=='20DAV' )
+		 {
+			conditionResult = checkCondition( Number( twentyDAV ) )
+		 }
+		 else if( checkByInput=='Money' )
+		 {
+			conditionResult = checkCondition( Number( WFactor ) )
+		 }
+		 
+		 
+		 if( conditionResult==true )
+		 {
+		 printDataStr()
+		 }
+		}
+		else if( document.getElementById('preOpenConditionOnOff').checked==true )
+		 {
+		 //var preOpenConditionResult = checkCondition( Number(symbolArray['pChange']) )
+		 //console.log(symbolArray)
+		 var preOpen = Math.abs (((symbolArray['open'] - symbolArray['previousClose'])/symbolArray['previousClose'])*100).toFixed(3)
+		 //console.log(Symbol,preOpen, Number(preOpenPChng.value) )
+		 if( preOpen <= Number(preOpenPChng.value) )
+		 {
+		 printDataStr()
+		 }
+		}
+		else{
+			 printDataStr()
+		}
+	
 	
 		
 	}
@@ -944,450 +1130,11 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 
 
 	
-	 document.getElementById('deliveryDataTableContainer').innerHTML = tablesStr;
-	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
-	 
-	 
-	if( document.getElementById('deliveryStockSymbol').options.length<=1 )
-	{
-		document.getElementById("deliveryStockSymbol").innerHTML=''
-		var option = document.createElement("option");
-		option.value = "Select";
-		option.text =   "Select";
-		document.getElementById("deliveryStockSymbol").add(option);
-		
-		for( var StockName in selectedDateDeliveryObj )
-		{
-			var option = document.createElement("option");
-			option.value = StockName;
-			option.text =  StockName;
-			document.getElementById("deliveryStockSymbol").add(option);
-		}
-		//console.log( selectedDayDataObj )
-	}
-	 
-	// await addEventListnerInTables()
-}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
-
-
-async function fetchEODDeliveryData(docPath) {
-
-  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
-  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
-
-  if (firebaseFetchedDocs[docPath] !== undefined) {
-    return firebaseFetchedDocs[docPath];
-  } 
-  else {
-  
-	var selectedMonthYear = document.getElementById('monthYear').value
-	var selectedTradingDate = document.getElementById('tradingDate').value
-	var selectedAvgDays = Number( document.getElementById("avgDays").value )
-	var returnedDateWiseObj  = await previousTradingDateObj( Number(selectedAvgDays)+1, selectedTradingDate, ( document.getElementById('useCurrentDateDelivery').checked==true ))
-	
-	var selectedDeliveryTradingDate =  Object.keys(returnedDateWiseObj)[0]
-	//var selectedDateDeliveryObj = returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[0] ]['Symbols']
-	var selectedDateDeliveryObj = returnedDateWiseObj[ selectedDeliveryTradingDate ]['Symbols']
-	
-	
-	var aggergatedDeliveryQntyObj = {}
-	for ( var date in returnedDateWiseObj )
-	{
-		//if( date!=selectedTradingDate && date!= undefined)
-		if( date!=selectedDeliveryTradingDate && date!= undefined)
-		{
-			var dateObj = returnedDateWiseObj[ date ]['Symbols']
-			for( var stockName in dateObj )
-			{
-				var symbolObj = dateObj[ stockName ] //for short-handing
-				if( symbolObj != undefined )
-				{
-					//11: "deliverable_quantity"
-					if( aggergatedDeliveryQntyObj[ stockName ] ==undefined )
-					{
-						//aggergatedDeliveryQntyObj[ stockName ] = symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ] = {
-							'deliverable_quantity': symbolObj[ 'deliverable_quantity' ],
-							'deliverable_percentage': symbolObj[ 'deliverable_percentage' ]
-						}
-						
-					}
-					else
-					{
-						//aggergatedDeliveryQntyObj[ stockName ] += symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ]['deliverable_quantity'] += symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ]['deliverable_percentage'] += symbolObj[ 'deliverable_percentage' ]
-					}
-					
-				}
-
-			}
-		}
-		
-	}
-	
-	  if (aggergatedDeliveryQntyObj!=undefined) {
-          var dataObj = doc.data();
-
-          // Store the fetched document in localStorage
-          firebaseFetchedDocs[docPath] = dataObj;
-
-          // Attempt to update localStorage and handle quota exceeded error
-          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
-          var currentAttempt = 0;
-
-          while (currentAttempt < maxAttempts) {
-            try {
-              localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
-              break; // Successfully stored the new entry
-            } catch (e) {
-              // Remove oldest entry
-              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
-              delete firebaseFetchedDocs[oldestEntryKey];
-              currentAttempt++;
-            }
-          }
-
-          if (currentAttempt === maxAttempts) {
-            console.log("Unable to store the new entry due to quota limitations.");
-          }
-
-          return dataObj;
-        } else {
-          console.log("Document does not exist");
-          return null;
-        }
-	
-	//console.log( "aggergatedDeliveryQntyObj", aggergatedDeliveryQntyObj )
-	
-    //var docRef = db.doc(docPath);
-
-    // Retrieve the document from Firebase
-    return docRef
-      .get()
-      .then(function (doc) {
-        if (doc.exists) {
-          var dataObj = doc.data();
-
-          // Store the fetched document in localStorage
-          firebaseFetchedDocs[docPath] = dataObj;
-
-          // Attempt to update localStorage and handle quota exceeded error
-          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
-          var currentAttempt = 0;
-
-          while (currentAttempt < maxAttempts) {
-            try {
-              localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
-              break; // Successfully stored the new entry
-            } catch (e) {
-              // Remove oldest entry
-              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
-              delete firebaseFetchedDocs[oldestEntryKey];
-              currentAttempt++;
-            }
-          }
-
-          if (currentAttempt === maxAttempts) {
-            console.log("Unable to store the new entry due to quota limitations.");
-          }
-
-          return dataObj;
-        } else {
-          console.log("Document does not exist");
-          return null;
-        }
-      })
-      .catch(function (error) {
-        console.log("Error getting document:", error);
-        return null;
-      });
-  }
-}
-
-
-async function fetchCalculatedEODDeliveryData( collectionPath ) {
-	
-  try {
-  
-	var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
-	var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
-
-	var selectedMonthYear = document.getElementById('monthYear').value
-	var selectedTradingDate = document.getElementById('tradingDate').value
-	var selectedAvgDays
-	if( document.getElementById("avgDays") )
-		selectedAvgDays = Number( document.getElementById("avgDays").value )
-	else
-		selectedAvgDays = 10
-	
-	var useCurrentDateDelivery
-	if( document.getElementById("useCurrentDateDelivery") )
-		useCurrentDateDelivery = ( document.getElementById('useCurrentDateDelivery').checked==true )
-	else
-		useCurrentDateDelivery = false
-	
-	collectionPath = collectionPath+selectedAvgDays+useCurrentDateDelivery
-	
-	var localStorageForCalculatedEODDeliveryData = localStorage.getItem('calculatedEODDeliveryData')
-	if( localStorageForCalculatedEODDeliveryData!=null && JSON.parse(localStorageForCalculatedEODDeliveryData) [collectionPath]!=undefined )
-	{
-		 var sectorStockNamesObj = {};
-		var allDocsDataObj = JSON.parse(localStorageForCalculatedEODDeliveryData) [collectionPath]
-		console.log("getting from localstorage")
-		return allDocsDataObj;
-	}
-	else {
-  //var collectionRef = db.collection(collectionPath);
-  var sectorStockNamesObj = {};
-
-	
-	var returnedDateWiseObj  = await previousTradingDateObj( Number(selectedAvgDays)+1, selectedTradingDate, useCurrentDateDelivery )
-	
-	var selectedDeliveryTradingDate =  Object.keys(returnedDateWiseObj)[0]
-	//var selectedDateDeliveryObj = returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[0] ]['Symbols']
-	var selectedDateDeliveryObj = returnedDateWiseObj[ selectedDeliveryTradingDate ]['Symbols']
-	
-	
-	var aggergatedDeliveryQntyObj = {}
-	for ( var date in returnedDateWiseObj )
-	{
-		//if( date!=selectedTradingDate && date!= undefined)
-		if( date!=selectedDeliveryTradingDate && date!= undefined)
-		{
-			var dateObj = returnedDateWiseObj[ date ]['Symbols']
-			for( var stockName in dateObj )
-			{
-				var symbolObj = dateObj[ stockName ] //for short-handing
-				if( symbolObj != undefined )
-				{
-					//11: "deliverable_quantity"
-					if( aggergatedDeliveryQntyObj[ stockName ] ==undefined )
-					{
-						//aggergatedDeliveryQntyObj[ stockName ] = symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ] = {
-							'deliverable_quantity': symbolObj[ 'deliverable_quantity' ],
-							'deliverable_percentage': symbolObj[ 'deliverable_percentage' ]
-						}
-						
-					}
-					else
-					{
-						//aggergatedDeliveryQntyObj[ stockName ] += symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ]['deliverable_quantity'] += symbolObj[ 'deliverable_quantity' ]
-						aggergatedDeliveryQntyObj[ stockName ]['deliverable_percentage'] += symbolObj[ 'deliverable_percentage' ]
-					}
-					
-				}
-
-			}
-		}
-		
-	}
-	console.log("aggergatedDeliveryQntyObj",aggergatedDeliveryQntyObj)
-	for( var symbol in selectedDateDeliveryObj )
-	{
-		var symbolObj = selectedDateDeliveryObj[symbol] //for short-handing
-		console.log( symbol )
-		if( aggergatedDeliveryQntyObj[ symbol ] )
-		{
-		var averageDeliveryQuantity = (  symbolObj['deliverable_quantity'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_quantity'] / Number(selectedAvgDays) ) ).toFixed(2)
-		var averageDeliveryPercentage = (  symbolObj['deliverable_percentage'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_percentage'] / Number(selectedAvgDays) ) ).toFixed(2)
-		
-		aggergatedDeliveryQntyObj[ symbol ] = {
-			"averageDeliveryQuantity":averageDeliveryQuantity,
-			"averageDeliveryPercentage":averageDeliveryPercentage,
-		}
-		}
-	}
-	
-  try {
-   
-          // Attempt to update localStorage and handle quota exceeded error (Starts Here)
-          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
-          var currentAttempt = 0;
-
-          while (currentAttempt < maxAttempts) {
-            try {
-               //localStorage.setItem('sectorStockNames', JSON.stringify( {[collectionPath]:sectorStockNamesObj} ));
-               //localStorage.setItem('calculatedEODDeliveryData', JSON.stringify( {[collectionPath]:JSON.stringify(aggergatedDeliveryQntyObj) } ));
-               localStorage.setItem('calculatedEODDeliveryData', JSON.stringify( {[collectionPath]:aggergatedDeliveryQntyObj } ));
-              break; // Successfully stored the new entry
-            } catch (e) {
-			console.log(e)
-				//document.getElementById('messages').innerHTML = e;
-              // Remove oldest entry
-              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
-			  //console.log("oldestEntryKey", oldestEntryKey)
-              delete firebaseFetchedDocs[oldestEntryKey];
-			  //console.log("firebaseFetchedDocs", firebaseFetchedDocs)
-			  localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
-              currentAttempt++;
-            }
-          }
-		// Attempt to update localStorage and handle quota exceeded error (Ends Here)
-	
-    return aggergatedDeliveryQntyObj;
-  } catch (error) {
-    console.log("Error getting documents: ", error);
-    //return null;
-    return {};
-  }
-  }
-  
-   } catch (error) {
-    console.log("Error getting documents: ", error);
-    //return null;
-    return {};
-  }
-  
-}
-
-async function showPerticularStocksDeliveryDataInTable()
-{
-	 document.getElementById('perticularStockDeliveryTableContainer').innerHTML = "";
-	 
-	 var selectedDeliveryStockSymbol = document.getElementById("deliveryStockSymbol").value
-	var selectedMonthYear = document.getElementById('monthYear').value
-	var selectedTradingDate = document.getElementById('tradingDate').value
-	var selectedAvgDays = Number( document.getElementById("avgDays").value )
-	var selectedPreviousTradingDays = Number( document.getElementById("previousTradingDays").value )
-
-
-	var returnedDateWiseObj = await previousTradingDateObj( Number(selectedPreviousTradingDays)+1, selectedTradingDate, ( document.getElementById('useCurrentDateDelivery').checked==true ))
-	//console.log("returnedDateWiseObj",returnedDateWiseObj)
-	
-	var selectedDeliveryTradingDate =  Object.keys(returnedDateWiseObj)[0]
-	//var selectedDateDeliveryObj = returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[0] ]['Symbols']
-	var selectedDateDeliveryObj = returnedDateWiseObj[ selectedDeliveryTradingDate ]['Symbols']
-	
-	
-	
-
-	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
-	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
-
-	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
-	var tablesStr =  ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="perticularStocksDeliveryDataTableStr"> <caption style="caption-side:top"> Perticular Stock | '+selectedDeliveryStockSymbol+'</caption> <thead> <tr class="tableRowClass">'
-	  +'<th>Date</th>'
-	  +'<th>AvgD</th>'
-	  +'<th>AvgD%</th>'
-	  +' <th>Chg%</th>'
-	  +' <th>Delivery%</th>'
-	  //+' <th>Traded Qty</th>'
-	 // +' <th>TO</th>'
-	  //+' <th>Del. Qty</th>'
-	  
-	   
-	  +' </tr> </thead> <tbody>'
-	
-		var stocksListArray = []
-		stocksListArray = sectorStockNamesObj[ document.getElementById('tableListSelector').value ]
-		//spurtsInOIUnderlyingsObject = convertSpurtsDataArrayIntoObj( spurtsInOIUnderlyingsObject )
-	//console.log( 'stocksListArray', stocksListArray )
-	
-	//for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
-	//for( var F=0; F< stocksListArray.length; F++ ) {
-	for ( var date in returnedDateWiseObj ) {
-	
-	
-		var returnedDateWiseObj2 = await previousTradingDateObj( Number(selectedAvgDays)+1, date, true )
-		//console.log("returnedDateWiseObj2",returnedDateWiseObj2)
-	
-		//var aggergatedDeliveryQntyObj = {}
-		var aggergatedDeliveryQnty = 0
-		var aggergatedDeliveryPrcntg = 0
-		for ( var date2 in returnedDateWiseObj2 )
-		{
-			if( date2!=date && date!= undefined && date2!= undefined)
-			{
-				var symbolArray2 = returnedDateWiseObj2[ date2 ][ selectedDeliveryStockSymbol ] 
-				var symbolObj = returnedDateWiseObj2 [ date2 ]['Symbols'][ selectedDeliveryStockSymbol ] 
-				if( aggergatedDeliveryQnty==0 )
-				{
-					aggergatedDeliveryQnty = symbolObj[ 'deliverable_quantity' ]
-					aggergatedDeliveryPrcntg = symbolObj[ 'deliverable_percentage' ]
-				}
-				else
-				{
-					aggergatedDeliveryQnty += symbolObj[ 'deliverable_quantity' ]
-					aggergatedDeliveryPrcntg += symbolObj[ 'deliverable_percentage' ]
-				}
-			}
-			
-		}
-		
-	
-
-	//var symbol = spurtsInOIUnderlyingsObject[F]["symbol"]
-	var symbol = selectedDeliveryStockSymbol
-	var symbolObj =  returnedDateWiseObj[ date ]['Symbols'][ symbol ]  //for short-handing
-		
-	if( symbolObj !=undefined )
-	{
-		
-		var perChange = ( ( ( symbolObj['close_price'] - symbolObj['prev_close'] ) / symbolObj['prev_close'] ) * 100 ).toFixed(2)
-		
-		/*
-		var perChangeStr = ( ( ( symbolObj['close_price'] - symbolObj['prev_close'] ) / symbolObj['prev_close'] ) * 100 ).toFixed(2)
-		if ( perChangeStr < 0 )// % change in red
-		{
-			perChangeStr ='<td class="redClass">'
-			+perChangeStr // % change
-			 +'</td><td>'
-		}
-		else // % change in green
-		{
-			perChangeStr ='<td class="greenClass">'
-			+perChangeStr // % change
-			 +'</td><td>'
-		}
-		*/
-		
-		
-		function printDataStr()
-		{
-		tablesStr +='<tr class="item"><td>'
-		+ date
-		+'</td><td>'
-		+ (  symbolObj['deliverable_quantity'] / ( aggergatedDeliveryQnty / Number(selectedAvgDays) ) ).toFixed(2)
-		+'</td><td>'
-		+ (  symbolObj['deliverable_percentage'] / ( aggergatedDeliveryPrcntg / Number(selectedAvgDays) ) ).toFixed(2)
-		+'</td><td>'
-		+ perChange 
-		+'</td><td>'
-		+symbolObj['deliverable_percentage']
-		//+'</td><td>'
-		//+( symbolObj['volume'] / 1000 ).toFixed(0) 
-		//+'</td><td>'
-		//+( symbolObj['turnover'] / 100000 ).toFixed(0)
-		//+'</td><td>'
-		//+symbolObj['deliverable_quantity']
-		
-		+'</td></tr>'
-			}
-			
-	printDataStr()
-	
-		
-	}
-	
-	
-	
-	
-	}
-	tablesStr +=' </tbody> </table>    </div>  </div>'
-
-
-	
-	 document.getElementById('perticularStockDeliveryTableContainer').innerHTML = tablesStr;
+	 document.getElementById('spurtsDataTableContainer').innerHTML = tablesStr;
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
 	// await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
-
-
-
 
 function convertSpurtsDataArrayIntoObj( dataArray )
 {
@@ -1406,15 +1153,15 @@ function add_Sectors_In_HeatMapSelector( )
 	
 	if( sectorStockNamesObj !=undefined)
 	{
-	if( document.getElementById("tableListSelector").getElementsByTagName('option').length <=1 )
+	if( document.getElementById("heatMapSectorSelector").getElementsByTagName('option').length <=1 )
 	{
-	//document.getElementById("heatMapSectorSelector").innerHTML = "";
+	document.getElementById("heatMapSectorSelector").innerHTML = "";
 	document.getElementById("tableListSelector").innerHTML = "";
 	
 	var option = document.createElement("option");
-	option.value = "ALL";
-	option.text = "ALL";
-	document.getElementById("tableListSelector").add(option);
+	option.value = "ALL BANKS";
+	option.text = "ALL BANKS";
+	document.getElementById("heatMapSectorSelector").add(option);
 	
 	
 	
@@ -1425,7 +1172,7 @@ function add_Sectors_In_HeatMapSelector( )
 		var option = document.createElement("option");
 		option.value = sectorName;
 		option.text = sectorName;
-		//document.getElementById("heatMapSectorSelector").add(option);
+		document.getElementById("heatMapSectorSelector").add(option);
 		
 		var option = document.createElement("option");
 		option.value = sectorName;
@@ -1434,12 +1181,12 @@ function add_Sectors_In_HeatMapSelector( )
 		}
 	}
 	//document.getElementById('heatMapSectorSelector').value=document.getElementById('heatMapSectorSelector').getElementsByTagName('option')[2].value
-	//document.getElementById('heatMapSectorSelector').value="NIFTY_50"
+	document.getElementById('heatMapSectorSelector').value="NIFTY_50"
 	document.getElementById('tableListSelector').value="FnO"
 	}
 	
 	//showHeatMapChart(sectorStockNamesObj)
-	//showHeatMapChart()
+	showHeatMapChart()
 	}
 	
 } // add_Sectors_In_HeatMapSelector() ENDS HERE
@@ -1819,112 +1566,51 @@ function copyHeatMapList( heatMapSectorSelected, greenOrRed )
 }
 
 
-function addOnclickEvent()
-{
-var tableRows = document.getElementsByTagName('tr')
-
-for( var i=0;i<tableRows.length;i++ )
-{
-var tableData = tableRows[i].getElementsByTagName('td')[0]
-var tableHead = tableRows[i].getElementsByTagName('th')
-
-if( tableData==undefined && tableHead[0] !=undefined )
-{
-/*
-console.log(tableHead[0].innerHTML)
-for( var j=0;j<tableHead.length;j++ )
-{
-var functionStr ="addOnclickEvent();" + tableHead[j].getAttribute('onclick')
- tableHead[j].setAttribute('onclick', functionStr)
- }
- */
-}
-else
-{
-var functionStr = "document.getElementById('deliveryStockSymbol').value ='"+tableData.innerHTML+"';showPerticularStocksDeliveryDataInTable();document.getElementById('perticularStockDeliveryTableContainer').scrollIntoView();"
-tableData.setAttribute('onclick', functionStr)
-}
-}
-}
-
-function tableSortAndPushData(tableHead,event)
-{
-	var clicked_heading_index = tableHead.closest('th').cellIndex
-	var clicked_table_id=tableHead.closest("table").id
-	
-	//console.log("clicked heading index "+ clicked_heading_index  )
-	//console.log("clicked table index "+ clicked_table_id )
-	
-	var table=tableHead.closest("table")
-   	var fetchedTableData = [];
-	table.tBodies[0].getElementsByTagName('tr').length
-
-	for( var tableRow=0;  tableRow<table.tBodies[0].getElementsByTagName('tr').length; tableRow++ )
-	{
-	var keysValuesObj={}
-	var td=(table.tBodies[0].getElementsByTagName('tr')[tableRow]).getElementsByTagName('td')
-	for( var tableData=0;  tableData< td.length; tableData++ )
-	{
-	if(isNaN(td[tableData].innerText) == false )
-	{
-	keysValuesObj["column"+tableData] = Number( td[tableData].innerText )
-	}
-	else
-	{
-	keysValuesObj["column"+tableData] =  td[tableData].innerText 
-	}
-
-	}
-	
-	fetchedTableData.push(keysValuesObj)
-	}
-	//console.log(fetchedTableData)
-	
-	
-	
-	   let element = event.target;
-		//  console.log(element)
-      let caret, field, reverse;
-      if (element.tagName === 'SPAN') {
-        caret = element.getElementsByClassName('caret')[0];
- 
-      }
-      else {
-        caret = element;
- 
-      }
-	  
-	       field = "column"+clicked_heading_index 
-		   
-      let iconClassName = caret.className;
-      clearArrow();
-	 // console.log("cleared carets, iconClassName: " + iconClassName)
-      if (iconClassName.includes(caretUpClassName)) {
-        caret.className = `caret ${caretDownClassName}`;
-        reverse = false;
-      } else {
-		 caret.className = `caret ${caretUpClassName}`;
-        reverse = true;
-      }
-
-      fetchedTableData.sort(sort_by(field, reverse));
-      populateTable(fetchedTableData, clicked_table_id);
-	addOnclickEvent()
-	} // tableSortAndPushData() ENDS HERE
-
-
 </script>
-<!-- Delivery EOD Code Ends Here -->
+<!-- Spurts-Equity Code Ends Here -->
 
+
+<!-- Floating Buttons Code Starts Here -->
+
+<script>
+    function updateCondition() {
+            getSpurtsEquityData( );
+        }
+
+        function checkCondition( passedNumber ) {
+            var conditionSelect = document.getElementById("positiveConditionSelect");
+            var positiveSelectedCondition = conditionSelect.options[conditionSelect.selectedIndex].value;
+			
+			var conditionSelect = document.getElementById("negativeConditionSelect");
+            var negativeSelectedCondition = conditionSelect.options[conditionSelect.selectedIndex].value;
+
+            var positivePChngNumberInput = document.getElementById("positivePChngNumberInput").value;
+            var negativePChngNumberInput = document.getElementById("negativePChngNumberInput").value;
+
+            // Construct the condition string
+            //var conditionString = "Entered value " +passedNumber+ selectedCondition + " " + numberInput;
+            var conditionString = (passedNumber+ positiveSelectedCondition+ Number(positivePChngNumberInput) +'&&'+ passedNumber+ negativeSelectedCondition+ Number(negativePChngNumberInput) );
+			
+            // Evaluate the condition
+            //var result = eval(passedNumber+ selectedCondition+ Number(numberInput) );
+            var result = eval(passedNumber+ positiveSelectedCondition+ Number(positivePChngNumberInput) +'&&'+ passedNumber+ negativeSelectedCondition+ Number(negativePChngNumberInput) );
+			//console.log(conditionString + result)
+            // Update the result message
+            //document.getElementById("result").innerHTML = conditionString + ": " + result;
+			return ( result );
+        }
+
+</script>		
+<!-- Floating Buttons Code Ends Here -->
 
 
 <!-- Floating Buttons Code Starts Here -->
 <style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	     <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
 <!-- Floating Buttons Code Ends Here -->
 
 
 <script>
-// Example usage: generate month and year from April 2023 till now
 generateMonthYearFromDate( new Date("April 2023") );
 </script>
