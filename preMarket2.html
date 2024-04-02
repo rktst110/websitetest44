@@ -209,7 +209,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 	var tablesStr=''
 
 	var NiftyTablesStr = '<div class="column Left">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingNifty">'
-	+'<caption style="caption-side:top">Nifty 50 | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>    <thead class="greenHeaderClass">       <tr>               <th class="">Symbol</th>              <th class="">Chng%</th>               <th class="">LTP</th>			   <th class="">TO</th>    	<th>20DAV</th>    	<th>RFac</th> 	<th>D</th>  <th>D%</th>        </tr>  </thead>'
+	+'<caption style="caption-side:top">Nifty 50 | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>    <thead class="greenHeaderClass">       <tr>               <th class="">Symbol</th>              <th class="">Chng%</th>               		   <th class="">TO</th>    	<th>20DAV</th>    	<th>RFac</th> 	<th>D</th>  <th>D%</th>        </tr>  </thead>'
 	+'<tbody>'
 
 
@@ -231,8 +231,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+'</td><td>'
 		+stockValuesObj['metadata']['pChange'] .toFixed(2)
 		+'</td><td>'
-		+ stockValuesObj['metadata']['iep'] //lEP
-		+'</td><td>'
+		
 		+( stockValuesObj['metadata']['totalTurnover']  /  1000 ).toFixed(0)
 		+'</td><td>'
 		+ twentyDAV
@@ -252,7 +251,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 
 	
 	var FnOTablesStr = '<div class="column Right">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingFnO">'
-	+'<caption style="caption-side:top">FnO | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>     <thead class="greenHeaderClass">       <tr>               <th>Symbol</th>              <th>Chng%</th>               <th>LTP</th>			   <th>TO</th>   <th>20DAV</th>      	<th>RFac</th>    <th>D</th>  <th>D%</th>      </tr>   </thead> '
+	+'<caption style="caption-side:top">FnO | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>     <thead class="greenHeaderClass">       <tr>               <th>Symbol</th>              <th>Chng%</th>               	   <th>TO</th>   <th>20DAV</th>      	<th>RFac</th>    <th>D</th>  <th>D%</th>      </tr>   </thead> '
 	+'<tbody>'
 
 	for( var Symbol in preOpenMarketObject['data'] )
@@ -272,8 +271,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+'</td><td>'
 		+stockValuesObj['metadata']['pChange'].toFixed(2)
 		+'</td><td>'
-		+stockValuesObj['metadata']['iep'] //lEP
-		+'</td><td>'
+		
 		+(stockValuesObj['metadata']['totalTurnover'] / 1000 ).toFixed(0)
 		+'</td><td>'
 		+ twentyDAV
