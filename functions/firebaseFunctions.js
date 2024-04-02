@@ -349,6 +349,7 @@ async function fetchIndicesSectorStockNamesCollectionData( collectionPath ) {
               // Remove oldest entry
               var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
               delete firebaseFetchedDocs[oldestEntryKey];
+			  localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
               currentAttempt++;
             }
           }
@@ -431,6 +432,7 @@ async function fetchDeliveryDataDocData(docPath) {
               // Remove oldest entry
               var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
               delete firebaseFetchedDocs[oldestEntryKey];
+			  localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
               currentAttempt++;
             }
           }
@@ -662,6 +664,7 @@ function fetchIntradayChartFirebaseDocData(docPath, selectedTradingDate ) {
               // Remove oldest entry
               var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
               delete firebaseFetchedDocs[oldestEntryKey];
+			  localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
               currentAttempt++;
             }
           }
