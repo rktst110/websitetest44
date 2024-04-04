@@ -744,11 +744,15 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	  +'<th>Symbol</th>'
 	  +' <th>Chg%</th>'
 	  // +' <th>LTP</th>'
-	  +' <th>T.O.</th>'
-	 +' <th>Fac</th>'
-	  +' <th>20DAV</th>'
+	  
+	    +' <th>D</th>'
 	  +' <th>D%</th>'
-	  +' <th>D</th>'
+	
+	  +' <th>20DAV</th>'
+	  +' <th>T.O.</th>'
+	  +' <th>Vol</th>'
+	 +' <th>Fac</th>'
+	 +' <th>Range</th>'
 	  +' <th>Money</th>'
 	  +' </tr> </thead> <tbody>'
 		
@@ -876,7 +880,10 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		
 		}	   	//this block of code is for sectors heatMap chart. (END)
 		  
-		 
+		 var DayHigh = niftyTotalMarketObject[Symbol]['dayHigh'] 
+		var DayLow = niftyTotalMarketObject[Symbol]['dayLow']  
+		var DayRange =( ( (DayHigh - DayLow) / DayLow) *100)
+		
 		 function printDataStr(){
 			onlyEquityTableStr +='<tr class="item"><td>'
 			 +Symbol
@@ -884,17 +891,24 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 			+ symbolArray['pChange']  //pchange
 			 //+'</td><td>'
 			 //+symbolArray['lastPrice']  //lastPrice
-			 +'</td><td>'
-			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
-		 +'</td><td>'
-		 + Fac
+			 
 		+'</td><td>'
-		+ twentyDAV
+		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
+		
 		+'</td><td>'
 		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
 		+'</td><td>'
-		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
+		+ twentyDAV
 		+'</td><td>'
+			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		 +'</td><td>'
+			 +( symbolArray['totalTradedVolume'] / 100000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		
+		 +'</td><td>'
+		 + Fac
+		 +'</td><td>'
+		 + DayRange.toFixed(2)
+		 +'</td><td>'
 		+ WFactor
 		+'</td></tr>'
 			
@@ -995,7 +1009,7 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 
 	//var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>EQ TO</th>  <th>TO/OI</th>      <th>Chng (%)</th>      <th>OI</th>   <th>Vol</th>       </tr></thead><tbody>'
-	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>Chg%</th> 	<th>EQ TO</th>  		<th>Fut</th>   <th>Opt</th>	 <th>Tot</th>     <th>OI%Chg</th>             </tr></thead><tbody>'
+	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>Chg%</th>	<th>Range</th> 	<th>EQ TO</th>  		<th>Fut</th>   <th>Opt</th>	 <th>Tot</th>     <th>OI%Chg</th>             </tr></thead><tbody>'
 	
 	
 		var stocksListArray = []
@@ -1012,12 +1026,18 @@ async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDa
 	{
 		var symbolArray = niftyTotalMarketObject[symbol] //for short-handing
 		
+		var DayHigh = niftyTotalMarketObject[symbol]['dayHigh'] 
+		var DayLow = niftyTotalMarketObject[symbol]['dayLow']  
+		var DayRange =( ( (DayHigh - DayLow) / DayLow) *100)
+		
 		function printDataStr()
 		{
 		tablesStr +='<tr class="item"><td>'
 		+ symbol
 		+'</td><td>'
 		+ niftyTotalMarketObject[symbol]["pChange"] // equity/NiftyTotalMarket pchange
+		+'</td><td>'
+		+DayRange.toFixed(2)
 		+'</td><td>'
 		+( niftyTotalMarketObject[symbol]["totalTradedValue"] / 1000000).toFixed(0) // equity/NiftyTotalMarket totalTradedValue
 		+'</td><td>'
