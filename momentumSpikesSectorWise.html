@@ -239,6 +239,10 @@ async function getEquityData()
 	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/'+selectedMarketTypeValue+'/'+selectedTimeValue+'/'+selectedTimeValue
 	var equityDataObj = JSON.parse( (await fetchFirebaseDocData( docPathForEquity ) ) ['data'] )
 
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/'
+	var calculatedEODDeliveryDataObj = await fetchCalculatedEODDeliveryData( collectioPath )
+	
+	
 	var timeValuePrev5minutes = ''
 	var equityDataObjPrev5m = {}
 	if( selectedTimeValueRef.options[selectedTimeValueRef.selectedIndex - 3] !=undefined )
@@ -252,7 +256,7 @@ async function getEquityData()
 	equityDataObjPrev5m =  JSON.parse( (await fetchFirebaseDocData( docPathForEquityPrev5m ) ) ['data'] )
 		//console.log( "equityDataObj", equityDataObj)
 		//console.log( "equityDataObjPrev5m", equityDataObjPrev5m)
-	show_momentum_spike_Data( tableCaption, tableContainerID, tableID, selectedTimeValue, timeValuePrev5minutes, equityDataObj, equityDataObjPrev5m, JSON.parse( deliveryDataObj['data'] ), selectedTradingDate)
+	show_momentum_spike_Data( tableCaption, tableContainerID, tableID, selectedTimeValue, timeValuePrev5minutes, equityDataObj, equityDataObjPrev5m, JSON.parse( deliveryDataObj['data'] ), selectedTradingDate, calculatedEODDeliveryDataObj)
 	
 	var tableContainerID = 'spike5mTableContainer_sectors'
 	var tableID = 'spike5mTable_sectors'
@@ -274,7 +278,7 @@ async function getEquityData()
 
 		equityDataObjPrev10m =  JSON.parse(  ( await fetchFirebaseDocData( docPathForEquityPrev10m ) )['data'] )
 		
-		show_momentum_spike_Data( tableCaption, tableContainerID, tableID, selectedTimeValue, timeValuePrev10minutes, equityDataObj, equityDataObjPrev10m, JSON.parse( deliveryDataObj['data'] ), selectedTradingDate)
+		show_momentum_spike_Data( tableCaption, tableContainerID, tableID, selectedTimeValue, timeValuePrev10minutes, equityDataObj, equityDataObjPrev10m, JSON.parse( deliveryDataObj['data'] ), selectedTradingDate, calculatedEODDeliveryDataObj )
 		
 		var tableContainerID = 'spike10mTableContainer_sectors'
 		var tableID = 'spike10mTable_sectors'
@@ -295,7 +299,7 @@ async function getEquityData()
 	
 	equityDataObjPrev15m = JSON.parse( (await fetchFirebaseDocData( docPathForEquityPrev15m ) ) ['data'] )
 	//equityDataObjPrev15m = JSON.parse( await fetchFirebaseDocData( docPathForEquityPrev15m ) )['data'] 
-	show_momentum_spike_Data( tableCaption, tableContainerID, tableID, selectedTimeValue, timeValuePrev15minutes, equityDataObj, equityDataObjPrev15m, JSON.parse( deliveryDataObj['data'] ), selectedTradingDate)
+	show_momentum_spike_Data( tableCaption, tableContainerID, tableID, selectedTimeValue, timeValuePrev15minutes, equityDataObj, equityDataObjPrev15m, JSON.parse( deliveryDataObj['data'] ), selectedTradingDate, calculatedEODDeliveryDataObj )
 	
 	var tableContainerID = 'spike15mTableContainer_sectors'
 	var tableID = 'spike15mTable_sectors'
@@ -310,7 +314,7 @@ async function getEquityData()
 }
 
 
-async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID, currentTimeValue, previousTimeValue, currentEquityDataObj, previousEquityDataObj, deliveryDataObj, selectedTradingDate  )
+async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID, currentTimeValue, previousTimeValue, currentEquityDataObj, previousEquityDataObj, deliveryDataObj, selectedTradingDate, calculatedEODDeliveryDataObj )
 //async function show_momentum_spike_Data( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, selectedTradingDate, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious, deliveryDataObj )
 {
 	 document.getElementById(tableContainerID).innerHTML = "";
@@ -328,6 +332,8 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	   +' <th>Spike</th>'
 	 //+' <th>Money</th>'
 	  +' <th>20DAV</th>'
+	  +' <th>DQ</th>'
+	  +' <th>D%</th>'
 	  +' </tr> </thead> <tbody>'
 
 		//for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
@@ -364,6 +370,12 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 			// + WFactor
 			//+'</td><td>'
 			+ twentyDAV
+			
+			+'</td><td>'
+			+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
+			+'</td><td>'
+			+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
+			
 			+'</td></tr>'
 			
 		
