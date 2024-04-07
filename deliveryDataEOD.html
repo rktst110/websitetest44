@@ -132,11 +132,11 @@ body {
 
 <div class="row">
 	<center>
-	<button onclick="document.getElementById('tableListSelector').value='FnO';getSpurtsEquityData()">FnO</button>
-	<button onclick="document.getElementById('tableListSelector').value='NIFTY_50';getSpurtsEquityData()">Nifty 50</button>
-   <button onclick="document.getElementById('tableListSelector').value='NIFTY_BANK';getSpurtsEquityData()">Banks</button>
-   <button onclick="document.getElementById('tableListSelector').value='NIFTY_FIN_SERVICE';getSpurtsEquityData()">Finance</button>
-   <button onclick="document.getElementById('tableListSelector').value='NIFTY_MIDCAP_150';getSpurtsEquityData()">Midcap</button>
+	<button onclick="document.getElementById('tableListSelector').value='FnO';getDeliveryData()">FnO</button>
+	<button onclick="document.getElementById('tableListSelector').value='NIFTY_50';getDeliveryData()">Nifty 50</button>
+   <button onclick="document.getElementById('tableListSelector').value='NIFTY_BANK';getDeliveryData()">Banks</button>
+   <button onclick="document.getElementById('tableListSelector').value='NIFTY_FIN_SERVICE';getDeliveryData()">Finance</button>
+   <button onclick="document.getElementById('tableListSelector').value='NIFTY_MIDCAP_150';getDeliveryData()">Midcap</button>
     | List:	<select id="tableListSelector" aria-labelledby="expiryLbl" onchange="getDeliveryData()"> </select> 
 	| Avg Days: 		 <input id="avgDays" type="number" value="10"  size="3">
 	<br> Symbols:	<select id="deliveryStockSymbol" onchange="showPerticularStocksDeliveryDataInTable()"></select>
@@ -810,7 +810,7 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 	//var selectedDateDeliveryObj = returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[0] ]['Symbols']
 	var selectedDateDeliveryObj = returnedDateWiseObj[ selectedDeliveryTradingDate ]['Symbols']
 	
-	
+	//console.log('returnedDateWiseObj', returnedDateWiseObj)
 	
 	var aggergatedDeliveryQntyObj = {}
 	for ( var date in returnedDateWiseObj )
@@ -860,6 +860,9 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 	  +'<th>AvgD%</th>'
 	  +' <th>Chg%</th>'
 	  +' <th>Delivery%</th>'
+	  +' <th>cR</th>'
+	  +' <th>p1R</th>'
+	  +' <th>p2R</th>'
 	 // +' <th>Traded Qty</th>'
 	 // +' <th>TO</th>'
 	  //+' <th>Del. Qty</th>'
@@ -911,16 +914,38 @@ async function show_EOD_Delivery_Data( selectedMonthYear, selectedTradingDate, s
 		
 		function printDataStr()
 		{
+		
+		//console.log(symbol )
+		
+			var DayHigh = symbolObj ['high_price']
+			var DayLow = symbolObj ['low_price']
+			var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2) 
+			
+			var prev1DayHigh = returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[1] ]['Symbols'][ symbol ] ['high_price']
+			var prev1DayLow =  returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[1] ]['Symbols'][ symbol ]  ['low_price']
+			var prev1DayRange =( ( (prev1DayHigh - prev1DayLow) / prev1DayLow) *100).toFixed(2) 
+		
+			var prev2DayHigh = returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[2] ]['Symbols'][ symbol ] ['high_price']
+			var prev2DayLow =  returnedDateWiseObj[ Object.keys(returnedDateWiseObj)[2] ]['Symbols'][ symbol ]  ['low_price']
+			var prev2DayRange =( ( (prev2DayHigh - prev2DayLow) / prev2DayLow) *100).toFixed(2) 
+		
+		
 		tablesStr +='<tr class="item"><td>'
 		+ symbol
 		+'</td><td>'
-		+ (  symbolObj['deliverable_quantity'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_quantity'] / Number(selectedAvgDays) ) ).toFixed(2)
+		+ ( aggergatedDeliveryQntyObj[ symbol ] ? (  symbolObj['deliverable_quantity'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_quantity'] / Number(selectedAvgDays) ) ).toFixed(2) : 0 )
 		+'</td><td>'
-		+ (  symbolObj['deliverable_percentage'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_percentage'] / Number(selectedAvgDays) ) ).toFixed(2)
+		+ ( aggergatedDeliveryQntyObj[ symbol ] ? (  symbolObj['deliverable_percentage'] / ( aggergatedDeliveryQntyObj[ symbol ]['deliverable_percentage'] / Number(selectedAvgDays) ) ).toFixed(2) : 0 )
 		+'</td><td>'
 		+ perChange 
 		+'</td><td>'
 		+symbolObj['deliverable_percentage']
+		+'</td><td>'
+		+DayRange
+		+'</td><td>'
+		+prev1DayRange
+		+'</td><td>'
+		+prev2DayRange
 		//+'</td><td>'
 		//+( symbolObj['volume'] / 1000 ).toFixed(0) 
 		//+'</td><td>'
@@ -1107,7 +1132,6 @@ async function fetchEODDeliveryData(docPath) {
 
 
 async function fetchCalculatedEODDeliveryData( collectionPath ) {
-	
   try {
   
 	var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
@@ -1274,6 +1298,7 @@ async function showPerticularStocksDeliveryDataInTable()
 	  +'<th>AvgD%</th>'
 	  +' <th>Chg%</th>'
 	  +' <th>Delivery%</th>'
+	  +' <th>Range</th>'
 	  //+' <th>Traded Qty</th>'
 	 // +' <th>TO</th>'
 	  //+' <th>Del. Qty</th>'
@@ -1347,6 +1372,11 @@ async function showPerticularStocksDeliveryDataInTable()
 		
 		function printDataStr()
 		{
+			var DayHigh = symbolObj ['high_price']
+			var DayLow = symbolObj ['low_price']
+			var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2) 
+		
+		
 		tablesStr +='<tr class="item"><td>'
 		+ date
 		+'</td><td>'
@@ -1357,6 +1387,8 @@ async function showPerticularStocksDeliveryDataInTable()
 		+ perChange 
 		+'</td><td>'
 		+symbolObj['deliverable_percentage']
+		+'</td><td>'
+		+DayRange
 		//+'</td><td>'
 		//+( symbolObj['volume'] / 1000 ).toFixed(0) 
 		//+'</td><td>'
