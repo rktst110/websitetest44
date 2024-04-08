@@ -334,6 +334,7 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	  +' <th>20DAV</th>'
 	  +' <th>DQ</th>'
 	  +' <th>D%</th>'
+	  +' <th>Rng</th>'
 	  +' </tr> </thead> <tbody>'
 
 		//for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
@@ -348,6 +349,12 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 		{
 	   var valueSpike = ( ( ( symbolArray['totalTradedValue'] -  previousSymbolArray['totalTradedValue']) / previousSymbolArray['totalTradedValue'] ) * 100).toFixed(2)
 	
+	 var DayHigh = symbolArray['dayHigh'] 
+	 var DayLow = symbolArray['dayLow'] 
+	 var LastPrice = symbolArray['lastPrice'] 
+	
+	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
+	  
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
@@ -375,6 +382,8 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 			+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
 			+'</td><td>'
 			+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
+			+'</td><td>'
+			+DayRange
 			
 			+'</td></tr>'
 			
@@ -797,7 +806,7 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 	 document.getElementById(tableContainerID).innerHTML = "";
 	
 	var sectorStockArray = sectorStockNamesObj[ document.getElementById('tableListSelector').value ]
-	console.log("sectorStockArray",sectorStockArray)
+	//console.log("sectorStockArray",sectorStockArray)
 	
 	var niftyTotalMarketObject = currentEquityDataObj['data']
 	var niftyTotalMarket2MinutePreviousObject = previousEquityDataObj['data']
@@ -814,6 +823,7 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 	  +' <th>20DAV</th>'
 	  +' <th>D</th>'
 	 +' <th>D%</th>'
+	 +' <th>Rng</th>'
 	  +' </tr> </thead> <tbody>'
 
 		//for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
@@ -829,6 +839,12 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 		{
 	   var valueSpike = ( ( ( symbolArray['totalTradedValue'] -  previousSymbolArray['totalTradedValue']) / previousSymbolArray['totalTradedValue'] ) * 100).toFixed(2)
 	
+	 var DayHigh = symbolArray['dayHigh'] 
+	 var DayLow = symbolArray['dayLow'] 
+	 var LastPrice = symbolArray['lastPrice'] 
+	
+	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
+	  
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
@@ -855,6 +871,8 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 			+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
 			+'</td><td>'
 			+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
+			+'</td><td>'
+			+ DayRange
 			
 			+'</td></tr>'
 			
