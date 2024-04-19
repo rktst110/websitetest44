@@ -1,0 +1,1363 @@
+
+<!-- Importing Firebase SDK Starts Here-->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+ <!-- Importing Firebase SDK Ends Here-->
+ 
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Starts Here-->
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
+ 
+
+  <script src="functions/commonFunctions.js"></script>
+  <script src="functions/tableSortingFunctons.js"></script>
+ <script src="functions/importFiles.js"></script>
+ <script src="functions/firebase.js"></script>
+ <script src="functions/firebaseFunctions.js"></script>
+
+ <div id="importedContent"></div>
+ 
+ <title>Indices + HeatMap</title>
+ 
+ 
+
+<style>
+
+thead {
+  position: sticky;
+  top: 0;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Create two unequal columns that floats next to each other */
+.column {
+  float: left;
+  padding: 0.5px;
+  height: 520px; 
+}
+
+.equityLeft {
+  width: 33%;
+}
+
+.spurtsRight {
+  width: 33%;
+}
+
+.left {
+  width: 25%;
+}
+
+.right {
+  width: 75%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+@media screen and (max-width: 800px) {
+  .column {
+    width: 100%;
+  }
+}
+
+td {
+  text-align: center;
+}
+</style>
+
+ <label>Month Year:</label>
+<select id="monthYear" onchange="getFirestoreData()">
+</select>
+
+ <label> | Trading Date:</label>
+<select id="tradingDate" onchange="setCommonSelectors()">
+</select>
+
+
+ <label> | Common TimeValues:</label>
+<select id="commonTimeValues" onchange="saveSelectedValues();fetchDataForAllSegments()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+<button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
+&nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
+
+<hr>
+
+ <label> Indices TimeValues:</label>
+<select id="indicesTimeValues" onchange="getIndicesData()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+ <label> Spurts TimeValues:</label>
+<select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
+</select>
+
+<!--Content Start From Here-->
+<div class="row">
+  <div class="column left" style="background-color:#aaa;">
+  
+ <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
+   <br>
+   </div>
+  <div class="column right" style="background-color:#bbb;">
+  
+   <center> 
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_50';showHeatMapChart()">Nifty 50</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='ALL BANKS';showHeatMapChart()">Banks</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_FIN_SERVICE';showHeatMapChart()">Finance</button>
+   <button onclick="document.getElementById('heatMapSectorSelector').value='NIFTY_MIDCAP_150';showHeatMapChart()">Midcap</button>
+   
+   HeatMap Sectors: &nbsp;<select id="heatMapSectorSelector" aria-labelledby="expiryLbl" onchange="showHeatMapChart()"> <option value="">Select</option> </select></center>  <div id="heatMapContainer" style=" height:500px; width: auto; margin: 0 auto;"></div>
+
+  </div>
+</div>
+
+<br><br>
+
+
+
+
+
+<div class="row">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="equityDataTableContainer"></div> </div>
+  </div>
+  
+  <div class="column spurtsRight" style="background-color:#bbb;">
+  <div class="spaceBetweenTables">  	<div id="equityDataTableContainer2"></div> </div>
+    </div>
+  
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="spurtsDataTableContainer"></div> </div>
+  </div>
+  
+  
+</div>
+
+
+<!--<div class="tableRow"> <center> Spurts Time: &nbsp;<select id="spurts_time_for_both" aria-labelledby="expiryLbl" onchange="adjust_equity_spurts_timeValues()"> <option value="">Select</option> </select> &nbsp; &nbsp;  | &nbsp; &nbsp; No. of Comparison Stocks : &nbsp; <input id="noOfComparisonStocks" type="number" value="30" size="3"> <button onclick="compareEquitySpurtsStocks(\'compareEquityWithSpurts\')">Cmp EquitySpurts</button> <button onclick="compareEquitySpurtsStocks(\'compareSpurtsWithEquity\')">Cmp SpurtsEquity</button>   </center> <br> <div class="tableColumn" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Equity Time: &nbsp;<select id="only_equity_time" aria-labelledby="expiryLbl" onchange="show_only_equity_Data()"> <option value="">Select</option> </select> </center>  <div id="equityDataTableContainer"></div> </div> </div> <div class="tableColumn" style="border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Spurts Time: &nbsp;<select id="only_spurts_time" aria-labelledby="expiryLbl" onchange="show_only_Spurts_Data()"> <option value="">Select</option> </select> </center>  <div id="spurtsDataTableContainer"></div> </div> </div> -->
+
+
+<br><br><br><br><br><br>
+<!--Content Ends Here-->
+
+
+<script>
+function fetchDataForAllSegments()
+{
+setIndicesSelectorTimeValues( "syncWithCommonTime" );
+setSpurtsSelectorTimeValues( "syncWithCommonTime" )
+}
+</script>
+
+
+<!-- Indices Code Starts Here -->
+<script>
+
+function setIndicesSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+	var selectElementRef = document.getElementById("indicesTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+}
+
+
+async function getPreviousDaySpurtsData( selectedTradingDate )
+{
+	  function formatDate(date) {
+		const monthNames = [
+		  "January", "February", "March", "April", "May", "June", 
+		  "July", "August", "September", "October", "November", "December"
+		];
+		const monthIndex = date.getMonth();
+		const year = date.getFullYear();
+		return monthNames[monthIndex] + " " + year;
+	  }
+	  
+
+
+
+	
+	//firestoreIndexObj['03-Jul-2023']['trading_dates']['previousTradingDate']
+	var previousTradingDate = firestoreIndexObj[selectedTradingDate]['trading_dates']['previousTradingDate']
+	var previousMonthYear = formatDate( new Date( previousTradingDate ) );
+	var docPathForPreviousIndex = '/'+previousMonthYear+'/'+previousTradingDate
+	//var previousIndexDataObj = await fetchFirebaseDocData( docPathForPreviousIndex )
+	var previousIndexDataObj = await fetchFirebaseDocData( docPathForPreviousIndex )
+
+	//console.log("previousIndexDataObj",previousIndexDataObj)
+	var previousDaySpurtsTime = previousIndexDataObj ['Index']['spurts_in_open_interest_by_underlyings'][previousIndexDataObj ['Index']['spurts_in_open_interest_by_underlyings'].length-1]
+	var docPathForPreviousDaySpurts = '/'+previousMonthYear+'/'+previousTradingDate+'/spurts_in_open_interest_by_underlyings/'+previousDaySpurtsTime
+	
+	var previousDaySpurtsDataObj = await fetchFirebaseDocData( docPathForPreviousDaySpurts )
+	previousDaySpurtsDataObj = JSON.parse( previousDaySpurtsDataObj['data'] )
+	//console.log("previousDaySpurtsDataObj",previousDaySpurtsDataObj)
+	
+	var symbolWiseObj = {}
+	
+	for( var i=0;i<previousDaySpurtsDataObj['data'].length;i++ )
+	{
+		var aliasObj = previousDaySpurtsDataObj['data'][i]
+		symbolWiseObj[ aliasObj['symbol'] ] = aliasObj
+	}
+	
+	//return previousDaySpurtsDataObj;
+	return symbolWiseObj;
+}
+
+async function getIndicesData( passedValue )
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	console.log( "dataObj", JSON.parse( dataObj['data'] )  )
+	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	console.log("previousDaySpurtsDataObj", await getPreviousDaySpurtsData( selectedTradingDate ))
+}
+
+async function showIndicesPerformanceChart ( returnedDataObj )
+{
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	//var selectedValue = document.getElementById("indices_performance_time").value;
+		
+	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
+	var indicesPerformanceObject = returnedDataObj ['data']
+	
+	var sectorsWeightageInNifty50 = { "FIN SERVICE":37.59, "IT":12.65, "OIL AND GAS":11.99, "FMCG": 9.82, "AUTO":5.98, "PHARMA":3.86, "HEALTHCARE":3.86,"Construction":3.54, "METAL":3.52, "CONSR DURBL":3.30,"Telecommunication":2.61, "ENERGY":2.10,"INFRA":1.89, "SERV SECTOR":0.74, "Chemicals":0.41 }
+	
+	var dataPointsArray=[]
+	var dataPointsArrayAdvances=[]
+	var dataPointsArrayDeclines=[]
+	var dataPointsArrayUnchanged=[]
+	var dataPointsArrayPChangeAddition=[]
+	
+	var tempObj={}
+	for (var symbol in indicesPerformanceObject) {
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500'  && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' && symbol !='NIFTY PSE' && symbol !='NIFTY SERV SECTOR' && symbol !='NIFTY COMMODITIES' && symbol !='NIFTY HEALTHCARE'  )
+		{
+		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+		}
+	}
+	
+// tempObj is sorted by this code
+//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
+Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
+var temp={}
+if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=symbol.replace(/NIFTY /g,'') 
+}
+else{
+	temp["label"]=symbol
+}
+	
+	if( sectorsWeightageInNifty50[ temp["label"] ]!=undefined )
+	{
+		 temp["label"] =  temp["label"] 
+	}
+	
+		//temp["y"]=tempObj[symbol]; 
+		temp["y"]= Math.abs( tempObj[symbol] ); 
+		if(tempObj[symbol]<0) 
+		{
+			temp["color"]="#cd5652"
+		}
+		else if(tempObj[symbol]>0) 
+		{
+			temp["color"]="#3a7dd4"
+		}
+		else if(tempObj[symbol]==0) 
+		{
+			temp["color"]="black"
+		}
+		
+		dataPointsArray.push(temp)
+	});
+	
+/*
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][9]; 
+		temp["color"]="#089981"
+			
+		dataPointsArrayAdvances.push(temp)
+		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
+	});
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][10]; 
+		temp["color"]="#cd5652"
+		
+	
+		
+		dataPointsArrayDeclines.push(temp)
+		
+	});	
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][11]; 
+	
+		temp["color"]="#cbba4d"
+		
+		
+		dataPointsArrayUnchanged.push(temp)
+	});
+	
+	*/
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+	animationEnabled: false,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
+			//verticalAlign: "top",
+
+			 //horizontalAlign: "right",
+	
+			 //fontSize: 15,
+			 fontSize: 13,
+			//dockInsidePlotArea: true
+			dockInsidePlotArea: false
+	}],
+	
+	toolTip: {
+			//fontSize: 19,
+			fontSize: 15,
+	},
+	axisY: {
+		//title: "Growth Rate (in %)",
+		//includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.03,
+		//labelFontSize: 18,
+		labelFontSize: 0, // bottom size for change%
+		 tickLength: 0,
+		 
+	},
+	axisX: {
+		interval: 1,
+		//title: "Countries"
+		includeZero: true,
+		 //labelFontSize: 17,
+		 labelFontSize: 11, // vertical axis size for text
+		 //labelFontWeight: "bold",
+		  lineThickness: 0.5,
+         lineColor: "#ccc",
+		 tickColor: "#555",
+		 tickLength: 0,
+		
+		 
+	},
+	dataPointWidth: 12,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		click: onClick,
+		//type: "column",
+		type: "bar",
+		indexLabelPlacement: "auto",
+			indexLabel: "{y}",
+			indexLabelFontSize: 11,
+			indexLabelFontColor: "#ddd",
+		yValueFormatString: "#,##0.0#\"%\"",
+		dataPoints:dataPointsArray
+	}]
+});
+
+
+//console.log("dataPointsArray",dataPointsArray)
+chart.render();
+//chart2.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+
+
+
+function onClick(e) {
+
+		var label=e.dataPoint.label
+		var labelToScroll;
+		{
+			if( label=='NIFTY 50' || label=='NIFTY BANK')
+			{
+				labelToScroll = label.replace(/ /g, '_')
+				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
+				showHeatMapChart();
+				document.getElementById("heatMapSectorSelector").scrollIntoView();
+			}
+			else
+			{
+				labelToScroll = 'NIFTY_'+label.replace(/ /g, '_')
+				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
+				showHeatMapChart();
+				document.getElementById("heatMapSectorSelector").scrollIntoView();
+			}
+		}
+
+		
+}
+
+
+</script>
+<!-- Indices Code Ends Here -->
+
+
+
+<!-- Spurts-Equity Code Starts Here -->
+
+<style>    .spaceBetweenTables { border: 2px solid #4b4d4e;height: 525px;overflow-y: scroll;background-color: #32373a; }     .greenHeaderClass{   color: #ffffff;   background: #27ae60;   } .blueHeaderClass{   color: #ffffff;   background: #3a7dd4;    }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	</style>
+
+
+<script>
+var dataObjectForHeatChart={}
+var sectorStockNamesObj = {}
+var allBanksStocksObj ={}
+
+function setSpurtsSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['spurts_in_open_interest_by_underlyings']
+	var selectElementRef = document.getElementById("spurtsTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSpurtsEquityData )
+}
+
+
+async function getSpurtsEquityData( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	
+	var selectedSpurtsTimeRef = document.getElementById('spurtsTimeValues')
+	var selectedSpurtsTimeValue = selectedSpurtsTimeRef.value
+
+	var docPathForSpurts = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValue
+	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
+	
+	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
+	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	
+	
+	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
+	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedSpurtsTimeValue )
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	
+	//console.log( "docPathForEquity", docPathForEquity )
+	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
+	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	//console.log( "deliveryDataObj",JSON.parse( deliveryDataObj['data'] ) )
+	
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	
+	
+	var previousDaySpurtsDataObj = await getPreviousDaySpurtsData( selectedTradingDate )
+	
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ), previousDaySpurtsDataObj )
+	await show_only_equity_Data2( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ), previousDaySpurtsDataObj )
+	await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ), previousDaySpurtsDataObj )
+	
+	addEventListnerInTables()
+}
+
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj, previousDaySpurtsDataObj )
+{
+	 document.getElementById('equityDataTableContainer').innerHTML = "";
+	
+	var selectedValue = selectedSpurtsTimeValue
+	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
+	
+	var niftyTotalMarketObject = equityDataObj['data']
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+	console.log("spurtsInOIUnderlyingsObject",spurtsInOIUnderlyingsObject)
+//console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+
+		var tempObj = {};
+
+	
+	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> TDVA Green | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
+	  +'<th>Symbol</th>'
+	 +' <th>%</th>'
+	// +' <th>LTP</th>'
+	  +' <th>pLevel</th>'
+	//  +' <th>Range</th>'
+	// +' <th>prem</th>'
+	 //  +' <th>fut</th>'
+	//  +' <th>opt</th>'
+	// +' <th>ST</th>'
+	// +' <th>EV</th>'
+	 //+' <th>SOI</th>'
+	 +' <th>Money</th>'
+	 // +' <th>20DAV</th>'
+	  +' </tr> </thead> <tbody>'
+
+		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
+		if( Symbol.includes('NIFTY')==false )
+		{
+		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+	
+	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
+	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
+	
+	var spurtsTotal = spurtsSymbolArray["total"] / previousDaySpurtsDataObj[ Symbol ]["total"] 
+	var futValue = spurtsSymbolArray["futValue"] / previousDaySpurtsDataObj[ Symbol ]["futValue"] 
+	var optValue = spurtsSymbolArray["optValue"] / previousDaySpurtsDataObj[ Symbol ]["optValue"] 
+	var premValue = spurtsSymbolArray["premValue"] / previousDaySpurtsDataObj[ Symbol ]["premValue"] 
+	
+	//madan code starts
+	var DayHigh = symbolArray['dayHigh'] 
+	var DayLow = symbolArray['dayLow'] 
+	var LastPrice = symbolArray['lastPrice'] 
+	
+	var DayRange =( ( (DayHigh - DayLow) / DayLow) *100)
+	var DayRange2 =( ( (DayHigh - DayLow) / DayLow) )
+	  var Level =  ( ( ( (LastPrice - DayLow) / DayLow) *100) / DayRange2)
+	  
+	  var pDayHigh = deliveryDataObj["Symbols"][Symbol]["deliveryData"][3] 
+	var pDayLow = deliveryDataObj["Symbols"][Symbol]["deliveryData"][4]
+	
+	  var pDayRange =( ( (pDayHigh - pDayLow) / pDayLow) )
+	var pLevel =  ( ( ( (LastPrice - pDayLow) / pDayLow) *10) / pDayRange)
+
+	var Pchange = symbolArray['pChange'] 
+	var PrevDayTO = deliveryDataObj["Symbols"][Symbol]["deliveryData"][9]
+	var EqtValvsPrevVal =  ( (symbolArray["totalTradedValue"] ) / PrevDayTO)
+	var SurtOIvsPrevOI =spurtsSymbolArray["latestOI"] / spurtsSymbolArray["prevOI"]
+	//var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	//var WFactor =( EqtyValvs20DAyVal + EqtValvsPrevVal + SurtOIvsPrevOI + Pchange).toFixed(2)
+	//var WFactor =( EqtyValvs20DAyVal + EqtValvsPrevVal +  SurtOIvsPrevOI ).toFixed(2)
+	//madan code ends
+	
+	//var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	//var WFactor =( EqtyValvs20DAyVal + spurtsTotal + SpurtValvsOI ).toFixed(2)
+	
+	//var WFactor =( EqtyValvs20DAyVal + spurtsTotal +EqtValvsPrevVal +SurtOIvsPrevOI + futValue + optValue +premValue ).toFixed(2)
+	var WFactor =( spurtsTotal +EqtValvsPrevVal +SurtOIvsPrevOI + futValue + optValue  ).toFixed(2)
+	
+	
+	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
+	 
+	 var rFactor = Number (symbolArray["pChange"] )*( symbolArray["totalTradedValue"]  / average20DaysValue)
+	 
+	 var rankForHeatMap = Math.abs(rFactor).toFixed(2)
+	 //var rankForHeatMap = WFactor
+	  
+		//this block of code is for sectors heatMap chart. (START)
+		//this block adds stocks in a object with few values. this code was written on 7-Jan-2023
+		{
+			//dataObjectForHeatChart["selectedTime"] =selectedValue.value
+			dataObjectForHeatChart["selectedTime"] =selectedValue
+			dataObjectForHeatChart["selectedTradingDate"] =selectedTradingDate
+		   var colorValue;
+		   var dataLabelFontColor="white";
+		   
+		if(symbolArray["pChange"]>=0)
+	   {
+		   if( symbolArray["pChange"]>=0 && symbolArray["pChange"]<=0.5)
+		   {
+			   colorValue = '#7cb67e' 
+			  // dataLabelFontColor="black"
+		   }
+		   else if( symbolArray["pChange"]>0.5 && symbolArray["pChange"]<=1)
+		   {
+			   colorValue = '#6cac6e'
+		   } 
+		   else if( symbolArray["pChange"]>1 && symbolArray["pChange"]<=2)
+		   {
+			    colorValue = '#5ca35e'
+		   }
+		   else if( symbolArray["pChange"]>2 && symbolArray["pChange"]<=3)
+		   {
+			   colorValue = '#539355'
+		   } 
+		   
+		   else if( symbolArray["pChange"]>3 && symbolArray["pChange"]<=20)
+		   {
+			   colorValue = '#288cda'
+		   }
+			   
+		  
+		   dataObjectForHeatChart[Symbol] ={
+			  parent: 'Green',
+			 name: Symbol,
+			 pChange:symbolArray["pChange"],
+			 value: Number(rankForHeatMap),
+			 //colorValue: Number(symbolArray["pChange"])
+			 color: colorValue,
+			 
+			 dataLabels: {
+				 shadow: false,
+				 color: dataLabelFontColor //data label font color
+				 //format: '{name pChange} %'
+			 }
+		 }
+		   
+		 
+	   }
+	   else
+	   {
+	 
+		  if( symbolArray["pChange"]>=-0.5 && symbolArray["pChange"]<0)
+		   {
+			   colorValue = '#d4777a'
+			   //dataLabelFontColor="black"
+		   }
+		   else if( symbolArray["pChange"]>-1 && symbolArray["pChange"]<=-0.5)
+		   {
+			   colorValue = '#ce6467'
+		   }
+		   else if( symbolArray["pChange"]>-2 && symbolArray["pChange"]<=-1)
+		   {
+			   colorValue = '#ca575a'
+		   }
+		   else if( symbolArray["pChange"]>-3 && symbolArray["pChange"]<=-2)
+		   {
+			   colorValue = '#ca575a'
+		   }
+		   else if( symbolArray["pChange"]>-20 && symbolArray["pChange"]<=-3)
+		   {
+			   colorValue = '#a9494a'
+		   } 
+		   
+			   
+			 dataObjectForHeatChart[Symbol] ={
+			  parent: 'Red',
+			 name: Symbol,
+			 pChange:symbolArray["pChange"],
+			 value: Number(rankForHeatMap),
+			 //colorValue: Number(symbolArray["pChange"])
+			 color: colorValue,
+			 
+			 dataLabels: {
+				  shadow: false,
+				 color: dataLabelFontColor, //data label font color
+				 //format: '{name pChange} %'
+			 }
+		 }
+		  
+		  
+	   }
+		
+		}	   	//this block of code is for sectors heatMap chart. (END)
+		  
+		  
+		  if( LastPrice>20 && Pchange>0.001  )
+		{
+			onlyEquityTableStr +='<tr class="item"><td>'
+			 +Symbol
+			 +'</td><td>'
+			+ symbolArray['pChange']  //pchange
+			 +'</td><td>'
+			  //+ LastPrice
+			 //+'</td><td>'
+			+  pLevel.toFixed(0)  //pchange
+			+'</td><td>'
+			// + DayRange.toFixed(2)  //pchange
+			 //+'</td><td>'
+			//+ premValue.toFixed(2)  //pchange
+			// +'</td><td>'
+			// +futValue.toFixed(2)  //lastPrice
+			 //+'</td><td>'
+			 //+optValue.toFixed(2)   //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		// +'</td><td>'
+		 //+ spurtsTotal.toFixed(2)  
+		// +'</td><td>' 
+		 //+ EqtValvsPrevVal.toFixed(2)  
+		 //+'</td><td>'
+		 //+ SurtOIvsPrevOI.toFixed(2)  
+		//+'</td><td>' 
+		//+ WFactor //rFactor.toFixed(2)
+	     + twentyDAV
+		+'</td></tr>'
+			
+		
+		}
+	}
+		} //for Loop ENDS HERE
+		
+		onlyEquityTableStr +=' </tbody> </table>    </div>  </div>'
+		
+	document.getElementById('equityDataTableContainer').innerHTML = onlyEquityTableStr
+	 //addEventListnerInTables()
+	 add_Sectors_In_HeatMapSelector( )
+}	//	show_volume_value_spike_Data() Function ENDS HERE
+
+
+//	show_volume_value_spike_Data2() Function STARTS HERE
+async function show_only_equity_Data2( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj, previousDaySpurtsDataObj )
+{
+	 document.getElementById('equityDataTableContainer2').innerHTML = "";
+	
+	var selectedValue = selectedSpurtsTimeValue
+	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
+	
+	var niftyTotalMarketObject = equityDataObj['data']
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+	console.log("spurtsInOIUnderlyingsObject",spurtsInOIUnderlyingsObject)
+//console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+
+		var tempObj = {};
+
+	
+	  var onlyEquityTableStr2 = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr2"> <caption style="caption-side:top"> TDVA Red | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
+	  +'<th>Symbol</th>'
+	 +' <th>%</th>'
+	 //+' <th>LTP</th>'
+	 +' <th>pLevel</th>'
+	// +' <th>Range</th>'
+	// +' <th>prem</th>'
+	 //  +' <th>fut</th>'
+	//  +' <th>opt</th>'
+	// +' <th>ST</th>'
+	// +' <th>EV</th>'
+	 //+' <th>SOI</th>'
+	// +' <th>Money</th>'
+	 +' <th>20DAV</th>'
+	  +' </tr> </thead> <tbody>'
+
+		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
+		if( Symbol.includes('NIFTY')==false )
+		{
+		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+	
+	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
+	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
+	
+	var spurtsTotal = spurtsSymbolArray["total"] / previousDaySpurtsDataObj[ Symbol ]["total"] 
+	var futValue = spurtsSymbolArray["futValue"] / previousDaySpurtsDataObj[ Symbol ]["futValue"] 
+	var optValue = spurtsSymbolArray["optValue"] / previousDaySpurtsDataObj[ Symbol ]["optValue"] 
+	var premValue = spurtsSymbolArray["premValue"] / previousDaySpurtsDataObj[ Symbol ]["premValue"] 
+	
+	//madan code starts
+	var DayHigh = symbolArray['dayHigh'] 
+	var DayLow = symbolArray['dayLow'] 
+	var LastPrice = symbolArray['lastPrice'] 
+	
+	var DayRange =( ( (DayHigh - DayLow) / DayLow) *100)
+	var DayRange2 =( ( (DayHigh - DayLow) / DayLow) )
+	  var Level =  ( ( ( (LastPrice - DayLow) / DayLow) *100) / DayRange2)
+	  
+	   var pDayHigh = deliveryDataObj["Symbols"][Symbol]["deliveryData"][3] 
+	var pDayLow = deliveryDataObj["Symbols"][Symbol]["deliveryData"][4]
+	
+	  var pDayRange =( ( (pDayHigh - pDayLow) / pDayLow) )
+	var pLevel =  ( ( ( (LastPrice - pDayLow) / pDayLow) *10) / pDayRange)
+
+	var Pchange = symbolArray['pChange'] 
+	var PrevDayTO = deliveryDataObj["Symbols"][Symbol]["deliveryData"][9]
+	var EqtValvsPrevVal =  ( (symbolArray["totalTradedValue"] ) / PrevDayTO)
+	var SurtOIvsPrevOI =spurtsSymbolArray["latestOI"] / spurtsSymbolArray["prevOI"]
+	//var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	//var WFactor =( EqtyValvs20DAyVal + EqtValvsPrevVal + SurtOIvsPrevOI + Pchange).toFixed(2)
+	//var WFactor =( EqtyValvs20DAyVal + EqtValvsPrevVal +  SurtOIvsPrevOI ).toFixed(2)
+	//madan code ends
+	
+	//var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	//var WFactor =( EqtyValvs20DAyVal + spurtsTotal + SpurtValvsOI ).toFixed(2)
+	
+	//var WFactor =( EqtyValvs20DAyVal + spurtsTotal +EqtValvsPrevVal +SurtOIvsPrevOI + futValue + optValue +premValue ).toFixed(2)
+	var WFactor =( EqtyValvs20DAyVal + spurtsTotal +EqtValvsPrevVal +SurtOIvsPrevOI + futValue + optValue  ).toFixed(2)
+	
+	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
+	 
+	 	  var rankForHeatMap = WFactor
+			  
+		  
+		  if( LastPrice>20 && Pchange<0.001  )
+		{
+			onlyEquityTableStr2 +='<tr class="item"><td>'
+			 +Symbol
+			 +'</td><td>'
+			+ symbolArray['pChange']  //pchange
+			 +'</td><td>'
+			// + LastPrice
+			 //+'</td><td>'
+			 + pLevel.toFixed(0)  // Level pchange
+		   +'</td><td>'
+		  // + DayRange.toFixed(2)  //pchange
+			//+'</td><td>'
+			//+ premValue.toFixed(2)  //pchange
+			// +'</td><td>'
+			// +futValue.toFixed(2)  //lastPrice
+			 //+'</td><td>'
+			 //+optValue.toFixed(2)   //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		// +'</td><td>'
+		 //+ spurtsTotal.toFixed(2)  
+		// +'</td><td>' 
+		 //+ EqtValvsPrevVal.toFixed(2)  
+		 //+'</td><td>'
+		 //+ SurtOIvsPrevOI.toFixed(2)  
+		//+'</td><td>' 
+		+ twentyDAV
+	
+		//+ twentyDAV
+		+'</td></tr>'
+			
+		
+		}
+	}
+		} //for Loop ENDS HERE
+		
+		onlyEquityTableStr2 +=' </tbody> </table>    </div>  </div>'
+		
+	document.getElementById('equityDataTableContainer2').innerHTML = onlyEquityTableStr2
+	 //addEventListnerInTables()
+	 
+}	//	show_volume_value_spike_Data() Function ENDS HERE
+
+
+async function show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
+{
+	 document.getElementById('spurtsDataTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+	var niftyTotalMarketObject = equityDataObj ['data']
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+
+	var tablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="onlySpurtsOIUnderlyingsTableStr"><caption style="caption-side:top">High Powered | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption><thead class="tableRowClass">   <tr>      <th>Symbol</th> <th>EQ Chng(%)</th> <th>Vol</th>  <th>EQ TO</th>     </tr></thead><tbody>'
+		
+	for( var F=0; F< Object.keys( spurtsInOIUnderlyingsObject ).length ; F++ ) {
+
+	var symbol = spurtsInOIUnderlyingsObject[F]["symbol"]
+	
+		if( symbol.includes('NIFTY')==false && niftyTotalMarketObject[symbol]["lastPrice"]>20   ){
+
+		tablesStr +='<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ niftyTotalMarketObject[symbol]["pChange"] // equity/NiftyTotalMarket pchange
+		+'</td><td>'
+		+ (niftyTotalMarketObject[symbol]["totalTradedVolume"]/ 100000).toFixed(0) // equity/NiftyTotalMarket pchange
+		+'</td><td>'
+		+( niftyTotalMarketObject[symbol]["totalTradedValue"] / 1000000).toFixed(0) // equity/NiftyTotalMarket totalTradedValue
+	//	+'</td><td>'
+		//+ spurtsInOIUnderlyingsObject[symbol][8] // underlyingValue
+		//+ (spurtsInOIUnderlyingsObject[F]["total"] / spurtsInOIUnderlyingsObject[F]["latestOI"] ).toFixed(2)// underlyingValue
+		//+'</td><td>'
+	 //	  + spurtsInOIUnderlyingsObject[F]["avgInOI"]  //"avgInOI/perChangeInOI
+		//+'</td><td>'
+		//+ spurtsInOIUnderlyingsObject[symbol][4] //volume
+		//+ spurtsInOIUnderlyingsObject[F]["latestOI"] //OI
+		//+'</td><td>'
+		//+ spurtsInOIUnderlyingsObject[F]["volume"] //Volume
+		//+'</td><td>'
+		//+ (1/(spurtsInOIUnderlyingsObject[F]["latestOI"] / spurtsInOIUnderlyingsObject[F]["volume"])).toFixed(2) //OI/Volume
+		//+'</td><td>'
+		//+ returnedCandlestickPatternsStr //Candlestick Patterns
+		+'</td></tr>'
+			
+		
+	}
+	}
+	tablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('spurtsDataTableContainer').innerHTML = tablesStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+
+
+function add_Sectors_In_HeatMapSelector( )
+{
+	//console.log( "sectorStockNamesObj", sectorStockNamesObj)
+	
+	if( sectorStockNamesObj !=undefined)
+	{
+	if( document.getElementById("heatMapSectorSelector").getElementsByTagName('option').length <=1 )
+	{
+	document.getElementById("heatMapSectorSelector").innerHTML = "";
+	
+	var option = document.createElement("option");
+	option.value = "ALL BANKS";
+	option.text = "ALL BANKS";
+	document.getElementById("heatMapSectorSelector").add(option);
+	
+	
+	for ( var sectorName in sectorStockNamesObj ) {
+		
+		if( sectorName != 'Template' )
+		{
+		var option = document.createElement("option");
+		option.value = sectorName;
+		option.text = sectorName;
+		document.getElementById("heatMapSectorSelector").add(option);
+		}
+	}
+	//document.getElementById('heatMapSectorSelector').value=document.getElementById('heatMapSectorSelector').getElementsByTagName('option')[2].value
+	document.getElementById('heatMapSectorSelector').value="NIFTY_50"
+	}
+	
+	//showHeatMapChart(sectorStockNamesObj)
+	showHeatMapChart()
+	}
+	
+} // add_Sectors_In_HeatMapSelector() ENDS HERE
+
+async function showHeatMapChart( )
+{
+	await setHighChartsDarkTheme()
+	var sectorDataArrayForHeatChart=[{
+      id: 'Green',
+      //name: 'Green',
+      color: "#EC2500"
+    }, {
+      id: 'Red',
+      //name: 'Red',
+      color: "#ECE100"
+    }]
+	
+	var heatMapSectorSelected = document.getElementById("heatMapSectorSelector").value
+	var sectorStockArray;
+	if( heatMapSectorSelected=='ALL BANKS' )
+	{
+		
+		for( var sector in sectorStockNamesObj )
+		{
+			if( sector.includes('BANK')==true )
+			{
+				var sectorStockArray = sectorStockNamesObj [sector]
+				for( var s=0;s<sectorStockArray.length;s++)
+				{
+					var Symbol = sectorStockArray [s]
+					allBanksStocksObj [Symbol] = 1
+				}
+				
+			}
+		}
+		
+		sectorStockArray = Object.keys(allBanksStocksObj)
+	}
+	else {
+	sectorStockArray = sectorStockNamesObj [heatMapSectorSelected] 
+	}
+	for( var s=0;s<sectorStockArray.length;s++)
+	{
+		var Symbol = sectorStockArray [s]
+		//console.log(Symbol)
+		if( dataObjectForHeatChart[Symbol] !=undefined )
+		{
+			sectorDataArrayForHeatChart.push( dataObjectForHeatChart[Symbol] )
+		}
+	}
+	//console.log("sectorDataArrayForHeatChart", sectorDataArrayForHeatChart)
+	
+	
+var H = Highcharts
+H.addEvent(H.Legend, 'afterGetAllItems', function(e) {
+  e.allItems.splice(2, 6);
+});
+
+H.chart('heatMapContainer', {
+  colorAxis: {
+      stops: [
+       
+	  [0, '#ff0000'],//red
+      [0.5, '#fff'], // white
+      [1, '#02ff00']//green
+	  
+    ],
+  },
+  legend: {
+      enabled: false
+    },
+  series: [{
+	animation: false,
+	borderWidth: 0.25,
+    //borderColor: '#fff',
+    borderColor: '#4b4b4c',
+    colorAxis: 0,
+    legendType: 'point',
+    showInLegend: false,
+    type: "treemap",
+    layoutAlgorithm: 'squarified',
+    alternateStartingDirection: true,
+    levels: [{
+      level: 1,
+      layoutAlgorithm: 'sliceAndDice',
+      dataLabels: {
+        enabled: false,
+        align: 'left',
+        verticalAlign: 'top',
+        style: {
+          fontSize: '15px',
+          fontWeight: 'bold'
+        }
+      }
+    }],
+    data: sectorDataArrayForHeatChart,
+	
+  dataLabels: {
+		enabled: true,
+                format: '{point.name} <br> {point.value}',
+			 },
+			 
+			  events: {
+                    click: function (event) {
+                        //console.log(event.point.name);
+						copyHeatMapList( heatMapSectorSelected, event.point.parent )
+                    }
+                }
+  }],
+  tooltip: {
+            //headerFormat: 'Temperature<br/>',
+            pointFormat: '{point.name} <br> pChange: {point.pChange} <br> Rank: {point.value}'
+        },
+	
+  title: {
+    //text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTime"] +' | '+ mainOIDataObject['Date'],
+    text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTradingDate"] +' | '+ dataObjectForHeatChart["selectedTime"],
+	   style: {
+                    //color: 'red',
+                    fontSize:'15px'
+                }
+  }
+});
+
+}
+
+function setHighChartsDarkTheme()
+{
+
+	Highcharts.theme = {
+    colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
+        '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+    chart: {
+        backgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+            stops: [
+                [0, '#2a2a2b'],
+                [1, '#3e3e40']
+            ]
+        },
+        style: {
+     
+        },
+        plotBorderColor: '#606063'
+    },
+    title: {
+        style: {
+            color: '#E0E0E3',
+            textTransform: 'uppercase',
+            fontSize: '20px'
+        }
+    },
+    subtitle: {
+        style: {
+            color: '#E0E0E3',
+            textTransform: 'uppercase'
+        }
+    },
+    xAxis: {
+        gridLineColor: '#707073',
+        labels: {
+            style: {
+                color: '#E0E0E3'
+            }
+        },
+        lineColor: '#707073',
+        minorGridLineColor: '#505053',
+        tickColor: '#707073',
+        title: {
+            style: {
+                color: '#A0A0A3'
+            }
+        }
+    },
+    yAxis: {
+        gridLineColor: '#707073',
+        labels: {
+            style: {
+                color: '#E0E0E3'
+            }
+        },
+        lineColor: '#707073',
+        minorGridLineColor: '#505053',
+        tickColor: '#707073',
+        tickWidth: 1,
+        title: {
+            style: {
+                color: '#A0A0A3'
+            }
+        }
+    },
+    tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        style: {
+            color: '#F0F0F0'
+        }
+    },
+    plotOptions: {
+        series: {
+            dataLabels: {
+                color: '#F0F0F3',
+                style: {
+                    fontSize: '12px'
+                }
+            },
+            marker: {
+                lineColor: '#333'
+            }
+        },
+        boxplot: {
+            fillColor: '#505053'
+        },
+        candlestick: {
+          
+        },
+        errorbar: {
+            
+        }
+    },
+    legend: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        itemStyle: {
+            color: '#E0E0E3'
+        },
+        itemHoverStyle: {
+            color: '#FFF'
+        },
+        itemHiddenStyle: {
+            color: '#606063'
+        },
+        title: {
+            style: {
+                color: '#C0C0C0'
+            }
+        }
+    },
+    credits: {
+        style: {
+            color: '#666'
+        }
+    },
+    labels: {
+        style: {
+            color: '#707073'
+        }
+    },
+    drilldown: {
+        activeAxisLabelStyle: {
+            color: '#F0F0F3'
+        },
+        activeDataLabelStyle: {
+            color: '#F0F0F3'
+        }
+    },
+    navigation: {
+        buttonOptions: {
+            symbolStroke: '#DDDDDD',
+            theme: {
+                fill: '#505053'
+            }
+        }
+    },
+    // scroll charts
+    rangeSelector: {
+        buttonTheme: {
+            fill: '#505053',
+            stroke: '#000000',
+            style: {
+              
+            },
+            states: {
+                hover: {
+                    fill: '#707073',
+                    stroke: '#000000',
+                    style: {
+                      
+                    }
+                },
+                select: {
+                    fill: '#000003',
+                    stroke: '#000000',
+                    style: {
+                        
+                    }
+                }
+            }
+        },
+        inputBoxBorderColor: '#505053',
+        inputStyle: {
+            backgroundColor: '#333',
+            color: 'silver'
+        },
+        labelStyle: {
+            color: 'silver'
+        }
+    },
+    navigator: {
+        handles: {
+            backgroundColor: '#666',
+            borderColor: '#AAA'
+        },
+        outlineColor: '#CCC',
+        maskFill: 'rgba(255,255,255,0.1)',
+        series: {
+            color: '#7798BF',
+            lineColor: '#A6C7ED'
+        },
+        xAxis: {
+            gridLineColor: '#505053'
+        }
+    },
+    scrollbar: {
+        barBackgroundColor: '#808083',
+        barBorderColor: '#808083',
+        buttonArrowColor: '#CCC',
+        buttonBackgroundColor: '#606063',
+        buttonBorderColor: '#606063',
+        rifleColor: '#FFF',
+        trackBackgroundColor: '#404043',
+        trackBorderColor: '#404043'
+    }
+};
+	// Apply the theme
+	Highcharts.setOptions(Highcharts.theme);
+
+}
+
+
+function copyHeatMapList( heatMapSectorSelected, greenOrRed )
+{
+	var symbolObject ={}
+	var sectorStockArray;
+	if( heatMapSectorSelected=='ALL BANKS' )
+	{
+		sectorStockArray = Object.keys(allBanksStocksObj)
+	}
+	else {
+	sectorStockArray = sectorStockNamesObj[heatMapSectorSelected]
+	}
+	
+	for( var s=0;s<sectorStockArray.length;s++)
+	{
+		var Symbol = sectorStockArray [s]
+		//console.log(Symbol)
+		if( dataObjectForHeatChart[Symbol] !=undefined )
+		{
+			if( dataObjectForHeatChart[Symbol]["parent"]==greenOrRed )
+				symbolObject[Symbol] = dataObjectForHeatChart[Symbol]["value"] //symbol's rank
+		}
+	}
+	
+	var stockNames=''
+	stockNames= ( 'NSE:'+dataObjectForHeatChart["selectedTime"] +'_'+ heatMapSectorSelected+',' ).replace(/ /g,'_')
+	
+	Object.keys(symbolObject).sort((a,b) => symbolObject[b]-symbolObject[a]).forEach((symbol) => {    	//  descending sort
+		stockNames +='NSE:'+symbol.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +','
+	});
+
+	
+	
+	navigator.clipboard.writeText(stockNames);
+}
+
+
+</script>
+<!-- Spurts-Equity Code Ends Here -->
+
+
+
+
+<!-- Floating Buttons Code Starts Here -->
+<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
+<!-- Floating Buttons Code Ends Here -->
+
+
+<script>
+generateMonthYearFromDate( new Date("April 2023") );
+</script>
