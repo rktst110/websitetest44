@@ -103,6 +103,11 @@ body {
 <button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
 &nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
 
+
+&nbsp; | &nbsp;
+<span class="toggle-label">Current Delivery:  </span> <label class="toggle">  <input id="useCurrentDateDelivery" class="toggle-checkbox" type="checkbox"> <div class="toggle-switch"></div> </label> 
+
+
 <hr>
 
  <label> Indices TimeValues:</label>
@@ -498,6 +503,10 @@ function onClick(e) {
 				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
 				showHeatMapChart();
 				document.getElementById("heatMapSectorSelector").scrollIntoView();
+				
+				document.getElementById("tableListSelector").value = labelToScroll ;
+				getSpurtsEquityData();
+				document.getElementById("tableListSelector").scrollIntoView();
 			}
 			else
 			{
@@ -505,6 +514,10 @@ function onClick(e) {
 				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
 				showHeatMapChart();
 				document.getElementById("heatMapSectorSelector").scrollIntoView();
+				
+				document.getElementById("tableListSelector").value = labelToScroll ;
+				getSpurtsEquityData();
+				document.getElementById("tableListSelector").scrollIntoView();
 			}
 		}
 
@@ -734,6 +747,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
 	
 	//console.log("spurtsInOIUnderlyingsObject",spurtsInOIUnderlyingsObject)
+	console.log("deliveryDataObj",deliveryDataObj)
 
 //console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
 
@@ -749,10 +763,13 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	  +' <th>D%</th>'
 	
 	  +' <th>20DAV</th>'
-	  +' <th>T.O.</th>'
-	  +' <th>Vol</th>'
-	 +' <th>Fac</th>'
-	 +' <th>Range</th>'
+	 // +' <th>T.O.</th>'
+	 // +' <th>Vol</th>'
+	 //+' <th>Fac</th>'
+	 +' <th>Pre</th>'
+	 +' <th>cRng</th>'
+	 +' <th>pRng</th>'
+	 
 	  +' <th>Money</th>'
 	  +' </tr> </thead> <tbody>'
 		
@@ -776,6 +793,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	
 	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	
 	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
 	
 	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
@@ -882,7 +900,12 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		  
 		 var DayHigh = niftyTotalMarketObject[Symbol]['dayHigh'] 
 		var DayLow = niftyTotalMarketObject[Symbol]['dayLow']  
-		var DayRange =( ( (DayHigh - DayLow) / DayLow) *100)
+		var DayRange = ( ( (DayHigh - DayLow) / DayLow) *100)
+		
+		var prevDeliveryDataArray = deliveryDataObj["Symbols"][Symbol]["deliveryData"]
+		var prevHigh = prevDeliveryDataArray[3]
+		var prevLow = prevDeliveryDataArray[4]
+		var prevDayRange = ( ( (prevHigh - prevLow) / prevLow) *100)
 		
 		 function printDataStr(){
 			onlyEquityTableStr +='<tr class="item"><td>'
@@ -899,16 +922,21 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
 		+'</td><td>'
 		+ twentyDAV
-		+'</td><td>'
-			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
-		 +'</td><td>'
-			 +( symbolArray['totalTradedVolume'] / 100000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		//+'</td><td>'
+		//	 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		// +'</td><td>'
+		//	 +( symbolArray['totalTradedVolume'] / 100000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
 		
+		// +'</td><td>'
+		// + Fac
 		 +'</td><td>'
-		 + Fac
+		 + Math.abs (((symbolArray['open'] - symbolArray['previousClose'])/symbolArray['previousClose'])*100).toFixed(2)
 		 +'</td><td>'
 		 + DayRange.toFixed(2)
 		 +'</td><td>'
+		 + prevDayRange.toFixed(2)
+		 +'</td><td>' 
+		
 		+ WFactor
 		+'</td></tr>'
 			
