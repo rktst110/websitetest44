@@ -395,6 +395,16 @@ function clickOnVolumeAutomatically()
 			
 		}
 		}
+
+	    if( tableId =='spike10mTable' && window.location.href.toLocaleLowerCase().includes('Telegram-momentum')==true ) 
+		{
+		//if( th.innerText.includes('T.O.') )
+		if( th.innerText=='HSpike' )
+		{
+			th.click()
+			
+		}
+		}
 		
 		
 		
