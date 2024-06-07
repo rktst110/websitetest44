@@ -785,7 +785,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		//console.log("Symbol",Symbol)
 		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
 		//if( Symbol.includes('NIFTY')==false )
-		if( Symbol.includes('NIFTY')==false && niftyTotalMarketObject[Symbol]!=undefined && spurtsInOIUnderlyingsObject[Symbol]!=undefined )
+		if( Symbol.includes('NIFTY')==false && niftyTotalMarketObject[Symbol]!=undefined && spurtsInOIUnderlyingsObject[Symbol]!=undefined && deliveryDataObj["Symbols"][Symbol]!=undefined )
 		{
 		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
         //var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
