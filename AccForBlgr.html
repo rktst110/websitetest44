@@ -35,6 +35,11 @@ P Name (09 Jan (21:47:00 PM) Tuesday)
 (09 Jan (21:47:00 PM) Tuesday) ALL
 </div>
 <hr>
+<div id="accountStr" onclick="copyRecoveryEmail()" onmouseover="">
+Recovery Email (myacc4recovery)
+</div>
+
+<hr>
 <a href="https://console.apify.com/">https://console.apify.com/</a>
 <hr>
 <a href="https://account.proton.me/mail/signup?plan=free&billing=12&ref=prctbl&minimumCycle=12&currency=EUR">https://account.proton.me/mail/signup</a>
@@ -101,6 +106,11 @@ function generatePName()
 function generateApiName()
 {
 	navigator.clipboard.writeText( "data@4apify" )
+}
+
+function copyRecoveryEmail()
+{
+	navigator.clipboard.writeText( "myacc4recovery@proton.me" )
 }
 
 
