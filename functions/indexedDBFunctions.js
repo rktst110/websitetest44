@@ -144,8 +144,10 @@ async function fetchAndSaveDataIDB(path, url) {
         const db = await openOrCreateDB();
         if (await isObjectStoreAvailable(db)) {
           const existingData = await checkIfPathAvailableInIDB(path, db);
-          if (existingData && Object.keys(existingData).length>0 && path.includes('/all_derivatives/') ) {
+          //if (existingData && Object.keys(existingData).length>0 && path.includes('/all_derivatives/') ) {
+          if (existingData && Object.keys(existingData).length>0 ) {
             //console.log('Data found in IndexedDB:', existingData);
+            console.log('Data found in IndexedDB:');
 			allDerivativesDataObj = existingData;
 			return existingData;
           }
@@ -157,6 +159,7 @@ async function fetchAndSaveDataIDB(path, url) {
 		  else {
             const fetchedData = await fetchDerivativesCollectionDataOnly( path );
            //console.log('Data fetched from the URL:', fetchedData);
+           console.log('Data fetched from the URL:');
             //await saveDataToIDB(path, fetchedData, db);
 			
 			// Example usage:
