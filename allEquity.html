@@ -1456,7 +1456,7 @@ async function showPerticularStocksEquityDataInTable()
 	//var returnedEntryWiseObj = await previousEntriesDataObj( Number(selectedPreviousTradingDays)+1, selectedTradingDate, ( document.getElementById('useCurrentDateDelivery').checked==true ))
 	//var returnedEntryWiseObj = await previousEntriesDataObj( 15, selectedTradingDate, true)
 	var returnedEntryWiseObj = await previousEntriesDataObj( selectedNumberOfPreviousEntries, selectedDifferenceBetweenEntries, selectedTradingDate, true)
-	//console.log("returnedDateWiseObj",returnedDateWiseObj)
+	console.log("returnedEntryWiseObj",returnedEntryWiseObj)
 	
 	//var selectedDeliveryTradingDate =  Object.keys(returnedDateWiseObj)[0]
 	//var selectedDateDeliveryObj = returnedDateWiseObj[ selectedDeliveryTradingDate ]['Symbols']
@@ -1469,6 +1469,10 @@ async function showPerticularStocksEquityDataInTable()
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Time</th>'
+	
+	+' <th>chngBuy</th>'
+	+' <th>chngSell</th>'
+	+' <th>chngTrded</th>'
 	+' <th>Buy</th>'
 	+' <th>Sell</th>'
 	+' <th>Buy%</th>'
@@ -1480,13 +1484,23 @@ async function showPerticularStocksEquityDataInTable()
 	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="perticularStockMarketDepthOrderBookTableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	 
-	for ( var timeStamp in returnedEntryWiseObj ) {
+	//for ( var timeStamp in returnedEntryWiseObj ) {
+	for( var i=0; i< Object.keys( returnedEntryWiseObj ).length ; i++ ) {
+	var timeStamp = Object.keys( returnedEntryWiseObj )[i]
+	var timeStampPrevious1 
+	timeStampPrevious1 = Object.keys( returnedEntryWiseObj )[i+1]
 	
-	function returnDataStr( symbol, timeStamp, dataObj )
+	function returnDataStr( symbol, timeStamp, dataObj, timeStampPrevious1, dataObjPrevious1 )
 	{
 		var whoIsMoreAggressive = ''
 		var ratio = 0
 		var ratioPercentage = 0
+		var changeInBuyQty = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'] )*100
+		//var changeInBuyQty = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity']) )
+		var changeInSellQty = ((dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'] )*100
+		//var changeInSellQty = ((dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity']))
+		
+		var changeInTradedQty = ((dataObj['marketDeptOrderBook']['tradeInfo']['totalTradedVolume']  - dataObjPrevious1['marketDeptOrderBook']['tradeInfo']['totalTradedVolume'])/dataObjPrevious1['marketDeptOrderBook']['tradeInfo']['totalTradedVolume'] )*100
 		
 		if( dataObj['marketDeptOrderBook']['totalBuyQuantity'] >= dataObj['marketDeptOrderBook']['totalSellQuantity'] )
 		{
@@ -1494,6 +1508,7 @@ async function showPerticularStocksEquityDataInTable()
 			whoIsMoreAggressive = 'Buyers' 
 			ratioPercentage = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObj['marketDeptOrderBook']['totalSellQuantity'])/dataObj['marketDeptOrderBook']['totalSellQuantity'] )*100
 			ratio = dataObj['marketDeptOrderBook']['totalBuyQuantity'] / dataObj['marketDeptOrderBook']['totalSellQuantity']
+			
 		}
 		else if( dataObj['marketDeptOrderBook']['totalBuyQuantity'] < dataObj['marketDeptOrderBook']['totalSellQuantity'] )
 		{
@@ -1504,7 +1519,14 @@ async function showPerticularStocksEquityDataInTable()
 
 
 		var tablesStr = '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
 		+ timeStamp
+		+'</td><td>'
+		+ changeInBuyQty.toFixed(2)
+		+'</td><td>'
+		+ changeInSellQty.toFixed(2)
+		+'</td><td>'
+		+ changeInTradedQty.toFixed(2)
 		+'</td><td>'
 		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
 		+'</td><td>'
@@ -1515,6 +1537,8 @@ async function showPerticularStocksEquityDataInTable()
 		+'</td><td>'
 		//+ dataObj['marketDeptOrderBook']['totalSellQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
 		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
+		
+		
 		+'</td><td>'
 		+ whoIsMoreAggressive 
 		+'</td><td>'
@@ -1529,10 +1553,18 @@ async function showPerticularStocksEquityDataInTable()
 	
 	//console.log( returnedEntryWiseObj[timeStamp] )
 	var symbolObj = returnedEntryWiseObj[timeStamp] [selectedEquitySymbol]
-	if( symbolObj !=undefined )
+	var symbolObjPrevious1 
+	if( timeStampPrevious1 !=undefined )
+		symbolObjPrevious1 = returnedEntryWiseObj[timeStampPrevious1] [selectedEquitySymbol]
+	
+	if( symbolObj !=undefined && timeStampPrevious1 !=undefined && symbolObjPrevious1 !=undefined )
 	{
+	
+	//console.log(timeStamp, timeStampPrevious1, symbolObjPrevious1)
 	var dataObj = JSON.parse( returnedEntryWiseObj[timeStamp] [selectedEquitySymbol]['data'] )
-	tableStr +=	returnDataStr( selectedEquitySymbol, timeStamp, dataObj )
+	//var dataObjPrevious1 = JSON.parse( returnedEntryWiseObj[timeStampPrevious1] [selectedEquitySymbol]['data'] )
+	var dataObjPrevious1 = JSON.parse( symbolObjPrevious1['data'])
+	tableStr +=	returnDataStr( selectedEquitySymbol, timeStamp, dataObj, timeStampPrevious1, dataObjPrevious1 )
 	}
 	
 	/*
