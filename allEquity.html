@@ -146,7 +146,7 @@ body {
 <select id="derivativesSymbols" onchange="showPerticularStocksEquityDataInTable()">
 </select>
 <span>  
- 	| No. of Entries: 		 <input id="numberOfPreviousEntries" type="number" value="10"  size="3">
+ 	| No. of Entries: 		 <input id="numberOfPreviousEntries" type="number" value="60"  size="3">
 	| Minutes: 		 <input id="differenceBetweenEntries" type="number" value="1"  size="3">
  <button onclick="showPerticularStocksEquityDataInTable()">GO</button>
  </span>
@@ -172,7 +172,7 @@ body {
 
 
 
-
+<!-- 
 
 <div class="row">
   <div class="column equityLeft" style="background-color:#aaa;">
@@ -230,6 +230,7 @@ body {
   </div>
 </div>
 
+Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
 
 <!--<div class="tableRow"> <center> Spurts Time: &nbsp;<select id="spurts_time_for_both" aria-labelledby="expiryLbl" onchange="adjust_equity_spurts_timeValues()"> <option value="">Select</option> </select> &nbsp; &nbsp;  | &nbsp; &nbsp; No. of Comparison Stocks : &nbsp; <input id="noOfComparisonStocks" type="number" value="30" size="3"> <button onclick="compareEquitySpurtsStocks(\'compareEquityWithSpurts\')">Cmp EquitySpurts</button> <button onclick="compareEquitySpurtsStocks(\'compareSpurtsWithEquity\')">Cmp SpurtsEquity</button>   </center> <br> <div class="tableColumn" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Equity Time: &nbsp;<select id="only_equity_time" aria-labelledby="expiryLbl" onchange="show_only_equity_Data()"> <option value="">Select</option> </select> </center>  <div id="equityDataTableContainer"></div> </div> </div> <div class="tableColumn" style="border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Spurts Time: &nbsp;<select id="only_spurts_time" aria-labelledby="expiryLbl" onchange="show_only_Spurts_Data()"> <option value="">Select</option> </select> </center>  <div id="spurtsDataTableContainer"></div> </div> </div> -->
 
@@ -1150,7 +1151,8 @@ function setDerivativesSymbolsSelector( passedValue )
 	var allSymbolsArray = firestoreIndexObj[ tradingDate ]['all_derivatives_index']['all_symbols']
 	var selectElementRef = document.getElementById("derivativesSymbols");
 	
-	handleTimeValues( passedValue, allSymbolsArray, selectElementRef, null )
+	if( selectElementRef.options.length<3 )
+		handleTimeValues( passedValue, allSymbolsArray, selectElementRef, null )
 }
 
 async function getAllEquityData( passedValue )
@@ -1167,15 +1169,18 @@ async function getAllEquityData( passedValue )
 	//console.log( "docPath", docPath )
 	
 	var allEquityDataObj = await fetchAndSaveDataIDB( docPath );
-
-
+	
+	var selectedDifferenceBetweenEntries = Number( document.getElementById("differenceBetweenEntries").value )
+	//var returnedEntryWiseObj = await previousEntriesDataObj( 2, 1, selectedTradingDate, true)
+	var returnedEntryWiseObj = await previousEntriesDataObj( 2, selectedDifferenceBetweenEntries, selectedTradingDate, true)
+	//console.log( "returnedEntryWiseObj.length", returnedEntryWiseObj )
 	
 	//console.log( "allDerivativesDataArray.length", JSON.stringify( allDerivativesDataArray ).length )
 	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
 	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 	
 	//await showAllDerivativesData( selectedDerivativesTimeValue, selectedTradingDate, allDerivativesDataObj )
-	await calculateFutOptData( selectedEquityTimeValue, selectedTradingDate, allEquityDataObj )
+	await calculateFutOptData( selectedEquityTimeValue, selectedTradingDate, allEquityDataObj, returnedEntryWiseObj )
 
 
 	/*
@@ -1203,13 +1208,13 @@ async function getAllEquityData( passedValue )
 	 addOnclickEvent()
 }
 
-async function calculateFutOptData( selectedEquityTimeValue, selectedTradingDate, allEquityDataObj )
+async function calculateFutOptData( selectedEquityTimeValue, selectedTradingDate, allEquityDataObj, returnedEntryWiseObj )
 {
 	console.log("allEquityDataObj",allEquityDataObj, selectedEquityTimeValue)
 	console.log("allEquityDataObj", Object.keys(allEquityDataObj).length )
 	
-	var  dataObj = JSON.parse( allDerivativesDataObj["UPL"]['data'] )
-	console.log("dataObj", dataObj )
+	//var  dataObj = JSON.parse( allDerivativesDataObj["UPL"]['data'] )
+	//console.log("dataObj", dataObj )
 	
 	var marketDeptOrderBookObj = {}
 	var securityWiseDeliveryPerObj = {}
@@ -1239,10 +1244,10 @@ async function calculateFutOptData( selectedEquityTimeValue, selectedTradingDate
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 	
 	securityWiseDeliveryPerObj = Object.fromEntries( Object.entries(securityWiseDeliveryPerObj).sort( (a,b) => b[1] - a[1] )  ) 
-	showSecurityWiseDeliveryPerStocks( selectedEquityTimeValue, selectedTradingDate, securityWiseDeliveryPerObj, allEquityDataObj )
+	showSecurityWiseDeliveryPerStocks( selectedEquityTimeValue, selectedTradingDate, securityWiseDeliveryPerObj, allEquityDataObj, returnedEntryWiseObj )
 	
 	marketDeptOrderBookObj = Object.fromEntries( Object.entries(marketDeptOrderBookObj).sort( (a,b) => b[1] - a[1] )  ) 
-	showMarketDepthOrderBook( selectedEquityTimeValue, selectedTradingDate, marketDeptOrderBookObj, allEquityDataObj )
+	showMarketDepthOrderBook( selectedEquityTimeValue, selectedTradingDate, marketDeptOrderBookObj, allEquityDataObj, returnedEntryWiseObj )
 	
 	/*
 	futuresOIPerChngObj = Object.fromEntries( Object.entries(futuresOIPerChngObj).sort( (a,b) => b[1] - a[1] ) ) 
@@ -1278,7 +1283,7 @@ async function calculateFutOptData( selectedEquityTimeValue, selectedTradingDate
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
 
 
-async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate, passedDataObj, allEquityDataObj )
+async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate, passedDataObj, allEquityDataObj, returnedEntryWiseObj )
 {
 	
 	 document.getElementById('marketDepthOrderBookTableContainer').innerHTML = "";
@@ -1292,6 +1297,8 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Symbol</th>'
+	+' <th>cBuy</th>'
+	+' <th>cSell</th>'
 	+' <th>Buy</th>'
 	+' <th>Sell</th>'
 	+' <th>Buy%</th>'
@@ -1306,6 +1313,29 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 	
 	function returnDataStr( symbol, objectValue, dataObj )
 	{
+	
+		
+		var timeStampPrevious1 = Object.keys( returnedEntryWiseObj )[1]
+		var allEquityDataObjPrevious1
+		if(timeStampPrevious1!=undefined )
+		{
+			allEquityDataObjPrevious1 = returnedEntryWiseObj[timeStampPrevious1]
+		}
+		var dataObjPrevious1
+		var changeInBuyQty = 0
+		var changeInSellQty = 0
+		if( allEquityDataObjPrevious1!=undefined )
+		{
+			dataObjPrevious1 = JSON.parse( allEquityDataObjPrevious1[symbol]['data'] )
+			changeInBuyQty = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'] )*100
+			changeInSellQty = ((dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'] )*100
+		
+		}
+		
+	
+		
+		
+	
 		var whoIsMoreAggressive = ''
 		var ratioPercentage = 0
 		if( dataObj['marketDeptOrderBook']['totalBuyQuantity'] >= dataObj['marketDeptOrderBook']['totalSellQuantity'] )
@@ -1322,6 +1352,10 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 
 		var tablesStr = '<tr class="item"><td>'
 		+ symbol
+		+'</td><td>'
+		+changeInBuyQty.toFixed(2)
+		+'</td><td>'
+		+changeInSellQty.toFixed(2)
 		+'</td><td>'
 		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
 		+'</td><td>'
@@ -1470,25 +1504,29 @@ async function showPerticularStocksEquityDataInTable()
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Time</th>'
 	
-	+' <th>chngBuy</th>'
-	+' <th>chngSell</th>'
-	+' <th>chngTrded</th>'
+	+' <th>cBuy</th>'
+	+' <th>cSell</th>'
+	+' <th>cTrded</th>'
+	+' <th>Limits</th>'
+	
+	+' <th>Agrsv</th>'
+	+'<th>Ratio</th>   '
+	+'<th>Ratio%</th>   '
 	+' <th>Buy</th>'
 	+' <th>Sell</th>'
 	+' <th>Buy%</th>'
 	+' <th>Sell%</th>'
-	+' <th>Aggressive</th>'
-	+'<th>Ratio</th>   '
-	+'<th>Ratio%</th>   '
 	+' </tr></thead><tbody>'
 	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="perticularStockMarketDepthOrderBookTableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	 
 	//for ( var timeStamp in returnedEntryWiseObj ) {
 	for( var i=0; i< Object.keys( returnedEntryWiseObj ).length ; i++ ) {
+	
 	var timeStamp = Object.keys( returnedEntryWiseObj )[i]
 	var timeStampPrevious1 
 	timeStampPrevious1 = Object.keys( returnedEntryWiseObj )[i+1]
+	var timeStampOfData = returnedEntryWiseObj[timeStamp]['timestamp']['data'].split(' ')[1]
 	
 	function returnDataStr( symbol, timeStamp, dataObj, timeStampPrevious1, dataObjPrevious1 )
 	{
@@ -1505,28 +1543,58 @@ async function showPerticularStocksEquityDataInTable()
 		if( dataObj['marketDeptOrderBook']['totalBuyQuantity'] >= dataObj['marketDeptOrderBook']['totalSellQuantity'] )
 		{
 			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
-			whoIsMoreAggressive = 'Buyers' 
+			whoIsMoreAggressive = 'Buy' 
 			ratioPercentage = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObj['marketDeptOrderBook']['totalSellQuantity'])/dataObj['marketDeptOrderBook']['totalSellQuantity'] )*100
 			ratio = dataObj['marketDeptOrderBook']['totalBuyQuantity'] / dataObj['marketDeptOrderBook']['totalSellQuantity']
 			
 		}
 		else if( dataObj['marketDeptOrderBook']['totalBuyQuantity'] < dataObj['marketDeptOrderBook']['totalSellQuantity'] )
 		{
-			whoIsMoreAggressive = 'Sellers'
+			whoIsMoreAggressive = 'Sell'
 			ratioPercentage = ((dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObj['marketDeptOrderBook']['totalBuyQuantity'])/dataObj['marketDeptOrderBook']['totalBuyQuantity'] )*100
 			ratio = dataObj['marketDeptOrderBook']['totalSellQuantity'] / dataObj['marketDeptOrderBook']['totalBuyQuantity']
 		}
+		
+		var totalBidQty = 0
+		var totalAskQty = 0
+		var whoIsMorePassiveInLimit = ''
+		
+		for( var AB=0; AB< dataObj['marketDeptOrderBook']['ask'].length;AB++ )
+		{
+			totalAskQty += dataObj['marketDeptOrderBook']['ask'][AB]['quantity']
+			totalBidQty += dataObj['marketDeptOrderBook']['bid'][AB]['quantity']
+		}
+		if( totalAskQty>=totalBidQty )
+		{
+			//whoIsMorePassiveInLimit = (totalAskQty/totalBidQty).toFixed(2)+ ' Sellers'
+			whoIsMorePassiveInLimit = (totalAskQty/totalBidQty).toFixed(2)+ ' Sell'
+		}
+		else if( totalBidQty>totalAskQty )
+		{
+			//whoIsMorePassiveInLimit = (totalBidQty/totalAskQty).toFixed(2)+ ' Buyers'
+			whoIsMorePassiveInLimit = (totalBidQty/totalAskQty).toFixed(2)+ ' Buy'
+		}
+		
 
 
 		var tablesStr = '<tr class="item"><td>'
 		//+ timeStampPrevious1+'-'+timeStamp
 		+ timeStamp
+		//+ timeStampOfData
 		+'</td><td>'
 		+ changeInBuyQty.toFixed(2)
 		+'</td><td>'
 		+ changeInSellQty.toFixed(2)
 		+'</td><td>'
 		+ changeInTradedQty.toFixed(2)
+		+'</td><td>'
+		+ whoIsMorePassiveInLimit		
+		+'</td><td>'
+		+ whoIsMoreAggressive 
+		+'</td><td>'
+		+ ratio.toFixed(2)
+		+'</td><td>'
+		+ ratioPercentage.toFixed(2)
 		+'</td><td>'
 		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
 		+'</td><td>'
@@ -1539,12 +1607,6 @@ async function showPerticularStocksEquityDataInTable()
 		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
 		
 		
-		+'</td><td>'
-		+ whoIsMoreAggressive 
-		+'</td><td>'
-		+ ratio.toFixed(2)
-		+'</td><td>'
-		+ ratioPercentage.toFixed(2)
 		+'</td></tr>'
 		
 		return tablesStr;
