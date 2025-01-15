@@ -195,13 +195,15 @@ async function getPreMarketData( passedValue )
 async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selectedTradingDate, selectedTimeValue, deliveryDataObj, calculatedEODDeliveryDataObj )
 {
 	console.log("deliveryDataObj",deliveryDataObj )
+	
 	 document.getElementById('allPreOpenMarketColumnsContainer').innerHTML = "";
 
 	var preOpenMarketObject = dataObj
 
 	var AdvancesDeclinesUnchanged=preOpenMarketObject['AdvancesDeclinesUnchanged']
 	document.getElementById('AdvancesDeclinesContainer').innerHTML =  '<span style="color:#bfffbf">Advances: '+preOpenMarketObject['advances']+'</span><span style="color:#ffb8b8"> &nbsp;&nbsp; Declines: '+preOpenMarketObject['declines']+'</span><span style="color:white"> &nbsp;&nbsp; Unchanged: '+preOpenMarketObject['unchanged']+'</span> &nbsp; | &nbsp; '+selectedTradingDate+' | '+selectedTimeValue
-
+	
+	console.log("preOpenMarketObject",preOpenMarketObject )
 	
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
@@ -209,7 +211,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 	var tablesStr=''
 
 	var NiftyTablesStr = '<div class="column Left">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingNifty">'
-	+'<caption style="caption-side:top">Nifty 50 | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>    <thead class="greenHeaderClass">       <tr>               <th class="">Symbol</th>              <th class="">Chng%</th>              <th class="">Rng</th>               		   <th class="">TO</th>    	<th>20DAV</th>    	<th>RFac</th> 	<th>D</th>  <th>D%</th>        </tr>  </thead>'
+	+'<caption style="caption-side:top">Nifty 50 | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>    <thead class="greenHeaderClass">       <tr>               <th class="">Symbol</th>              <th class="">Chng%</th>              <th class="">Rng</th>               		   <th class="">TO</th>    	<th>20DAV</th>    	<th>RFac</th> 	<th>D</th>  <th>D%</th>   <th>AskBid</th>  <th>Agrsv</th>       </tr>  </thead>'
 	+'<tbody>'
 
 
@@ -225,6 +227,25 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
 		var rFactor = Number ( stockValuesObj['metadata']['pChange'] )*( twentyDAV )
 		rFactor = Math.abs(rFactor)
+		
+		
+		
+		var whoIsMoreAggressive = ''
+		var askBidRatio = 0
+		if( stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] >= stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] )
+		{	// adding it on 15-January-2025
+			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
+			whoIsMoreAggressive = 'Bid' 
+			askBidRatio = stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] / stockValuesObj['detail']['preOpenMarket'] ['totalSellQuantity']
+			
+		}
+		else if( stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] < stockValuesObj['detail']['preOpenMarket'] ['totalSellQuantity'] )
+		{
+			whoIsMoreAggressive = 'Ask'
+			askBidRatio = stockValuesObj['detail']['preOpenMarket'] ['totalSellQuantity'] / stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity']
+		}
+		
+		
 		
 		NiftyTablesStr +='<tr class="item"><td>'
 		+ Symbol
@@ -243,6 +264,11 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
 		+'</td><td>'
 		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
+		+'</td><td>'
+		+ askBidRatio.toFixed(2)
+		+'</td><td>'
+		+ whoIsMoreAggressive
+		
 		+'</td></tr>'
 		}
 
@@ -253,7 +279,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 
 	
 	var FnOTablesStr = '<div class="column Right">    <div class="spaceBetweenTables">     <table id="PreMarketAscendingFnO">'
-	+'<caption style="caption-side:top">FnO | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>     <thead class="greenHeaderClass">       <tr>               <th>Symbol</th>              <th>Chng%</th>              <th>Rng</th>               	   <th>TO</th>   <th>20DAV</th>      	<th>RFac</th>    <th>D</th>  <th>D%</th>      </tr>   </thead> '
+	+'<caption style="caption-side:top">FnO | '+selectedTradingDate+' | '+selectedTimeValue+'</caption>     <thead class="greenHeaderClass">       <tr>               <th>Symbol</th>              <th>Chng%</th>              <th>Rng</th>               	   <th>TO</th>   <th>20DAV</th>      	<th>RFac</th>    <th>D</th>  <th>D%</th>  <th>AskBid</th>  <th>Agrsv</th>      </tr>   </thead> '
 	+'<tbody>'
 
 	for( var Symbol in preOpenMarketObject['data'] )
@@ -266,6 +292,23 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		var twentyDAV =( stockValuesObj['metadata']['totalTurnover']  / average20DaysValue).toFixed(3)
 		var rFactor = Number ( stockValuesObj['metadata']['pChange'] )*( twentyDAV )
 		rFactor = Math.abs(rFactor)
+		
+		
+		var whoIsMoreAggressive = ''
+		var askBidRatio = 0
+		if( stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] >= stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] )
+		{	// adding it on 15-January-2025
+			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
+			whoIsMoreAggressive = 'Bid' 
+			askBidRatio = stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] / stockValuesObj['detail']['preOpenMarket'] ['totalSellQuantity']
+			
+		}
+		else if( stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] < stockValuesObj['detail']['preOpenMarket'] ['totalSellQuantity'] )
+		{
+			whoIsMoreAggressive = 'Ask'
+			askBidRatio = stockValuesObj['detail']['preOpenMarket'] ['totalSellQuantity'] / stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity']
+		}
+		
 	   
 		
 		FnOTablesStr +='<tr class="item"><td>'
@@ -285,6 +328,12 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
 		+'</td><td>'
 		+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
+		+'</td><td>'
+		+ askBidRatio.toFixed(2)
+		+'</td><td>'
+		+ whoIsMoreAggressive
+		
+		
 		+'</td></tr>'
 		}
 
