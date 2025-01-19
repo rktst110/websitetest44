@@ -232,7 +232,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		
 		var whoIsMoreAggressive = ''
 		var askBidRatio = 0
-		if( stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] >= stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] )
+		if( stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] >= stockValuesObj['detail']['preOpenMarket'] ['totalSellQuantity'] )
 		{	// adding it on 15-January-2025
 			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
 			whoIsMoreAggressive = 'Bid' 
@@ -296,7 +296,7 @@ async function show_pre_open_market_Data ( dataObj, sectorStockNamesObj, selecte
 		
 		var whoIsMoreAggressive = ''
 		var askBidRatio = 0
-		if( stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] >= stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] )
+		if( stockValuesObj['detail']['preOpenMarket'] ['totalBuyQuantity'] >= stockValuesObj['detail']['preOpenMarket'] ['totalSellQuantity'] )
 		{	// adding it on 15-January-2025
 			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
 			whoIsMoreAggressive = 'Bid' 
