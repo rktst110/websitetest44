@@ -1299,13 +1299,14 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 	+'<th>Symbol</th>'
 	+' <th>cBuy</th>'
 	+' <th>cSell</th>'
+	+'<th>Ratio</th>'
+	+' <th>Agrsv</th>'
 	+' <th>Buy</th>'
 	+' <th>Sell</th>'
 	+' <th>Buy%</th>'
 	+' <th>Sell%</th>'
-	+' <th>Aggressive</th>'
-	+'<th>Ratio</th>   '
-	+'<th>Ratio%</th>   '
+	
+	//+'<th>Ratio%</th>   '
 	+' </tr></thead><tbody>'
 	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="marketDepthOrderBookTableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
@@ -1341,12 +1342,12 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 		if( dataObj['marketDeptOrderBook']['totalBuyQuantity'] >= dataObj['marketDeptOrderBook']['totalSellQuantity'] )
 		{
 			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
-			whoIsMoreAggressive = 'Buyers' 
+			whoIsMoreAggressive = 'Buy' 
 			ratioPercentage = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObj['marketDeptOrderBook']['totalSellQuantity'])/dataObj['marketDeptOrderBook']['totalSellQuantity'] )*100
 		}
 		else if( dataObj['marketDeptOrderBook']['totalBuyQuantity'] < dataObj['marketDeptOrderBook']['totalSellQuantity'] )
 		{
-			whoIsMoreAggressive = 'Sellers'
+			whoIsMoreAggressive = 'Sell'
 			ratioPercentage = ((dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObj['marketDeptOrderBook']['totalBuyQuantity'])/dataObj['marketDeptOrderBook']['totalBuyQuantity'] )*100
 		}
 
@@ -1357,6 +1358,10 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 		+'</td><td>'
 		+changeInSellQty.toFixed(2)
 		+'</td><td>'
+		+ objectValue.toFixed(2)
+		+'</td><td>'
+		+ whoIsMoreAggressive 
+		+'</td><td>'
 		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
 		+'</td><td>'
 		+ dataObj['marketDeptOrderBook']['totalSellQuantity']
@@ -1366,12 +1371,8 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 		+'</td><td>'
 		//+ dataObj['marketDeptOrderBook']['totalSellQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
 		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
-		+'</td><td>'
-		+ whoIsMoreAggressive 
-		+'</td><td>'
-		+ objectValue.toFixed(2)
-		+'</td><td>'
-		+ ratioPercentage.toFixed(2)
+		//+'</td><td>'
+		//+ ratioPercentage.toFixed(2)
 		+'</td></tr>'
 		
 		return tablesStr;
@@ -1507,10 +1508,9 @@ async function showPerticularStocksEquityDataInTable()
 	+' <th>cBuy</th>'
 	+' <th>cSell</th>'
 	+' <th>cTrded</th>'
-	+' <th>Limits</th>'
-	
+	+'<th>Ratio</th>   '	
 	+' <th>Agrsv</th>'
-	+'<th>Ratio</th>   '
+	+' <th>Limits</th>'
 	+'<th>Ratio%</th>   '
 	+' <th>Buy</th>'
 	+' <th>Sell</th>'
@@ -1588,11 +1588,11 @@ async function showPerticularStocksEquityDataInTable()
 		+'</td><td>'
 		+ changeInTradedQty.toFixed(2)
 		+'</td><td>'
-		+ whoIsMorePassiveInLimit		
+		+ ratio.toFixed(2)
 		+'</td><td>'
 		+ whoIsMoreAggressive 
 		+'</td><td>'
-		+ ratio.toFixed(2)
+		+ whoIsMorePassiveInLimit		
 		+'</td><td>'
 		+ ratioPercentage.toFixed(2)
 		+'</td><td>'
