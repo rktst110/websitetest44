@@ -1507,6 +1507,8 @@ async function showPerticularStocksEquityDataInTable()
 	
 	+' <th>cBuy</th>'
 	+' <th>cSell</th>'
+	+' <th>cBuy%</th>'
+	+' <th>cSell%</th>'
 	+' <th>cTrded</th>'
 	+'<th>Ratio</th>   '	
 	+' <th>Agrsv</th>'
@@ -1533,9 +1535,11 @@ async function showPerticularStocksEquityDataInTable()
 		var whoIsMoreAggressive = ''
 		var ratio = 0
 		var ratioPercentage = 0
-		var changeInBuyQty = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'] )*100
+		var changeInBuyQtyPer = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'] )*100
+		var changeInBuyQty = (dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'])
 		//var changeInBuyQty = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity']) )
-		var changeInSellQty = ((dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'] )*100
+		var changeInSellQtyPer = ((dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'] )*100
+		var changeInSellQty = (dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity'])
 		//var changeInSellQty = ((dataObj['marketDeptOrderBook']['totalSellQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalSellQuantity']))
 		
 		var changeInTradedQty = ((dataObj['marketDeptOrderBook']['tradeInfo']['totalTradedVolume']  - dataObjPrevious1['marketDeptOrderBook']['tradeInfo']['totalTradedVolume'])/dataObjPrevious1['marketDeptOrderBook']['tradeInfo']['totalTradedVolume'] )*100
@@ -1582,9 +1586,13 @@ async function showPerticularStocksEquityDataInTable()
 		+ timeStamp
 		//+ timeStampOfData
 		+'</td><td>'
-		+ changeInBuyQty.toFixed(2)
+		+ changeInBuyQty.toFixed(0)
 		+'</td><td>'
-		+ changeInSellQty.toFixed(2)
+		+ changeInSellQty.toFixed(0)
+		+'</td><td>'
+		+ changeInBuyQtyPer.toFixed(2)
+		+'</td><td>'
+		+ changeInSellQtyPer.toFixed(2)
 		+'</td><td>'
 		+ changeInTradedQty.toFixed(2)
 		+'</td><td>'
