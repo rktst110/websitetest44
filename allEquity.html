@@ -242,9 +242,10 @@ Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
 <script>
 function fetchDataForAllSegments()
 {
-setIndicesSelectorTimeValues( "syncWithCommonTime" );
-setSpurtsSelectorTimeValues( "syncWithCommonTime" )
+//setIndicesSelectorTimeValues( "syncWithCommonTime" );
+//setSpurtsSelectorTimeValues( "syncWithCommonTime" )
 setDerivativesSelectorTimeValues( "syncWithCommonTime" )
+//setDerivativesSelectorTimeValues( "last" )
 }
 </script>
 
@@ -1134,6 +1135,39 @@ function copyHeatMapList( heatMapSectorSelected, greenOrRed )
 
 <script>
 var sectorStockNamesObj = {}
+
+
+function setCommonSelectors()
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray 
+	if( firestoreIndexObj[ tradingDate ]['all_equity_index']['time_values'] !=undefined )
+	{
+		//timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_timeValues']
+		timeValuesArray = firestoreIndexObj[ tradingDate ]['all_equity_index']['time_values']
+		// handle common time values
+	}
+	else if( firestoreIndexObj[ tradingDate ]['Index']['common_time_values'] !=undefined )
+	{
+		//timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_timeValues']
+		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['common_time_values']
+		// handle common time values
+	}
+	else
+	{
+		timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+	}
+
+const selectElement = document.getElementById("commonTimeValues");
+selectElement.innerHTML = '<option>Select</option>'
+  for (let i = 0; i < timeValuesArray.length; i++) {
+    const optionElement = document.createElement("option");
+    optionElement.text = timeValuesArray[i];
+    selectElement.add(optionElement);
+  }
+
+
+}
 
 function setDerivativesSelectorTimeValues( passedValue )
 {

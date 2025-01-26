@@ -765,7 +765,7 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 	  +' <th>20DAV</th>'
 	 // +' <th>T.O.</th>'
 	 // +' <th>Vol</th>'
-	 //+' <th>Fac</th>'
+	 +' <th>Fac</th>'
 	 +' <th>Pre</th>'
 	 +' <th>cRng</th>'
 	 +' <th>pRng</th>'
@@ -927,8 +927,8 @@ async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDa
 		// +'</td><td>'
 		//	 +( symbolArray['totalTradedVolume'] / 100000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
 		
-		// +'</td><td>'
-		// + Fac
+		 +'</td><td>'
+		 + Fac
 		 +'</td><td>'
 		 + Math.abs (((symbolArray['open'] - symbolArray['previousClose'])/symbolArray['previousClose'])*100).toFixed(2)
 		 +'</td><td>'
