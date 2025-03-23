@@ -331,13 +331,20 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity" style="height:550px;"> <table id="'+tableID+'"> <caption style="caption-side:top"> '+tableCaption+' | '+selectedTradingDate+' | '+previousTimeValue+'-'+currentTimeValue+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Symbol</th>'
 	  +' <th>Chg%</th>'
-	   +' <th>T.O.</th>'
-	   +' <th>V.Spike</th>'
+	 //  +' <th>T.O.</th>'
+	   
 	   +' <th>P.Spike</th>'
+	   +' <th>Fac</th>'
+	   +' <th>High</th>'
+	   +' <th>Low</th>'
+	   
+	   +' <th>P.Spike</th>'
+	   +' <th>V.Spike</th>'
 	   +' <th>PV.Spike</th>'
+	   
 	 //+' <th>Money</th>'
 	  +' <th>20DAV</th>'
-	  +' <th>Fac</th>'
+	  
 	  +' <th>DQ</th>'
 	  +' <th>D%</th>'
 	  +' <th>Rng</th>'
@@ -360,7 +367,7 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 		{
 		//console.log(Symbol)
 	   var valueSpike = Math.abs ( ( ( symbolArray['totalTradedValue'] -  previousSymbolArray['totalTradedValue']) / previousSymbolArray['totalTradedValue'] ) * 100).toFixed(2)
-	   var priceSpike = Math.abs ( ( ( symbolArray['lastPrice'] -  previousSymbolArray['lastPrice']) / previousSymbolArray['lastPrice'] ) * 100).toFixed(2)
+	   var priceSpike =  ( ( ( symbolArray['lastPrice'] -  previousSymbolArray['lastPrice']) / previousSymbolArray['lastPrice'] ) * 100).toFixed(2)
 	   var priceValueSpike = Math.abs( valueSpike * priceSpike ).toFixed(2)
 	   //var valueSpike = Math.abs(  priceSpike ).toFixed(2)
 	
@@ -370,6 +377,9 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	
 	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
 	  
+    var near_high_pct = (1 - (DayHigh - LastPrice) / (DayHigh - DayLow)) * 100 
+    var near_low_pct = (1 - (LastPrice - DayLow) / (DayHigh - DayLow)) * 100
+	  
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
@@ -377,9 +387,10 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	
 	 		  tempDataObj[Symbol] ={
 			 // "spike":valueSpike,
-			  "spike":priceSpike,
+			  "spike":Math.abs ( priceSpike ),
 			  "twentyDAV":twentyDAV,
-			  "pChange":symbolArray['pChange'],
+			  //"pChange":symbolArray['pChange'],
+			  "pChange":priceSpike,
 			  //symbolArray
 			  }
 
@@ -389,16 +400,31 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 			 +Symbol
 			 +'</td><td>'
 			+ symbolArray['pChange']  //pchange
-			 +'</td><td>'
-			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
-			+'</td><td>'
+			 //+'</td><td>'
+			// +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+			//+'</td><td>'
 			 //+ valueSpike //NoMinuspChng.toFixed(2) 
-			 + valueSpike //NoMinuspChng.toFixed(2) 
+			// + valueSpike //NoMinuspChng.toFixed(2) 
 			 //+ priceValueSpike //NoMinuspChng.toFixed(2) 
 			 
 			 +'</td><td>'
-			+ priceSpike
+			+ Math.abs ( priceSpike )
+			
+			 +'</td><td>'
+			+ Math.abs( twentyDAV * priceSpike).toFixed(2)
+			
+			 +'</td><td>'
+			+ near_high_pct.toFixed(0) 
+			
+			 +'</td><td>'
+			+ near_low_pct.toFixed(0) 
 			 
+			 +'</td><td>'
+			+ priceSpike
+			
+			 +'</td><td>'
+			+ valueSpike
+			
 			 +'</td><td>'
 			+ priceValueSpike
 			 
@@ -406,8 +432,8 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 			// + WFactor
 			//+'</td><td>'
 			+ twentyDAV
-			+'</td><td>'
-			+ Math.abs( twentyDAV * symbolArray['pChange'] ).toFixed(2)
+			
+			//+ Math.abs( twentyDAV * symbolArray['pChange'] ).toFixed(2)
 			//+ Math.abs( twentyDAV * priceSpike ).toFixed(2)
 			
 			+'</td><td>'
@@ -421,6 +447,8 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 			
 		
 		}
+		
+		
 		}
 	}
 		} //for Loop ENDS HERE
@@ -864,18 +892,25 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 
 	var tempDataObj = {}
 	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity" style="height:550px;"> <table id="'+tableID+'"> <caption style="caption-side:top"> '+tableCaption+' | '+selectedTradingDate+' | '+previousTimeValue+'-'+currentTimeValue+'</caption> <thead> <tr class="tableRowClass">'
-	  +'<th>Symbol</th>'
+	+'<th>Symbol</th>'
 	  +' <th>Chg%</th>'
-	   +' <th>T.O.</th>'
-	   +' <th>V.Spike</th>'
+	 //  +' <th>T.O.</th>'
+	   
 	   +' <th>P.Spike</th>'
+	   +' <th>Fac</th>'
+	   +' <th>High</th>'
+	   +' <th>Low</th>'
+	   
+	   +' <th>P.Spike</th>'
+	   +' <th>V.Spike</th>'
 	   +' <th>PV.Spike</th>'
+	   
 	 //+' <th>Money</th>'
 	  +' <th>20DAV</th>'
-	  +' <th>Fac</th>'
-	  +' <th>D</th>'
-	 +' <th>D%</th>'
-	 +' <th>Rng</th>'
+	  
+	  +' <th>DQ</th>'
+	  +' <th>D%</th>'
+	  +' <th>Rng</th>'
 	  +' </tr> </thead> <tbody>'
 
 		//for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
@@ -889,9 +924,11 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 		var previousSymbolArray = niftyTotalMarket2MinutePreviousObject [Symbol]  
 		if( symbolArray !=undefined && previousSymbolArray !=undefined )
 		{
-	   //var valueSpike = ( ( ( symbolArray['totalTradedValue'] -  previousSymbolArray['totalTradedValue']) / previousSymbolArray['totalTradedValue'] ) * 100).toFixed(2)
-	   var valueSpike = Math.abs ( ( ( symbolArray['totalTradedValue'] -  previousSymbolArray['totalTradedValue']) / previousSymbolArray['totalTradedValue'] ) * 100).toFixed(2)
-	   var priceSpike = Math.abs ( ( ( symbolArray['lastPrice'] -  previousSymbolArray['lastPrice']) / previousSymbolArray['lastPrice'] ) * 100).toFixed(2)
+		
+
+
+	  	   var valueSpike = Math.abs ( ( ( symbolArray['totalTradedValue'] -  previousSymbolArray['totalTradedValue']) / previousSymbolArray['totalTradedValue'] ) * 100).toFixed(2)
+	   var priceSpike =  ( ( ( symbolArray['lastPrice'] -  previousSymbolArray['lastPrice']) / previousSymbolArray['lastPrice'] ) * 100).toFixed(2)
 	   var priceValueSpike = Math.abs( valueSpike * priceSpike ).toFixed(2)
 	   //var valueSpike = Math.abs(  priceSpike ).toFixed(2)
 	
@@ -900,6 +937,11 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 	 var LastPrice = symbolArray['lastPrice'] 
 	
 	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
+	  
+    var near_high_pct = (1 - (DayHigh - LastPrice) / (DayHigh - DayLow)) * 100 
+    var near_low_pct = (1 - (LastPrice - DayLow) / (DayHigh - DayLow)) * 100
+	
+	  
 	  
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 
@@ -915,27 +957,48 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 			 +Symbol
 			 +'</td><td>'
 			+ symbolArray['pChange']  //pchange
+			 //+'</td><td>'
+			// +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+			//+'</td><td>'
+			 //+ valueSpike //NoMinuspChng.toFixed(2) 
+			// + valueSpike //NoMinuspChng.toFixed(2) 
+			 //+ priceValueSpike //NoMinuspChng.toFixed(2) 
+			 
 			 +'</td><td>'
-			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
-			+'</td><td>'
-			 + valueSpike //NoMinuspChng.toFixed(2) 
+			+ Math.abs ( priceSpike )
+			
 			 +'</td><td>'
-			 + priceSpike //NoMinuspChng.toFixed(2) 
+			+ Math.abs( twentyDAV * priceSpike).toFixed(2)
+			
 			 +'</td><td>'
-			 + priceValueSpike //NoMinuspChng.toFixed(2) 
+			+ near_high_pct.toFixed(0) 
+			
+			 +'</td><td>'
+			+ near_low_pct.toFixed(0) 
+			 
+			 +'</td><td>'
+			+ priceSpike
+			
+			 +'</td><td>'
+			+ valueSpike
+			
+			 +'</td><td>'
+			+ priceValueSpike
 			 
 			 +'</td><td>'
 			// + WFactor
 			//+'</td><td>'
 			+ twentyDAV
-			+'</td><td>'
-			+ Math.abs( twentyDAV * symbolArray['pChange'] ).toFixed(2)
+			
+			//+ Math.abs( twentyDAV * symbolArray['pChange'] ).toFixed(2)
+			//+ Math.abs( twentyDAV * priceSpike ).toFixed(2)
+			
 			+'</td><td>'
 			+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryQuantity'] : 0)
 			+'</td><td>'
 			+ (calculatedEODDeliveryDataObj[Symbol] ? calculatedEODDeliveryDataObj[Symbol] ['averageDeliveryPercentage'] : 0)
 			+'</td><td>'
-			+ DayRange
+			+DayRange
 			
 			+'</td></tr>'
 			
@@ -959,8 +1022,6 @@ showSpikeChart( tableCaption, tableContainerID, tableID, currentTimeValue, previ
 	
 	addEventListnerInTables()
 }	//	show_volume_value_spike_Data() Function ENDS HERE
-
-
 
 </script>
 <!-- Indices Code Ends Here -->
