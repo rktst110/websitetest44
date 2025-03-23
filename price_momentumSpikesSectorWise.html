@@ -946,9 +946,20 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 
 	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
-	 		  tempDataObj[Symbol] ={
+	 		 /*
+			 tempDataObj[Symbol] ={
 			  "spike":valueSpike,
 			  "pChange":symbolArray['pChange']
+			  }
+			  */
+			  
+	 		  tempDataObj[Symbol] ={
+			 // "spike":valueSpike,
+			  "spike":Math.abs ( priceSpike ),
+			  "twentyDAV":twentyDAV,
+			  //"pChange":symbolArray['pChange'],
+			  "pChange":priceSpike,
+			  //symbolArray
 			  }
 
 			  
