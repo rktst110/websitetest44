@@ -331,6 +331,8 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity" style="height:550px;"> <table id="'+tableID+'"> <caption style="caption-side:top"> '+tableCaption+' | '+selectedTradingDate+' | '+previousTimeValue+'-'+currentTimeValue+'</caption> <thead> <tr class="tableRowClass">'
 	  +'<th>Symbol</th>'
 	  +' <th>Chg%</th>'
+	  +' <th>DChg%</th>'
+	  +' <th>DC%Fac</th>'
 	 //  +' <th>T.O.</th>'
 	   
 	   +' <th>P.Spike</th>'
@@ -371,10 +373,13 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	   var priceValueSpike = Math.abs( valueSpike * priceSpike ).toFixed(2)
 	   //var valueSpike = Math.abs(  priceSpike ).toFixed(2)
 	
+	 var DayOpen = symbolArray['open'] 
 	 var DayHigh = symbolArray['dayHigh'] 
 	 var DayLow = symbolArray['dayLow'] 
 	 var LastPrice = symbolArray['lastPrice'] 
 	
+	var DayChangePercentage =( ( (LastPrice - DayOpen) / DayOpen) *100).toFixed(2)
+	  
 	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
 	  
     var near_high_pct = (1 - (DayHigh - LastPrice) / (DayHigh - DayLow)) * 100 
@@ -408,10 +413,17 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 			 //+ priceValueSpike //NoMinuspChng.toFixed(2) 
 			 
 			 +'</td><td>'
+			+ DayChangePercentage
+			
+			 +'</td><td>'
+			+ Math.abs( twentyDAV * DayChangePercentage ).toFixed(2)
+			
+			 +'</td><td>'
 			+ Math.abs ( priceSpike )
 			
 			 +'</td><td>'
 			+ Math.abs( twentyDAV * priceSpike).toFixed(2)
+			//+ Math.abs( DayRange * twentyDAV).toFixed(2)
 			
 			 +'</td><td>'
 			+ near_high_pct.toFixed(0) 
@@ -894,6 +906,8 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity" style="height:550px;"> <table id="'+tableID+'"> <caption style="caption-side:top"> '+tableCaption+' | '+selectedTradingDate+' | '+previousTimeValue+'-'+currentTimeValue+'</caption> <thead> <tr class="tableRowClass">'
 	+'<th>Symbol</th>'
 	  +' <th>Chg%</th>'
+	  +' <th>DChg%</th>'
+	  +' <th>DC%Fac</th>'
 	 //  +' <th>T.O.</th>'
 	   
 	   +' <th>P.Spike</th>'
@@ -931,11 +945,14 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 	   var priceSpike =  ( ( ( symbolArray['lastPrice'] -  previousSymbolArray['lastPrice']) / previousSymbolArray['lastPrice'] ) * 100).toFixed(2)
 	   var priceValueSpike = Math.abs( valueSpike * priceSpike ).toFixed(2)
 	   //var valueSpike = Math.abs(  priceSpike ).toFixed(2)
-	
+
+	 var DayOpen = symbolArray['open'] 
 	 var DayHigh = symbolArray['dayHigh'] 
 	 var DayLow = symbolArray['dayLow'] 
 	 var LastPrice = symbolArray['lastPrice'] 
 	
+	var DayChangePercentage =( ( (LastPrice - DayOpen) / DayOpen) *100).toFixed(2)
+	  
 	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
 	  
     var near_high_pct = (1 - (DayHigh - LastPrice) / (DayHigh - DayLow)) * 100 
@@ -976,10 +993,17 @@ async function show_sector_stocks_momentum_spike_Data( tableCaption, tableContai
 			 //+ priceValueSpike //NoMinuspChng.toFixed(2) 
 			 
 			 +'</td><td>'
+			+ DayChangePercentage
+			
+			 +'</td><td>'
+			+  Math.abs( twentyDAV * DayChangePercentage ).toFixed(2)
+			
+			 +'</td><td>'
 			+ Math.abs ( priceSpike )
 			
 			 +'</td><td>'
 			+ Math.abs( twentyDAV * priceSpike).toFixed(2)
+			//+ Math.abs( DayRange * twentyDAV).toFixed(2)
 			
 			 +'</td><td>'
 			+ near_high_pct.toFixed(0) 
