@@ -333,6 +333,8 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	  +' <th>Chg%</th>'
 	  +' <th>DChg%</th>'
 	  +' <th>DC%Fac</th>'
+	  +' <th>O=H</th>'
+	  +' <th>O=L</th>'
 	 //  +' <th>T.O.</th>'
 	   
 	   +' <th>P.Spike</th>'
@@ -379,6 +381,9 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 	 var LastPrice = symbolArray['lastPrice'] 
 	
 	var DayChangePercentage =( ( (LastPrice - DayOpen) / DayOpen) *100).toFixed(2)
+	
+	var open_near_high_percentage =( ( (DayHigh - DayOpen) / DayOpen) *100).toFixed(2)
+	var open_near_low_percentage =( ( (DayLow - DayOpen) / DayOpen) *100).toFixed(2)
 	  
 	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
 	  
@@ -417,6 +422,12 @@ async function show_momentum_spike_Data( tableCaption, tableContainerID, tableID
 			
 			 +'</td><td>'
 			+ Math.abs( twentyDAV * DayChangePercentage ).toFixed(2)
+			
+			 +'</td><td>'
+			+ Math.abs( open_near_high_percentage ).toFixed(2)
+			
+			 +'</td><td>'
+			+ Math.abs( open_near_low_percentage ).toFixed(2)
 			
 			 +'</td><td>'
 			+ Math.abs ( priceSpike )
