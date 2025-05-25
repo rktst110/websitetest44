@@ -285,6 +285,7 @@ async function fetchSectorStockNamesCollectionData( collectionPath ) {
     return null;
   }
   }
+
 }
 
 async function fetchIndicesSectorStockNamesCollectionData( collectionPath ) {
@@ -395,7 +396,7 @@ async function fetchDeliveryDataDocData_Previous_28May2023(docPath) {
 	}
 }
 
-async function fetchDeliveryDataDocData(docPath) {
+async function fetchDeliveryDataDocData_Previous_till_01May2025(docPath) {
 
 	  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
   var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
@@ -449,6 +450,94 @@ async function fetchDeliveryDataDocData(docPath) {
       return null;
     });
 	}
+}
+
+async function fetchDeliveryDataDocData(docPath) {
+
+	  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+
+	var localStorageForDeliveryData = localStorage.getItem('deliveryData')
+	if( localStorageForDeliveryData!=null && JSON.parse(localStorageForDeliveryData) [docPath]!=undefined )
+	{
+		return (JSON.parse(localStorageForDeliveryData) [docPath] )
+	}
+	
+	else {
+		//var docPath = '/April 2025/30-Apr-2025/delivery_data/part1';
+		var collectionPath = docPath.split('/').slice(0, -1).join('/');
+		// Result: "April 2025/30-Apr-2025/delivery_data"
+
+  var collectionRef = db.collection(collectionPath);
+
+  try {
+	  
+    var collectionRef = db.collection(collectionPath);
+	/*
+    const querySnapshot = await collectionRef.get();
+	var allDocsDataObj = {}
+    querySnapshot.forEach(function(doc) {
+		var docData = JSON.parse(doc.data()['data'])
+		var symbolsArray = docData['Symbols']
+		if( symbolsArray==undefined )
+		{
+			symbolsArray = Object.keys( docData['data'] )
+		}
+		allDocsDataObj [doc.id] = docData
+	  //console.log( symbolsArray )
+	  
+    });
+	*/
+	//const snapshot = await getDocs(colRef);
+	const snapshot = await collectionRef.get();
+var allDocsDataObj = {}
+  const merged = {};
+  for (const doc of snapshot.docs) {
+    const dataStr = doc.data().data;
+    const chunk = JSON.parse(dataStr);
+
+    for (const [key, value] of Object.entries(chunk)) {
+      if (key === 'Symbols') {
+        if (!merged.Symbols) merged.Symbols = {};
+        Object.assign(merged.Symbols, value);
+      } else {
+        merged[key] = value; // These should be consistent across all chunks
+      }
+    }
+  }
+	allDocsDataObj = { "data": JSON.stringify(merged) }
+	//console.log( "20DAV deliveryData", allDocsDataObj )  
+  
+          // Attempt to update localStorage and handle quota exceeded error (Starts Here)
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+               //localStorage.setItem('sectorStockNames', JSON.stringify( {[collectionPath]:sectorStockNamesObj} ));
+               //localStorage.setItem('sectorStockNames', JSON.stringify( {[collectionPath]:allDocsDataObj} ));
+			   	localStorage.setItem('deliveryData', JSON.stringify( {[docPath]:allDocsDataObj} ));
+              break; // Successfully stored the new entry
+            } catch (e) {
+				if( document.getElementById('messages') !=null )
+					document.getElementById('messages').innerHTML = e;
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              localStorage.setItem('firebaseFetchedDocs', JSON.stringify(firebaseFetchedDocs));
+              currentAttempt++;
+            }
+          }
+		// Attempt to update localStorage and handle quota exceeded error (Ends Here)
+	
+    return allDocsDataObj;
+  } catch (error) {
+    console.log("Error getting documents: ", error);
+    return null;
+  }
+  }
+
 }
 
 function fetchFirebaseDocData_ORIGINAL(docPath) {
