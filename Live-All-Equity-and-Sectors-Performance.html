@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <title>Live Stocks V8</title>
@@ -14434,9 +14434,21 @@ loadMonths();
 
 // === Price Band Filter code ===
 async function applyPriceBandFilter() {
-  const year = "2025";
-  const month = "Jul-2025";
-  const date = "03-Jul";
+  //const year = "2025";
+  //const month = "Jul-2025";
+  //const date = "10-Jul";
+
+// === Get Current Year month Date codeStart ===
+ const today = new Date();
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const year = yesterday.getFullYear().toString();
+  const month = `${monthNames[yesterday.getMonth()]}-${year}`;
+  const date = `${String(yesterday.getDate()).padStart(2, '0')}-${monthNames[yesterday.getMonth()]}`;
+// === Get Current Year month Date codeEnds===
+
   const basePath = `filteredEQBand/${year}/${month}/${date}`;
   const snapshot = await db.ref(basePath).get();
 
