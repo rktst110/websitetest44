@@ -141,6 +141,14 @@ th, td {
  <button onclick='askClearIDB()'>Clear IDB</button>
  
   <span> | No. Prev. Entries: 		 <input id="numberOfPreviousEntries" type="number" value="2"  size="3"> </span>
+  
+  <br>
+  <center>
+  <select id="tableSectorListSelector" aria-labelledby="expiryLbl" onchange="fetchDataForAllSegments()"> <option value="FnO">FnO</option> </select></center>
+  </center>
+  
+	<br>
+  
 <!--Content Start From Here-->
 
 
@@ -1254,15 +1262,23 @@ async function getAllEquityData( passedValue )
 	
 	//var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
 	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['AllStocksTraded']
+	var nextTradingDate = firestoreIndexObj[ tradingDate ]['trading_dates']['nextTradingDate']
 	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedEquityTimeValue )
 	//var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, "15:30:00" )
 	//var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
 	//var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/AllStocksTraded/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
 	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/ALL/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	//var docPathForEquity = '/'+selectedMonthYear+'/'+nextTradingDate+'/equity_market/ALL/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
 	var FnO_equityDataObj = ( equityDataObj ? JSON.parse( equityDataObj['data'] )  : {}  )
 	console.log( "FnO_equityDataObj", FnO_equityDataObj )
+	
+	
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	add_Sectors_In_SectorSelector()
 	
 	//console.log( "allDerivativesDataArray.length", JSON.stringify( allDerivativesDataArray ).length )
 	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
@@ -1291,6 +1307,51 @@ async function getAllEquityData( passedValue )
 	addEventListnerInTables()
 	 addOnclickEvent()
 }
+
+function add_Sectors_In_SectorSelector()
+{
+	//console.log( "sectorStockNamesObj", sectorStockNamesObj)
+	
+	if( sectorStockNamesObj !=undefined)
+	{
+	if( document.getElementById("tableSectorListSelector").getElementsByTagName('option').length <=1 )
+	{
+	//document.getElementById("heatMapSectorSelector").innerHTML = "";
+	document.getElementById("tableSectorListSelector").innerHTML = "";
+	
+	var option = document.createElement("option");
+	option.value = "ALL";
+	option.text = "ALL";
+	document.getElementById("tableSectorListSelector").add(option);
+	
+	
+	
+	for ( var sectorName in sectorStockNamesObj ) {
+		
+		if( sectorName != 'Template' )
+		{
+		/*
+		var option = document.createElement("option");
+		option.value = sectorName;
+		option.text = sectorName;
+		document.getElementById("heatMapSectorSelector").add(option);
+		*/
+		var option = document.createElement("option");
+		option.value = sectorName;
+		option.text = sectorName;	
+		document.getElementById("tableSectorListSelector").add(option);
+		}
+	}
+	//document.getElementById('heatMapSectorSelector').value=document.getElementById('heatMapSectorSelector').getElementsByTagName('option')[2].value
+	//document.getElementById('heatMapSectorSelector').value="NIFTY_50"
+	document.getElementById('tableSectorListSelector').value="FnO"
+	}
+	
+	//showHeatMapChart(sectorStockNamesObj)
+	//showHeatMapChart()
+	}
+	
+} // add_Sectors_In_HeatMapSelector() ENDS HERE
 
 async function calculateFutOptData( selectedEquityTimeValue, selectedTradingDate, allEquityDataObj, returnedEntryWiseObj, FnO_equityDataObj )
 {
@@ -1484,11 +1545,18 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 		return tablesStr;
 	}
 
-	for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	
+	//for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	var stocksListArray = sectorStockNamesObj[ document.getElementById('tableSectorListSelector').value ]
+	
+	for( var i=0; i< stocksListArray.length ; i++ ) {
 	//for( var i=0; i< 50 ; i++ ) {
 	//var symbol = symbolStr.split('_')[0]
-	var symbol = Object.keys( passedDataObj )[i]
+	//var symbol = Object.keys( passedDataObj )[i]
+	var symbol = stocksListArray[i]
+	//console.log( symbol )
 	var objectValue = passedDataObj [symbol]
+	if( objectValue )
 	{
 
 		var dataObj = JSON.parse( allEquityDataObj[symbol]['data'] )
