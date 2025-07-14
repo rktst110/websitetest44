@@ -1252,14 +1252,17 @@ async function getAllEquityData( passedValue )
 	
 	
 	
-	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
-	//var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedEquityTimeValue )
-	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, "15:30:00" )
-	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	//var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
+	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['AllStocksTraded']
+	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedEquityTimeValue )
+	//var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, "15:30:00" )
+	//var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	//var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/AllStocksTraded/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/ALL/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
 	var FnO_equityDataObj = ( equityDataObj ? JSON.parse( equityDataObj['data'] )  : {}  )
-	//console.log( "FnO_equityDataObj", FnO_equityDataObj )
+	console.log( "FnO_equityDataObj", FnO_equityDataObj )
 	
 	//console.log( "allDerivativesDataArray.length", JSON.stringify( allDerivativesDataArray ).length )
 	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
@@ -1413,7 +1416,7 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 		var changeInBuyQty = 0
 		var changeInSellQty = 0
 		var changeInBuySellRatio = 0
-		if( allEquityDataObjPrevious1!=undefined )
+		if( allEquityDataObjPrevious1!=undefined && allEquityDataObjPrevious1[symbol] !=undefined  )
 		{
 			dataObjPrevious1 = JSON.parse( allEquityDataObjPrevious1[symbol]['data'] )
 			changeInBuyQty = ((dataObj['marketDeptOrderBook']['totalBuyQuantity']  - dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'])/dataObjPrevious1['marketDeptOrderBook']['totalBuyQuantity'] )*100
@@ -1452,7 +1455,8 @@ async function showMarketDepthOrderBook( selectedTimeValue, selectedTradingDate,
 		var tablesStr = '<tr class="item"><td>'
 		+ symbol
 		+'</td><td>'
-		+ ( FnO_equityDataObj_symbolsWise[symbol] ? FnO_equityDataObj_symbolsWise[symbol] ['pChange']   : ''  )
+		//+ ( Object.keys(FnO_equityDataObj_symbolsWise).length > 0 && FnO_equityDataObj_symbolsWise[symbol] ? FnO_equityDataObj_symbolsWise[symbol] ['pChange']   : ''  )
+		+ ( FnO_equityDataObj_symbolsWise && FnO_equityDataObj_symbolsWise[symbol] ? FnO_equityDataObj_symbolsWise[symbol] ['pChange']   : ''  )
 		+'</td><td>'
 		+ changeInBuySellRatio.toFixed(2)
 		+'</td><td>'
