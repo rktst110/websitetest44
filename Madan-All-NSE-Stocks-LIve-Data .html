@@ -1,0 +1,513 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Stocks V8</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    select, button, input { margin: 5px; padding: 6px; }
+    h3 { margin-top: 30px; }
+    #topBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      font-size: 18px;
+      border: none;
+      outline: none;
+      background-color: green;
+      color: white;
+      cursor: pointer;
+      padding: 10px 15px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      display: none;
+    }
+    #topBtn:hover {
+      background-color: #555;
+    }
+  </style>
+<style>
+  #stocks table {
+    border-collapse: collapse;
+    width: 100%;
+    background: white;
+    font-size: 13px;
+  }
+
+  #stocks th, #stocks td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+  }
+
+  #stocks thead th {
+    background-color: #f8f8f8;
+    cursor: pointer;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  #stocks tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  #stocks tbody tr:hover {
+    background-color: #eef;
+  }
+
+#averageType {
+  display: none;
+}
+#groupSelect {
+  display: none;
+}
+
+</style>
+</head>
+<body>
+
+<label>Year: <select id="yearSelect"></select></label>
+<label>Month: <select id="monthSelect"></select></label>
+<label>Date: <select id="dateSelect" onchange="loadTimes()"></select></label>
+<label>Time: <select id="timeSelect"></select></label>
+
+<button onclick="getData()">Get Data</button>
+<button onclick="getLatestEntry()">Live</button>
+
+<br><br>
+
+ <select id="groupSelect">
+  <option value="All">All Stocks</option>
+ <option value="Macro">Group by Macro</option>
+<option value="Sector">Group by Sector</option>
+  <option value="Industry">Group by Industry</option>
+ <option value="BasicIndustry">Group by BasicIndustry</option>
+ </select>
+
+<select id="averageType">
+ <option value="simple">Simple Average</option>
+ <option value="weighted">Weighted Average</option>
+</select>
+
+
+<label>LTP ≥ <input type="number" id="ltpMin" placeholder="Min Price" value=""/></label>
+<label>LTP ≤ <input type="number" id="ltpMax" placeholder="Max Price" value=""/></label>
+<label>MarketCap ≥ <input type="number" id="mcMin" placeholder="Min MarketCap Cr" /></label>
+<label>MarketCap ≤ <input type="number" id="mcMax" placeholder="Max MarketCap Cr" /></label>
+
+
+<br>
+<button onclick="applyPriceBandFilter()">Price Band Filter</button>
+<button onclick="getData()">Reset Price Band Filter</button>
+<button onclick="downloadCSV()">⬇️ Download CSV</button>
+
+<span id="status" style="margin-left: 2px;"></span>
+
+<div id="columnToggles"><strong>Show/Hide Columns:</strong><br></div>
+
+<button id="applyColumnsBtn" onclick="applyColumnToggles()">✅ Apply Columns</button>
+<input id="search" placeholder="Search symbol or group..." />
+<br>
+
+<span id="stockCount" style="margin-top:10px; font-size:14px; color:#555;"></span>
+
+<p id="loadingStatus" style="font-size:14px; color:#666; margin-top: 10px;"></p>
+
+<div id="stocks"></div>
+
+<script>
+
+
+let currentSortColumn = null;
+let currentSortAsc = true;
+
+
+const firebaseConfig = {
+  databaseURL: "https://total-trades-stocks-data-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let enriched = [];
+
+const allColumns = [
+  { label: "Symbol", key: "Symbol", alwaysVisible: true, visible: true },
+  { label: "LTP", key: "LTP", visible: true },
+  { label: "Change %", key: "ChangePercent", visible: true },
+  { label: "Change ₹", key: "Change", visible: false },
+  { label: "Volume", key: "Volume", visible: true },
+  { label: "MarketCap (Cr)", key: "MarketCap", visible: true },
+  { label: "High", key: "High", visible: false },
+  { label: "Low", key: "Low", visible: false },
+  { label: "Free Float", key: "FreeFloat", visible: false },
+  { label: "Free Float %", key: "FreeFloatPercent", visible: false },
+  { label: "Beta", key: "Beta", visible: false },
+  { label: "Rel Vol (10D)", key: "RelVol10D", visible: true },
+  { label: "Rel Vol (Time)", key: "RelVatTime", visible: true }
+   
+];
+
+
+function setupColumnToggles() {
+  const toggleDiv = document.getElementById("columnToggles");
+  toggleDiv.innerHTML = "<strong>Show/Hide Columns:</strong><br>";
+
+  allColumns.forEach((col, i) => {
+    if (col.alwaysVisible) return;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = `colToggle-${col.key}`;
+    checkbox.checked = col.visible;
+
+    const label = document.createElement("label");
+    label.htmlFor = checkbox.id;
+    label.innerText = ` ${col.label} `;
+    label.style.marginRight = "10px";
+
+    toggleDiv.appendChild(checkbox);
+    toggleDiv.appendChild(label);
+  });
+}
+
+currentSortColumn = "ChangePercent";
+currentSortAsc = false;
+
+function applyColumnToggles() {
+  allColumns.forEach(col => {
+    if (col.alwaysVisible) return;
+    const checkbox = document.getElementById(`colToggle-${col.key}`);
+    if (checkbox) {
+      col.visible = checkbox.checked;
+    }
+  });
+  render(); // Refresh table
+}
+
+
+
+
+
+function fillDropdown(id, items, placeholder = "---Select---") {
+  const el = document.getElementById(id);
+  el.innerHTML = `<option value="">${placeholder}</option>` +
+    items.map(x => `<option value="${x}">${x}</option>`).join('');
+}
+
+async function loadMonths() {
+  const year = "2025";
+  document.getElementById("yearSelect").innerHTML = `<option>${year}</option>`;
+  fillDropdown("monthSelect", [], "Loading months...");
+  fillDropdown("dateSelect", []);
+  fillDropdown("timeSelect", []);
+  const snap = await db.ref(`indexes/${year}/months`).get();
+  const val = snap.val();
+  const months = val ? Object.keys(val) : [];
+  fillDropdown("monthSelect", months);
+}
+
+async function loadDates() {
+  const year = "2025";
+  const month = document.getElementById("monthSelect").value;
+  if (!month) return;
+  fillDropdown("dateSelect", [], "Loading dates...");
+  fillDropdown("timeSelect", []);
+  const snap = await db.ref(`indexes/${year}/${month}/dates`).get();
+  const val = snap.val();
+  const dates = val ? Object.keys(val) : [];
+  fillDropdown("dateSelect", dates);
+}
+
+async function loadTimes() {
+  const [year, month, date] = ["yearSelect", "monthSelect", "dateSelect"].map(id => document.getElementById(id).value);
+  if (!date) return;
+  fillDropdown("timeSelect", [], "Loading times...");
+  const snap = await db.ref(`indexes/${year}/${month}/${date}/times`).get();
+  const val = snap.val();
+  const times = val ? Object.keys(val).sort((a, b) => {
+    const toSec = t => t.split('-').reduce((s, n, i) => s + Number(n) * [3600, 60, 1][i], 0);
+    return toSec(a) - toSec(b);
+  }) : [];
+  fillDropdown("timeSelect", times);
+}
+
+async function getData() {
+    const [year, month, date, time] = ["yearSelect", "monthSelect", "dateSelect", "timeSelect"].map(id => document.getElementById(id).value);
+    if (!month || !date || !time) {
+      alert("Please select all dropdowns before fetching data.");
+      return;
+    }
+
+    document.getElementById("loadingStatus").innerText = "⏳ Loading data...";
+    const snap = await db.ref(`stocks/${year}/${month}/${date}/${time}/Data`).get();
+    const data = snap.val();
+
+    if (!data) {
+      document.getElementById("stocks").innerHTML = '<p>No data found.</p>';
+      document.getElementById("loadingStatus").innerText = '';
+      return;
+    }
+
+    enriched = Object.values(data).map(d => {
+      return {
+        Symbol: (d.symbol || d.Symbol || "").toUpperCase(),
+        LTP: parseFloat(d.LTP) || 0,
+        ChangePercent: parseFloat(d["Change%"]) || 0,
+        Change: parseFloat(d.change) || 0,
+        Volume: parseFloat(d.totalTradedVolume) || 0,
+        MarketCap: parseFloat(d.MarketCap) || 0,
+        High: parseFloat(d.high) || 0,
+        Low: parseFloat(d.low) || 0,
+        FreeFloat: parseFloat(d.freeFloat) || 0,
+        FreeFloatPercent: parseFloat(d.freeFloatPercent) || 0,
+        Beta: parseFloat(d.beta) || 0,
+        RelVol10D: parseFloat(d.relVolume10D) || 0,
+        RelVatTime:parseFloat(d.relVolume5Min) || 0
+      };
+    });
+
+    document.getElementById("loadingStatus").innerText = '';
+    render();
+  }
+
+
+function getFiltered() {
+  const search = document.getElementById("search").value.toLowerCase();
+  const ltpMin = parseFloat(document.getElementById("ltpMin").value);
+  const ltpMax = parseFloat(document.getElementById("ltpMax").value);
+  const mcMin = parseFloat(document.getElementById("mcMin").value);
+  const mcMax = parseFloat(document.getElementById("mcMax").value);
+
+  return enriched.filter(s => {
+    const matchesSearch =
+      s.Symbol.toLowerCase().includes(search);
+
+    const ltpOk =
+      (isNaN(ltpMin) || s.LTP >= ltpMin) &&
+      (isNaN(ltpMax) || s.LTP <= ltpMax);
+
+    const marketCapCr = s.MarketCap / 1e7; // ✅ Convert to Cr
+    const mcOk =
+      (isNaN(mcMin) || marketCapCr >= mcMin) &&
+      (isNaN(mcMax) || marketCapCr <= mcMax);
+
+    return matchesSearch && ltpOk && mcOk;
+  });
+}
+
+
+
+
+function render() {
+  let data = getFiltered();
+
+  if (currentSortColumn) {
+    data.sort((a, b) => {
+      let valA = a[currentSortColumn];
+      let valB = b[currentSortColumn];
+
+      if (typeof valA === 'string') {
+        valA = valA.toLowerCase();
+        valB = valB.toLowerCase();
+      }
+
+      if (valA < valB) return currentSortAsc ? -1 : 1;
+      if (valA > valB) return currentSortAsc ? 1 : -1;
+      return 0;
+    });
+  }
+
+  document.getElementById("stockCount").textContent = `Total Stocks Shown: ${data.length}`;
+  const stocksDiv = document.getElementById("stocks");
+  stocksDiv.innerHTML = '';
+
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  allColumns.forEach(col => {
+    if (!col.visible && !col.alwaysVisible) return;
+    const th = document.createElement("th");
+    th.innerText = col.label;
+    if (!col.alwaysVisible) {
+      th.onclick = () => {
+        if (currentSortColumn === col.key) {
+          currentSortAsc = !currentSortAsc;
+        } else {
+          currentSortColumn = col.key;
+          currentSortAsc = true;
+        }
+        render(); // Re-render
+      };
+    }
+    headerRow.appendChild(th);
+  });
+
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  data.forEach(s => {
+    const tr = document.createElement("tr");
+
+    allColumns.forEach(col => {
+      if (!col.visible && !col.alwaysVisible) return;
+
+      let val = s[col.key];
+
+      if (col.key === "LTP" || col.key === "Change") val = `${val.toFixed(2)}`;
+      else if (col.key === "ChangePercent" || col.key === "FreeFloatPercent") val = `${val.toFixed(2)}%`;
+      else if (col.key === "MarketCap") val = (val / 1e7).toFixed(2); // Convert to Cr
+      else if (col.key === "Volume" || col.key === "FreeFloat") val = val.toLocaleString();
+      else if (typeof val === 'number') val = val.toFixed(2);
+
+      const td = document.createElement("td");
+      td.innerText = val;
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  stocksDiv.appendChild(table);
+}
+
+
+// Get latest and call getData()
+  async function getLatestEntry() {
+    const year = "2025";
+    const month = document.getElementById("monthSelect").value;
+    const date = document.getElementById("dateSelect").value;
+
+    if (!month || !date) {
+      alert("Please select both month and date first.");
+      return;
+    }
+
+    const timeSnap = await db.ref(`indexes/${year}/${month}/${date}/times`).get();
+    const val = timeSnap.val();
+    if (!val) {
+      alert("⚠️ No time entries found.");
+      return;
+    }
+
+    const times = Object.keys(val).sort((a, b) => {
+      const toSec = t => t.split('-').reduce((s, n, i) => s + Number(n) * [3600, 60, 1][i], 0);
+      return toSec(a) - toSec(b);
+    });
+
+    const latest = times.at(-1);
+    document.getElementById("timeSelect").innerHTML = times.map(t => `<option value="${t}">${t}</option>`).join('');
+    document.getElementById("timeSelect").value = latest;
+
+    document.getElementById("loadingStatus").innerText = "⏳ Loading latest data...";
+    await getData();
+  }
+
+async function applyPriceBandFilter() {
+  const today = new Date();
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const year = yesterday.getFullYear().toString();
+  const month = `${monthNames[yesterday.getMonth()]}-${year}`;
+  const date = `${String(yesterday.getDate()).padStart(2, '0')}-${monthNames[yesterday.getMonth()]}`;
+
+  const basePath = `filteredEQBand/${year}/${month}/${date}`;
+  const snapshot = await db.ref(basePath).get();
+
+  if (!snapshot.exists()) {
+    document.getElementById('status').innerText = "❌ No data found.";
+    return;
+  }
+
+  const times = Object.keys(snapshot.val()).sort();
+  const latestTime = times[times.length - 1];
+  const symbolsPath = `${basePath}/${latestTime}/Symbols`;
+
+  const dataSnap = await db.ref(symbolsPath).get();
+  const data = dataSnap.val();
+
+  if (!data || data.length === 0) {
+    document.getElementById("status").innerText = "❌ No symbols found at latest time.";
+    return;
+  }
+
+  const allowedSymbols = new Set(data.map(d => d.Symbol?.toUpperCase()));
+  enriched = enriched.filter(s => allowedSymbols.has(s.Symbol));
+  document.getElementById("status").innerText = `✅ Filtered ${enriched.length} stocks using price band.`;
+  render();
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.onscroll = function () {
+  const btn = document.getElementById("topBtn");
+  btn.style.display = window.scrollY > 200 ? "block" : "none";
+};
+
+
+// === INITIAL LOAD ===
+loadMonths();
+ 
+
+// === EVENT LISTENERS ===
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("groupSelect").addEventListener("change", render);
+document.getElementById("averageType").addEventListener("change", render);
+document.getElementById("monthSelect").addEventListener("change", loadDates);
+document.getElementById("dateSelect").addEventListener("change", loadTimes);
+document.getElementById("ltpMin").addEventListener("input", render);
+document.getElementById("ltpMax").addEventListener("input", render);
+document.getElementById("mcMin").addEventListener("input", render);
+document.getElementById("mcMax").addEventListener("input", render);
+
+setupColumnToggles();
+
+function downloadCSV() {
+  const data = getFiltered(); // apply search, LTP, market cap filters
+
+  const visibleColumns = allColumns.filter(col => col.visible || col.alwaysVisible);
+
+  // Build CSV header
+  const header = visibleColumns.map(col => `"${col.label}"`).join(",");
+
+  // Build rows
+  const rows = data.map(s => {
+    return visibleColumns.map(col => {
+      let val = s[col.key];
+
+      if (col.key === "LTP" || col.key === "Change") val = `${val.toFixed(2)}`;
+      else if (col.key === "ChangePercent" || col.key === "FreeFloatPercent") val = `${val.toFixed(2)}%`;
+      else if (col.key === "MarketCap") val = (val / 1e7).toFixed(2); // ₹ to Cr
+      else if (col.key === "Volume" || col.key === "FreeFloat") val = val.toLocaleString();
+      else if (typeof val === 'number') val = val.toFixed(2);
+
+      return `"${val}"`;
+    }).join(",");
+  });
+
+  const csv = [header, ...rows].join("\n");
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `stocks_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+</script>
+
+<button onclick="scrollToTop()" id="topBtn" title="Go to top">⬆️</button>
+</body>
+</html>
