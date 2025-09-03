@@ -225,8 +225,9 @@ body {
 <script>
 function fetchDataForAllSegments()
 {
-setEquitySelectorTimeValues( "syncWithCommonTime" );
 setIndicesSelectorTimeValues( "syncWithCommonTime" );
+setEquitySelectorTimeValues( "syncWithCommonTime" );
+
 
 }
 </script>
@@ -416,7 +417,7 @@ var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
 	subtitles: [{
 			//text: "Subtitle 1"
 		  },{
-			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
+			text:  'NSE Sectors | '+returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
 			//verticalAlign: "top",
 
 			 //horizontalAlign: "right",
@@ -627,11 +628,11 @@ async function getEquityData()
 	var tableContainerID = 'spike15mTableContainer'
 	var tableID = 'spike15mTable'
 	var tableCaption = '15 Minutes Spike'
-	//timeValuePrev15minutes = selectedTimeValueRef.options[selectedTimeValueRef.selectedIndex - 8].value
+	timeValuePrev15minutes = selectedTimeValueRef.options[selectedTimeValueRef.selectedIndex - 8].value
 	//timeValuePrev15minutes = selectedTimeValueRef.options[selectedTimeValueRef.selectedIndex - 15].value
 	//var index_of_9_15_time = 
 	//timeValuePrev15minutes = selectedTimeValueRef.options[ 2 ].value
-	timeValuePrev15minutes = selectedTimeValueRef.options [ 8 ].value
+	//timeValuePrev15minutes = selectedTimeValueRef.options [ 8 ].value
 		var docPathForEquityPrev15m = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/'+selectedMarketTypeValue+'/'+timeValuePrev15minutes+'/'+timeValuePrev15minutes
 	
 	equityDataObjPrev15m = JSON.parse( (await fetchFirebaseDocData( docPathForEquityPrev15m ) ) ['data'] )
@@ -915,8 +916,11 @@ async function show_sector_momentum_spike_Data( tableCaption, tableContainerID, 
 	for( var sector in sectorStockNamesObj )
 	{
 		var valueSpike =0
+		var positive_price_spikes = 0
+		var negative_price_spikes = 0
 		//if( sector=='NIFTY_MID_SELECT' || sector=='NIFTY_50' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_INFRA' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_SERV_SECTOR' )
-		if( sector=='FnO' || sector=='NIFTY_MID_SELECT' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_CORE_HOUSING' || sector=='NIFTY_CONSUMPTION'  )
+		//if( sector=='FnO' || sector=='NIFTY_50' || sector=='NIFTY_MID_SELECT' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_CORE_HOUSING' || sector=='NIFTY_CONSUMPTION'  )
+		if( sector=='NIFTY_50' || sector=='NIFTY_MID_SELECT' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA'  || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY'  )
 		//if(   sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY'  )
 		//if( sector=='NIFTY_MID_SELECT' || sector=='NIFTY_AUTO' || sector=='NIFTY_BANK' || sector=='NIFTY_CONSR_DURBL' || sector=='NIFTY_ENERGY' || sector=='NIFTY_FIN_SERVICE' || sector=='NIFTY_FMCG' || sector=='NIFTY_HEALTHCARE' || sector=='NIFTY_IT' || sector=='NIFTY_MEDIA' || sector=='NIFTY_METAL' || sector=='NIFTY_OIL_AND_GAS' || sector=='NIFTY_PHARMA' || sector=='NIFTY_PSE' || sector=='NIFTY_PSU_BANK' || sector=='NIFTY_PVT_BANK' || sector=='NIFTY_REALTY' || sector=='NIFTY_CORE_HOUSING' || sector=='NIFTY_CONSUMPTION' || sector=='NIFTY_COMMODITIES' || sector=='NIFTY_CPSE' || sector=='NIFTY_HIGH_BETA_50' || sector=='NIFTY_HOUSING' || sector=='NIFTY_INDIA_DEFENCE' || sector=='NIFTY_INDIA_MFG'   || sector=='NIFTY_IND_DIGITAL'   || sector=='NIFTY_MOBILITY'   || sector=='NIFTY_PSE'   || sector=='NIFTY_SERV_SECTOR'    || sector=='NIFTY_TRANSPORTATION_AND_LOGISTICS'    || sector==''  )
 	
@@ -931,12 +935,21 @@ async function show_sector_momentum_spike_Data( tableCaption, tableContainerID, 
 		var previousSymbolArray = niftyTotalMarket2MinutePreviousObject [Symbol]  
 		if( symbolArray !=undefined && previousSymbolArray !=undefined )
 		{
+			var price_spike = ( ( ( symbolArray['lastPrice'] -  previousSymbolArray['lastPrice']) / previousSymbolArray['lastPrice'] ) * 100)
 			//valueSpike = Number(valueSpike) + ( ( ( symbolArray['totalTradedValue'] -  previousSymbolArray['totalTradedValue']) / previousSymbolArray['totalTradedValue'] ) * 100)
 			//valueSpike = Number(valueSpike) + Math.abs( ( ( symbolArray['lastPrice'] -  previousSymbolArray['lastPrice']) / previousSymbolArray['lastPrice'] ) * 100)
-			valueSpike = Number(valueSpike) + ( ( ( symbolArray['lastPrice'] -  previousSymbolArray['lastPrice']) / previousSymbolArray['lastPrice'] ) * 100)
+			valueSpike = Number(valueSpike) + price_spike
 			var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
 			var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
 	 		
+			if( price_spike>=0 )
+			{
+				positive_price_spikes++
+			}
+			else
+			{
+				negative_price_spikes++
+			}
 
 			  
 		
@@ -949,7 +962,9 @@ async function show_sector_momentum_spike_Data( tableCaption, tableContainerID, 
 			  "spike":valueSpike.toFixed(2),
 			  //"pChange":symbolArray['pChange']
 			  //"pChange":1
-			  "pChange":valueSpike
+			  "pChange":valueSpike,
+			  positive_price_spikes,
+			  negative_price_spikes,
 			  }
 		}
 	}
@@ -1099,32 +1114,75 @@ else{
 let keys = Object.keys(tempObj).sort((a, b) => tempObj[b] - tempObj[a]);
 
 // Check if "sector" is in any key
-if (! tableContainerID.includes("sector")) {
-    keys = keys.slice(0, 18); // only slice if no "sector"
+if ( tableContainerID.includes("sector")) {
+    //keys = keys.slice(0, 18); // only slice if no "sector"
+		
+	keys.reverse().forEach((symbol) => {   // descending sort
+		var temp = {};
+		if (symbol !== 'NIFTY 50' && symbol !== 'NIFTY BANK') {
+			temp["label"] = symbol.replace(/NIFTY /g, '');
+		} else {
+			temp["label"] = symbol;
+		}
+
+		temp["y"] = Math.abs(tempObj[symbol]);
+		var pchange = returnedDataObj[symbol]["pChange"];
+		var positive_price_spikes = returnedDataObj[symbol]["positive_price_spikes"];
+		var negative_price_spikes = returnedDataObj[symbol]["negative_price_spikes"];
+		
+		if( pchange >= 0 )
+		{
+			var positiv_negative_percentage =( positive_price_spikes / ( positive_price_spikes + negative_price_spikes ) )*100
+			//temp["label"] = positive_price_spikes +'/'+ ( positive_price_spikes + negative_price_spikes ) +' '+ temp["label"]
+			//temp["label"] = positiv_negative_percentage.toFixed(2) +' '+ temp["label"]
+			temp["positiv_negative_percentage"] = positiv_negative_percentage.toFixed(2) 
+		}
+		else
+		{
+			var positiv_negative_percentage =( negative_price_spikes / ( positive_price_spikes + negative_price_spikes ) )*100
+			//temp["label"] = negative_price_spikes +'/'+ ( positive_price_spikes + negative_price_spikes ) +' '+ temp["label"]
+			//temp["label"] = positiv_negative_percentage.toFixed(2) +' '+ temp["label"]
+			temp["positiv_negative_percentage"] = positiv_negative_percentage.toFixed(2) 
+		}
+		
+		if (pchange < 0) {
+			temp["color"] = "#cd5652";
+		} else if (pchange > 0) {
+			temp["color"] = "#3a7dd4";
+		} else {
+			temp["color"] = "#3a7dd4";
+		}
+
+		dataPointsArray.push(temp);
+	});
+	
 }
+else
+{
+   keys = keys.slice(0, 18); // only slice if no "sector"
+		
+	keys.reverse().forEach((symbol) => {   // descending sort
+		var temp = {};
+		if (symbol !== 'NIFTY 50' && symbol !== 'NIFTY BANK') {
+			temp["label"] = symbol.replace(/NIFTY /g, '');
+		} else {
+			temp["label"] = symbol;
+		}
 
-keys.reverse().forEach((symbol) => {   // descending sort
-    var temp = {};
-    if (symbol !== 'NIFTY 50' && symbol !== 'NIFTY BANK') {
-        temp["label"] = symbol.replace(/NIFTY /g, '');
-    } else {
-        temp["label"] = symbol;
-    }
+		temp["y"] = Math.abs(tempObj[symbol]);
+		var pchange = returnedDataObj[symbol]["pChange"];
 
-    temp["y"] = Math.abs(tempObj[symbol]);
-    var pchange = returnedDataObj[symbol]["pChange"];
+		if (pchange < 0) {
+			temp["color"] = "#cd5652";
+		} else if (pchange > 0) {
+			temp["color"] = "#3a7dd4";
+		} else {
+			temp["color"] = "#3a7dd4";
+		}
 
-    if (pchange < 0) {
-        temp["color"] = "#cd5652";
-    } else if (pchange > 0) {
-        temp["color"] = "#3a7dd4";
-    } else {
-        temp["color"] = "#3a7dd4";
-    }
-
-    dataPointsArray.push(temp);
-});
-
+		dataPointsArray.push(temp);
+	});
+}
 
 // this section is for plotting indices chart for simple perchange change of single column bar
 var chart = new CanvasJS.Chart(tableContainerID, {
@@ -1172,7 +1230,9 @@ var chart = new CanvasJS.Chart(tableContainerID, {
 	dataPointWidth: 10,
 	data: [{
 		//indexLabel: "{y}",
-		//indexLabelFontSize: 18,
+		//indexLabel: "{ x }",
+		indexLabel: "{ positiv_negative_percentage }",
+		indexLabelFontSize: 13,
 		click: onClick,
 		//type: "column",
 		type: "bar",
@@ -1192,7 +1252,8 @@ chart.render();
 function onClick(e) {
 
 		//var label=e.dataPoint.label
-		var label=e.dataPoint.label.replace(/ \(.*/g, '')
+		//var label=e.dataPoint.label.replace(/ \(.*/g, '')
+		var label=e.dataPoint.label.replace(/^.*? /, '').replace(/ \(.*/g, '')
 		var labelToScroll;
 		{
 		
@@ -1529,7 +1590,7 @@ showSpikeChart( tableCaption, tableContainerID, tableID, currentTimeValue, previ
 
 <!-- Floating Buttons Code Starts Here -->
 <style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	     <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	     <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	 <button class="Floatbtn" onclick="document.getElementById('spike5mTableContainer_sectors').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button><br/></div>
 <!-- Floating Buttons Code Ends Here -->
 
 
