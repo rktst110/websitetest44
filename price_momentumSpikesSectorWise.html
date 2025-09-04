@@ -1135,14 +1135,14 @@ if ( tableContainerID.includes("sector")) {
 			var positiv_negative_percentage =( positive_price_spikes / ( positive_price_spikes + negative_price_spikes ) )*100
 			//temp["label"] = positive_price_spikes +'/'+ ( positive_price_spikes + negative_price_spikes ) +' '+ temp["label"]
 			//temp["label"] = positiv_negative_percentage.toFixed(2) +' '+ temp["label"]
-			temp["positiv_negative_percentage"] = positiv_negative_percentage.toFixed(2) 
+			temp["positiv_negative_percentage"] = positiv_negative_percentage.toFixed(2) +' ('+ positive_price_spikes +'/'+ ( positive_price_spikes + negative_price_spikes ) +')'
 		}
 		else
 		{
 			var positiv_negative_percentage =( negative_price_spikes / ( positive_price_spikes + negative_price_spikes ) )*100
 			//temp["label"] = negative_price_spikes +'/'+ ( positive_price_spikes + negative_price_spikes ) +' '+ temp["label"]
 			//temp["label"] = positiv_negative_percentage.toFixed(2) +' '+ temp["label"]
-			temp["positiv_negative_percentage"] = positiv_negative_percentage.toFixed(2) 
+			temp["positiv_negative_percentage"] = positiv_negative_percentage.toFixed(2) +' ('+ negative_price_spikes +'/'+ ( positive_price_spikes + negative_price_spikes ) +')'
 		}
 		
 		if (pchange < 0) {
