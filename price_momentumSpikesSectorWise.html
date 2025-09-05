@@ -156,6 +156,12 @@ body {
  <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
    <br>
    </div>
+   
+ <div class="column Right" style="background-color:#aaa;">
+  
+ <div id="IndicesPerformance_advance_decline_Chart" style="min-height: 520px; height: auto;width: 100%;"></div>
+   <br>
+   </div>
  
 </div>
 
@@ -259,17 +265,86 @@ async function getIndicesData( passedValue )
 	//console.log( "dataObj", JSON.parse( dataObj['data'] )  )
 	//if( document.getElementById('indicesWith20DAVOnOff').checked==false && document.getElementById('indicesWithOI20DAVOnOff').checked==false && document.getElementById('indicesWithMoneyOnOff').checked==false )
 	{
-		showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+		//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 	}
+	
+	var indicesPerformanceObject =JSON.parse( dataObj['data'] )['data']
+	
+	{
+		// code block to show simple indices with respect to previous day close
+			
+		var tempObj={}
+		for (var symbol in indicesPerformanceObject) {
+			//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+			//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+			if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
+			{
+				var sector_object = indicesPerformanceObject[symbol]
+				var day_percentage_change =( ( (sector_object['last'] - sector_object['open'] )/ sector_object['open'] )*100 ).toFixed(2)
+				/*
+				if( document.getElementById('indicesWith20DAVOnOff').checked==true || document.getElementById('indicesWithOI20DAVOnOff').checked==true || document.getElementById('indicesWithMoneyOnOff').checked==true )
+				{
+					tempObj[symbol]= Math.abs( indicesPerformanceObject[symbol]['percentChange'] )
+				}
+				else
+				*/
+				{
+					tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+					//tempObj[symbol]= day_percentage_change
+				}			
+			
+			}
+		}
+		showIndicesPerformanceChart (  JSON.parse( dataObj['data'] ), tempObj, 'IndicesPerformanceChart' )
+		
+		
+	}
+	
+	{
+		// code block to show advance decline stocks of indices
+			
+		var tempObj={}
+		for (var symbol in indicesPerformanceObject) {
+			//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+			//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+			if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
+			{
+				var sector_object = indicesPerformanceObject[symbol]
+				var day_percentage_change =( ( (sector_object['last'] - sector_object['open'] )/ sector_object['open'] )*100 ).toFixed(2)
+				var advances =  indicesPerformanceObject[symbol] ['advances']
+				var declines =  indicesPerformanceObject[symbol] ['declines']
+				var unchanged =  indicesPerformanceObject[symbol] ['unchanged']
+				var total_stocks = advances + declines + unchanged
+				if(  advances>= declines)
+				{
+					tempObj[symbol]= Number( ( ( advances / total_stocks )*100 ).toFixed(2) )
+				}
+				else
+				{
+					tempObj[symbol]= 0-Number( ( ( declines / total_stocks )*100 ).toFixed(2) )
+				}
+				
+				
+			}
+		}
+		showIndicesPerformanceChart (  JSON.parse( dataObj['data'] ), tempObj, 'IndicesPerformance_advance_decline_Chart' )
+		
+		
+	}
+	
+	
+	
 }
 
-async function showIndicesPerformanceChart ( returnedDataObj, indicesData )
+async function showIndicesPerformanceChart ( returnedDataObj, passed_data_obj, passed_table_ID )
 {
+	//console.log ( returnedDataObj, passed_data_obj, passed_table_ID ) 
 	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
 	//var selectedValue = document.getElementById("indices_performance_time").value;
 		
 	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
-	var indicesPerformanceObject = returnedDataObj ['data']
+	//var indicesPerformanceObject = returnedDataObj ['data']
+	//console.log( "indicesPerformanceObject", indicesPerformanceObject )
 	
 	// list updated on June 30, 2023 from https://archives.nseindia.com/content/indices/ind_nifty50.pdf
 	var sectorsWeightageInNifty50 = { "FIN SERVICE":37.59, "IT":12.65, "OIL AND GAS":11.99, "FMCG": 9.82, "AUTO":5.98, "PHARMA":3.86, "HEALTHCARE":3.86,"Construction":3.54, "METAL":3.52, "CONSR DURBL":3.30,"Telecommunication":2.61, "ENERGY":2.10,"INFRA":1.89, "SERV SECTOR":0.74, "Chemicals":0.41 }
@@ -281,25 +356,10 @@ async function showIndicesPerformanceChart ( returnedDataObj, indicesData )
 	var dataPointsArrayPChangeAddition=[]
 	
 	var tempObj={}
-	for (var symbol in indicesPerformanceObject) {
-		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
-		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
-		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
-		{
-			/*
-			if( document.getElementById('indicesWith20DAVOnOff').checked==true || document.getElementById('indicesWithOI20DAVOnOff').checked==true || document.getElementById('indicesWithMoneyOnOff').checked==true )
-			{
-				tempObj[symbol]= Math.abs( indicesPerformanceObject[symbol]['percentChange'] )
-			}
-			else
-			*/
-			{
-				tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
-			}			
-		
-		}
-	}
+	tempObj = passed_data_obj
 	
+
+
 // tempObj is sorted by this code
 //Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
 Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
@@ -344,71 +404,11 @@ else{
 		
 		dataPointsArray.push(temp)
 	});
-	
-/*
-Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
-var temp={}
-var sectorName = symbol.replace(/_/g,' ')
-if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
-//if(symbol !='NIFTY BANK')
-{
-	temp["label"]=sectorName.replace(/NIFTY /g,'')
-}
-else{
-	temp["label"]=sectorName
-}
-	
-		temp["y"]=indicesPerformanceObject[symbol][9]; 
-		temp["color"]="#089981"
-			
-		dataPointsArrayAdvances.push(temp)
-		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
-	});
-	
-Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
-var temp={}
-var sectorName = symbol.replace(/_/g,' ')
-if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
-//if(symbol !='NIFTY BANK')
-{
-	temp["label"]=sectorName.replace(/NIFTY /g,'')
-}
-else{
-	temp["label"]=sectorName
-}
-	
-		temp["y"]=indicesPerformanceObject[symbol][10]; 
-		temp["color"]="#cd5652"
-		
-	
-		
-		dataPointsArrayDeclines.push(temp)
-		
-	});	
-	
-Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
-var temp={}
-var sectorName = symbol.replace(/_/g,' ')
-if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
-//if(symbol !='NIFTY BANK')
-{
-	temp["label"]=sectorName.replace(/NIFTY /g,'')
-}
-else{
-	temp["label"]=sectorName
-}
-	
-		temp["y"]=indicesPerformanceObject[symbol][11]; 
-	
-		temp["color"]="#cbba4d"
-		
-		
-		dataPointsArrayUnchanged.push(temp)
-	});
-	
-	*/
+
+
 // this section is for plotting indices chart for simple perchange change of single column bar
-var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+//var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+var chart = new CanvasJS.Chart( passed_table_ID, {
 	animationEnabled: true,
 	theme: "dark2", // "light1", "light2", "dark1", "dark2"
 	title: {
@@ -954,10 +954,19 @@ async function show_sector_momentum_spike_Data( tableCaption, tableContainerID, 
 			  
 		
 		}
-	}
+		}
 		} //for Loop ENDS HERE
 		
+		// Average % Change of each sector by ( sum of % change of each stock / Number of stocks in sector )
 		
+		if(valueSpike==0)
+		{
+			valueSpike=0
+		}
+		else
+		{
+			valueSpike = valueSpike/(positive_price_spikes+negative_price_spikes)
+		}
 			tempDataObj[sector] ={
 			  "spike":valueSpike.toFixed(2),
 			  //"pChange":symbolArray['pChange']
