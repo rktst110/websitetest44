@@ -1,0 +1,2553 @@
+
+<!-- Importing Firebase SDK Starts Here-->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
+ <!-- Importing Firebase SDK Ends Here-->
+ 
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Starts Here-->
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/treemap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+ <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
+ 
+
+  <script src="functions/commonFunctions.js"></script>
+  <script src="functions/tableSortingFunctons.js"></script>
+ <script src="functions/importFiles.js"></script>
+ <script src="functions/firebase.js"></script>
+ <script src="functions/firebaseFunctions.js"></script>
+ <script src="functions/indexedDBFunctions.js"></script>
+
+ <div id="importedContent"></div>
+ 
+ <title>Indices + HeatMap</title>
+ 
+ 
+
+<style>
+
+thead {
+  position: sticky;
+  top: 0;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; /* Set the text color to white */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Create two unequal columns that floats next to each other */
+.column {
+  float: left;
+  padding: 0.5px;
+  height: 520px; /* Should be removed. Only for demonstration */
+}
+
+.equityLeft {
+  width: 50%;
+}
+
+.spurtsRight {
+  width: 50%;
+}
+
+.left {
+  width: 25%;
+}
+
+.right {
+  width: 75%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+@media screen and (max-width: 800px) {
+  .column {
+	width: 100%;
+  }
+  
+  table {
+    width: 150%;
+	}
+	
+}
+
+
+</style>
+
+ <label>Month Year:</label>
+<select id="monthYear" onchange="getFirestoreData()">
+</select>
+
+ <label> | Trading Date:</label>
+<select id="tradingDate" onchange="setCommonSelectors()">
+</select>
+
+
+ <label> | Common TimeValues:</label>
+<select id="commonTimeValues" onchange="saveSelectedValues();fetchDataForAllSegments()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+<button id="dataRefreshButton" onclick="getFirestoreData('refresh','')">Refresh</button>
+&nbsp;&nbsp;<button id="dataRefreshButton" onclick="getFirestoreData('live','')">Live</button>
+
+<hr>
+
+ <label> Indices TimeValues:</label>
+<select id="indicesTimeValues" onchange="getIndicesData()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+ <label> Spurts TimeValues:</label>
+<select id="spurtsTimeValues" onchange="getSpurtsEquityData()">
+</select>
+
+&nbsp; | &nbsp;&nbsp;
+ <label> Derivatives TimeValues:</label>
+<select id="derivativesTimeValues" onchange="getAllDerivativesData()">
+</select>
+&nbsp; &nbsp;&nbsp; |  &nbsp;&nbsp; &nbsp;&nbsp;
+
+ <button onclick='askClearIDB()'>Clear IDB</button>
+<!--Content Start From Here-->
+<div class="row">
+  <div class="column left" style="background-color:#aaa;">
+  
+ <div id="IndicesPerformanceChart" style="min-height: 520px; height: auto;width: 100%;"></div>
+   <br>
+   </div>
+  <div class="column right" style="background-color:#bbb;">
+  
+   <center> HeatMap Sectors: &nbsp;<select id="heatMapSectorSelector" aria-labelledby="expiryLbl" onchange="showHeatMapChart()"> <option value="">Select</option> </select></center>  <div id="heatMapContainer" style=" height:500px; width: auto; margin: 0 auto;"></div>
+
+  </div>
+</div>
+
+<br><br>
+
+
+
+
+
+<div class="row">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="mostActiveFutStocksTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="mostActiveOptStocksTableContainer"></div> </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="futuresDerivativesTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="optionsDerivativesTableContainer"></div> </div>
+  </div>
+</div>
+
+<div class="row" name="optOIGainersLosers">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="optOIGainersTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="optOILosersTableContainer"></div> </div>
+  </div>
+</div>
+
+<div class="row" name="optPriceGainersLosers">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="optPriceGainersTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="optPriceLosersTableContainer"></div> </div>
+  </div>
+</div>
+
+
+<div class="row" name="futOIGainersLosers">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="futOIGainersTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="futOILosersTableContainer"></div> </div>
+  </div>
+</div>
+
+
+<div class="row" name="futPriceGainersLosers">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="futPriceGainersTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="futPriceLosersTableContainer"></div> </div>
+  </div>
+</div>
+
+<center>
+
+<hr>
+
+ <label> Derivatives Symbols:</label>
+<select id="derivativesSymbols" onchange="getPerticularDerivativeData()">
+</select>
+<span>  <input id="futuresCheckbox" type="checkbox" checked>Futures  |  <input  id="optionsCheckbox" type="checkbox" checked>Options </span>
+<div class="spaceBetweenTables">  	<div id="perticularDerivativeTableContainer"></div> </div>
+</center>
+
+
+<!--<div class="tableRow"> <center> Spurts Time: &nbsp;<select id="spurts_time_for_both" aria-labelledby="expiryLbl" onchange="adjust_equity_spurts_timeValues()"> <option value="">Select</option> </select> &nbsp; &nbsp;  | &nbsp; &nbsp; No. of Comparison Stocks : &nbsp; <input id="noOfComparisonStocks" type="number" value="30" size="3"> <button onclick="compareEquitySpurtsStocks(\'compareEquityWithSpurts\')">Cmp EquitySpurts</button> <button onclick="compareEquitySpurtsStocks(\'compareSpurtsWithEquity\')">Cmp SpurtsEquity</button>   </center> <br> <div class="tableColumn" style="background-color: ;border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Equity Time: &nbsp;<select id="only_equity_time" aria-labelledby="expiryLbl" onchange="show_only_equity_Data()"> <option value="">Select</option> </select> </center>  <div id="equityDataTableContainer"></div> </div> </div> <div class="tableColumn" style="border: 2px solid #4b4d4e;"> <div class="tableRow"> <center> Spurts Time: &nbsp;<select id="only_spurts_time" aria-labelledby="expiryLbl" onchange="show_only_Spurts_Data()"> <option value="">Select</option> </select> </center>  <div id="spurtsDataTableContainer"></div> </div> </div> -->
+
+
+<br><br><br><br><br><br>
+<!--Content Ends Here-->
+
+
+<script>
+function fetchDataForAllSegments()
+{
+setIndicesSelectorTimeValues( "syncWithCommonTime" );
+setSpurtsSelectorTimeValues( "syncWithCommonTime" )
+setDerivativesSelectorTimeValues( "syncWithCommonTime" )
+}
+</script>
+
+
+<!-- Indices Code Starts Here -->
+<script>
+
+function setIndicesSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['index_performace']
+	var selectElementRef = document.getElementById("indicesTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getIndicesData )
+}
+
+async function getIndicesData( passedValue )
+{
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	
+	var docPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/index_performace/'+selectedIndicesTimeValues
+	//await fetchFirebaseDocData( docPath, showIndicesPerformanceChart )
+	var dataObj = await fetchFirebaseDocData( docPath )
+	console.log( "dataObj", JSON.parse( dataObj['data'] )  )
+	showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+
+}
+
+async function showIndicesPerformanceChart ( returnedDataObj )
+{
+	var selectedIndicesTimeValues = document.getElementById('indicesTimeValues').value
+	//var selectedValue = document.getElementById("indices_performance_time").value;
+		
+	//var indicesPerformanceObject = mainOIDataObject['index_performace'][selectedValue]
+	var indicesPerformanceObject = returnedDataObj ['data']
+	
+	// list updated on June 30, 2023 from https://archives.nseindia.com/content/indices/ind_nifty50.pdf
+	var sectorsWeightageInNifty50 = { "FIN SERVICE":37.59, "IT":12.65, "OIL AND GAS":11.99, "FMCG": 9.82, "AUTO":5.98, "PHARMA":3.86, "HEALTHCARE":3.86,"Construction":3.54, "METAL":3.52, "CONSR DURBL":3.30,"Telecommunication":2.61, "ENERGY":2.10,"INFRA":1.89, "SERV SECTOR":0.74, "Chemicals":0.41 }
+	
+	var dataPointsArray=[]
+	var dataPointsArrayAdvances=[]
+	var dataPointsArrayDeclines=[]
+	var dataPointsArrayUnchanged=[]
+	var dataPointsArrayPChangeAddition=[]
+	
+	var tempObj={}
+	for (var symbol in indicesPerformanceObject) {
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY HEALTHCARE' )
+		//if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' )
+		if(symbol !='INDIA VIX' && symbol !='NIFTY FINSRV25 50' && symbol !='NIFTY NEXT 50' && symbol !='NIFTY 100' && symbol !='NIFTY 200' && symbol !='NIFTY 500' && symbol !='NIFTY MIDCAP 50' && symbol !='NIFTY MIDCAP 100' && symbol !='NIFTY SMLCAP 100' && symbol !='NIFTY MIDCAP 150' && symbol !='NIFTY SMLCAP 50' && symbol !='NIFTY SMLCAP 250' && symbol !='NIFTY MIDSML 400' && symbol !='NIFTY500 MULTICAP' && symbol !='NIFTY LARGEMID250' && symbol !='NIFTY TOTAL MKT' && symbol !='NIFTY MICROCAP250' )
+		{
+		tempObj[symbol]=indicesPerformanceObject[symbol]['percentChange']
+		}
+	}
+	
+// tempObj is sorted by this code
+//Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => { 	// ascending sort
+Object.keys(tempObj).sort((a,b) => tempObj[a]-tempObj[b]).forEach((symbol) => {  	//  descending sort
+var temp={}
+if(symbol !='NIFTY 50' && symbol !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=symbol.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=symbol
+}
+	
+	if( sectorsWeightageInNifty50[ temp["label"] ]!=undefined )
+	{
+		 temp["label"] =  temp["label"] +" ("+ sectorsWeightageInNifty50[ temp["label"] ] +")"
+	}
+	
+		//temp["y"]=tempObj[symbol]; 
+		temp["y"]= Math.abs( tempObj[symbol] ); 
+		if(tempObj[symbol]<0) 
+		{
+			temp["color"]="#cd5652"
+		}
+		else if(tempObj[symbol]>0) 
+		{
+			temp["color"]="#3a7dd4"
+		}
+		else if(tempObj[symbol]==0) 
+		{
+			temp["color"]="black"
+		}
+		
+		dataPointsArray.push(temp)
+	});
+	
+/*
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][9]; 
+		temp["color"]="#089981"
+			
+		dataPointsArrayAdvances.push(temp)
+		//console.log(symbol, preMarketSectorObj[symbol]["advances"])
+	});
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][10]; 
+		temp["color"]="#cd5652"
+		
+	
+		
+		dataPointsArrayDeclines.push(temp)
+		
+	});	
+	
+Object.keys(tempObj).sort((a,b) => tempObj[b]-tempObj[a]).forEach((symbol) => {  	//  descending sort
+var temp={}
+var sectorName = symbol.replace(/_/g,' ')
+if(sectorName !='NIFTY 50' && sectorName !='NIFTY BANK')
+//if(symbol !='NIFTY BANK')
+{
+	temp["label"]=sectorName.replace(/NIFTY /g,'')
+}
+else{
+	temp["label"]=sectorName
+}
+	
+		temp["y"]=indicesPerformanceObject[symbol][11]; 
+	
+		temp["color"]="#cbba4d"
+		
+		
+		dataPointsArrayUnchanged.push(temp)
+	});
+	
+	*/
+// this section is for plotting indices chart for simple perchange change of single column bar
+var chart = new CanvasJS.Chart("IndicesPerformanceChart", {
+	animationEnabled: true,
+	theme: "dark2", // "light1", "light2", "dark1", "dark2"
+	title: {
+		//text: "GDP Growth Rate - 2016"
+	},
+	subtitles: [{
+			//text: "Subtitle 1"
+		  },{
+			text:  returnedDataObj['timestamp'].split(' ')[0] +' | '+ selectedIndicesTimeValues +' | '+returnedDataObj['timestamp'].split(' ')[1],
+			//verticalAlign: "top",
+
+			 //horizontalAlign: "right",
+	
+			 //fontSize: 15,
+			 fontSize: 13,
+			//dockInsidePlotArea: true
+			dockInsidePlotArea: false
+	}],
+	
+	toolTip: {
+			//fontSize: 19,
+			fontSize: 15,
+	},
+	axisY: {
+		//title: "Growth Rate (in %)",
+		//includeZero: true,
+		//suffix: "%",
+		gridThickness: 0.03,
+		//labelFontSize: 18,
+		labelFontSize: 0, // bottom size for change%
+		 tickLength: 0,
+		 
+	},
+	axisX: {
+		interval: 1,
+		//title: "Countries"
+		includeZero: true,
+		 //labelFontSize: 17,
+		 labelFontSize: 11, // vertical axis size for text
+		 //labelFontWeight: "bold",
+		  lineThickness: 0.5,
+         lineColor: "#ccc",
+		 tickColor: "#555",
+		 tickLength: 0,
+		
+		 
+	},
+	dataPointWidth: 12,
+	data: [{
+		//indexLabel: "{y}",
+		//indexLabelFontSize: 18,
+		click: onClick,
+		//type: "column",
+		type: "bar",
+		indexLabelPlacement: "auto",
+			indexLabel: "{y}",
+			indexLabelFontSize: 11,
+			indexLabelFontColor: "#ddd",
+		yValueFormatString: "#,##0.0#\"%\"",
+		dataPoints:dataPointsArray
+	}]
+});
+
+
+//console.log("dataPointsArray",dataPointsArray)
+chart.render();
+//chart2.render();
+
+} // showIndicesPerformanceChart ENDS HERE
+
+
+
+
+function onClick(e) {
+
+		//var label=e.dataPoint.label
+		var label=e.dataPoint.label.replace(/ \(.*/g, '')
+		var labelToScroll;
+		{
+			if( label=='NIFTY 50' || label=='NIFTY BANK')
+			{
+				labelToScroll = label.replace(/ /g, '_')
+				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
+				showHeatMapChart();
+				document.getElementById("heatMapSectorSelector").scrollIntoView();
+			}
+			else
+			{
+				labelToScroll = 'NIFTY_'+label.replace(/ /g, '_')
+				document.getElementById("heatMapSectorSelector").value = labelToScroll ;
+				showHeatMapChart();
+				document.getElementById("heatMapSectorSelector").scrollIntoView();
+			}
+		}
+
+		
+}
+
+
+
+</script>
+<!-- Indices Code Ends Here -->
+
+
+
+<!-- Spurts-Equity Code Starts Here -->
+
+<style>    .spaceBetweenTables { border: 2px solid #4b4d4e;height: 518px;overflow-y: scroll;background-color: #32373a; }     .greenHeaderClass{   color: #ffffff;   background: #27ae60;   } .blueHeaderClass{   color: #ffffff;   background: #3a7dd4;    }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	</style>
+
+
+<script>
+var dataObjectForHeatChart={}
+var sectorStockNamesObj = {}
+var allBanksStocksObj ={}
+
+function setSpurtsSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['spurts_in_open_interest_by_underlyings']
+	var selectElementRef = document.getElementById("spurtsTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getSpurtsEquityData )
+}
+
+
+async function getSpurtsEquityData( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	
+	var selectedSpurtsTimeRef = document.getElementById('spurtsTimeValues')
+	var selectedSpurtsTimeValue = selectedSpurtsTimeRef.value
+
+	var docPathForSpurts = '/'+selectedMonthYear+'/'+selectedTradingDate+'/spurts_in_open_interest_by_underlyings/'+selectedSpurtsTimeValue
+	var spurtsDataObj = await fetchFirebaseDocData( docPathForSpurts )
+	
+	//console.log( "spurtsDataObj",JSON.parse( spurtsDataObj['data'] ) )
+	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	
+	
+	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
+	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedSpurtsTimeValue )
+	//var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/ALL/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	
+	//console.log( "docPathForEquity", docPathForEquity )
+	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
+	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	//console.log( "deliveryDataObj",JSON.parse( deliveryDataObj['data'] ) )
+	
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	//await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	
+	addEventListnerInTables()
+}
+
+async function show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, equityDataObj, spurtsDataObj, deliveryDataObj )
+{
+	 //document.getElementById('equityDataTableContainer').innerHTML = "";
+	
+	var selectedValue = selectedSpurtsTimeValue
+	//var previousTime=selectedValue.options[selectedValue.selectedIndex - 1] 
+	
+	var niftyTotalMarketObject = equityDataObj['data']
+	var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+
+//console.log( selectedSpurtsTimeValue, selectedSpurtsTimeValuePrevious, equityDataObj, equityDataObjPrevious, spurtsDataObj, spurtsDataObjPrevious  )
+
+		var tempObj = {};
+
+	
+	  var onlyEquityTableStr = ' <div class=""> <div class="spaceBetweenTablesSpurtsEquity"> <table id="onlyEquityTableStr"> <caption style="caption-side:top"> Intraday Hike | '+selectedTradingDate+' | '+selectedValue+'</caption> <thead> <tr class="tableRowClass">'
+	  +'<th>Symbol</th>'
+	  +' <th>Chg%</th>'
+	   +' <th>LTP</th>'
+	  +' <th>T.O.</th>'
+	 +' <th>Money</th>'
+	  +' <th>20DAV</th>'
+	  +' </tr> </thead> <tbody>'
+
+		for (var S=0; S<spurtsInOIUnderlyingsObject.length ;S++ ) { // loop for accessing all stocks of 754 stocks
+		var Symbol=spurtsInOIUnderlyingsObject[S]['symbol']
+		//for (var Symbol in niftyTotalMarketObject ) { // loop for accessing all stocks of 754 stocks
+		if( Symbol.includes('NIFTY')==false )
+		{
+		var symbolArray = niftyTotalMarketObject[Symbol] //for short-handing
+        var spurtsSymbolArray = spurtsInOIUnderlyingsObject[S] //for short-handing
+	
+	var SpurtValvsOI = spurtsSymbolArray["total"] / spurtsSymbolArray["latestOI"]
+	var average20DaysValue = deliveryDataObj["Symbols"][Symbol]["calculatedData"]["averageValues"]["twentyDays"]
+	var EqtyValvs20DAyVal = ( (symbolArray["totalTradedValue"] ) / average20DaysValue)
+	
+	var WFactor =( EqtyValvs20DAyVal + SpurtValvsOI ).toFixed(2)
+	var twentyDAV =( symbolArray["totalTradedValue"]  / average20DaysValue).toFixed(2)
+	 
+	  var rankForHeatMap = WFactor
+	  
+		//this block of code is for sectors heatMap chart. (START)
+		//this block adds stocks in a object with few values. this code was written on 7-Jan-2023
+		{
+			//dataObjectForHeatChart["selectedTime"] =selectedValue.value
+			dataObjectForHeatChart["selectedTime"] =selectedValue
+			dataObjectForHeatChart["selectedTradingDate"] =selectedTradingDate
+		   var colorValue;
+		   var dataLabelFontColor="white";
+		   
+		if(symbolArray["pChange"]>=0)
+	   {
+		   if( symbolArray["pChange"]>=0 && symbolArray["pChange"]<=0.5)
+		   {
+			   colorValue = '#7cb67e' 
+			  // dataLabelFontColor="black"
+		   }
+		   else if( symbolArray["pChange"]>0.5 && symbolArray["pChange"]<=1)
+		   {
+			   colorValue = '#6cac6e'
+		   } 
+		   else if( symbolArray["pChange"]>1 && symbolArray["pChange"]<=2)
+		   {
+			    colorValue = '#5ca35e'
+		   }
+		   else if( symbolArray["pChange"]>2)
+		   {
+			   colorValue = '#539355'
+		   }
+			   
+		  
+		   dataObjectForHeatChart[Symbol] ={
+			  parent: 'Green',
+			 name: Symbol,
+			 pChange:symbolArray["pChange"],
+			 value: Number(rankForHeatMap),
+			 //colorValue: Number(symbolArray["pChange"])
+			 color: colorValue,
+			 
+			 dataLabels: {
+				 shadow: false,
+				 color: dataLabelFontColor //data label font color
+				 //format: '{name pChange} %'
+			 }
+		 }
+		   
+		 
+	   }
+	   else
+	   {
+		   if( symbolArray["pChange"]>=-0.5 && symbolArray["pChange"]<0)
+		   {
+			   colorValue = '#d4777a'
+			   //dataLabelFontColor="black"
+		   }
+		   else if( symbolArray["pChange"]>-1 && symbolArray["pChange"]<=-0.5)
+		   {
+			   colorValue = '#ce6467'
+		   }
+		   else if( symbolArray["pChange"]>-2 && symbolArray["pChange"]<=-1)
+		   {
+			   colorValue = '#ca575a'
+		   }
+		   else if( symbolArray["pChange"]>-2)
+		   {
+			   colorValue = '#c85155'
+		   }
+			   
+			 dataObjectForHeatChart[Symbol] ={
+			  parent: 'Red',
+			 name: Symbol,
+			 pChange:symbolArray["pChange"],
+			 value: Number(rankForHeatMap),
+			 //colorValue: Number(symbolArray["pChange"])
+			 color: colorValue,
+			 
+			 dataLabels: {
+				  shadow: false,
+				 color: dataLabelFontColor, //data label font color
+				 //format: '{name pChange} %'
+			 }
+		 }
+		  
+		  
+	   }
+		
+		}	   	//this block of code is for sectors heatMap chart. (END)
+		  
+		  
+		  
+		{
+			onlyEquityTableStr +='<tr class="item"><td>'
+			 +Symbol
+			 +'</td><td>'
+			+ symbolArray['pChange']  //pchange
+			 +'</td><td>'
+			 +symbolArray['lastPrice']  //lastPrice
+			 +'</td><td>'
+			 +( symbolArray['totalTradedValue'] / 1000000).toFixed(0)  //(symbolArray[8] / 10000000).toFixed(2) //totalTradedValue
+		 +'</td><td>'
+		 + WFactor
+		+'</td><td>'
+		+ twentyDAV
+		+'</td></tr>'
+			
+		
+		}
+	}
+		} //for Loop ENDS HERE
+		
+		onlyEquityTableStr +=' </tbody> </table>    </div>  </div>'
+		
+	//document.getElementById('equityDataTableContainer').innerHTML = onlyEquityTableStr
+	 //addEventListnerInTables()
+	 add_Sectors_In_HeatMapSelector( )
+}	//	show_volume_value_spike_Data() Function ENDS HERE
+
+
+function add_Sectors_In_HeatMapSelector( )
+{
+	//console.log( "sectorStockNamesObj", sectorStockNamesObj)
+	
+	if( sectorStockNamesObj !=undefined)
+	{
+	if( document.getElementById("heatMapSectorSelector").getElementsByTagName('option').length <=1 )
+	{
+	document.getElementById("heatMapSectorSelector").innerHTML = "";
+	
+	var option = document.createElement("option");
+	option.value = "ALL BANKS";
+	option.text = "ALL BANKS";
+	document.getElementById("heatMapSectorSelector").add(option);
+	
+	
+	for ( var sectorName in sectorStockNamesObj ) {
+		
+		if( sectorName != 'Template' )
+		{
+		var option = document.createElement("option");
+		option.value = sectorName;
+		option.text = sectorName;
+		document.getElementById("heatMapSectorSelector").add(option);
+		}
+	}
+	//document.getElementById('heatMapSectorSelector').value=document.getElementById('heatMapSectorSelector').getElementsByTagName('option')[2].value
+	document.getElementById('heatMapSectorSelector').value="NIFTY_50"
+	}
+	
+	//showHeatMapChart(sectorStockNamesObj)
+	showHeatMapChart()
+	}
+	
+} // add_Sectors_In_HeatMapSelector() ENDS HERE
+
+async function showHeatMapChart( )
+{
+	await setHighChartsDarkTheme()
+	var sectorDataArrayForHeatChart=[{
+      id: 'Green',
+      //name: 'Green',
+      color: "#EC2500"
+    }, {
+      id: 'Red',
+      //name: 'Red',
+      color: "#ECE100"
+    }]
+	
+	var heatMapSectorSelected = document.getElementById("heatMapSectorSelector").value
+	var sectorStockArray;
+	if( heatMapSectorSelected=='ALL BANKS' )
+	{
+		
+		for( var sector in sectorStockNamesObj )
+		{
+			if( sector.includes('BANK')==true )
+			{
+				var sectorStockArray = sectorStockNamesObj [sector]
+				for( var s=0;s<sectorStockArray.length;s++)
+				{
+					var Symbol = sectorStockArray [s]
+					allBanksStocksObj [Symbol] = 1
+				}
+				
+			}
+		}
+		
+		sectorStockArray = Object.keys(allBanksStocksObj)
+	}
+	else {
+	sectorStockArray = sectorStockNamesObj [heatMapSectorSelected] 
+	}
+	for( var s=0;s<sectorStockArray.length;s++)
+	{
+		var Symbol = sectorStockArray [s]
+		//console.log(Symbol)
+		if( dataObjectForHeatChart[Symbol] !=undefined )
+		{
+			sectorDataArrayForHeatChart.push( dataObjectForHeatChart[Symbol] )
+		}
+	}
+	//console.log("sectorDataArrayForHeatChart", sectorDataArrayForHeatChart)
+	
+	
+var H = Highcharts
+H.addEvent(H.Legend, 'afterGetAllItems', function(e) {
+  e.allItems.splice(2, 6);
+});
+
+H.chart('heatMapContainer', {
+  colorAxis: {
+      stops: [
+       
+	  [0, '#ff0000'],//red
+      [0.5, '#fff'], // white
+      [1, '#02ff00']//green
+	  
+    ],
+  },
+  legend: {
+      enabled: false
+    },
+  series: [{
+	animation: false,
+	borderWidth: 0.25,
+    //borderColor: '#fff',
+    borderColor: '#4b4b4c',
+    colorAxis: 0,
+    legendType: 'point',
+    showInLegend: false,
+    type: "treemap",
+    layoutAlgorithm: 'squarified',
+    alternateStartingDirection: true,
+    levels: [{
+      level: 1,
+      layoutAlgorithm: 'sliceAndDice',
+      dataLabels: {
+        enabled: false,
+        align: 'left',
+        verticalAlign: 'top',
+        style: {
+          fontSize: '15px',
+          fontWeight: 'bold'
+        }
+      }
+    }],
+    data: sectorDataArrayForHeatChart,
+	
+  dataLabels: {
+		enabled: true,
+                format: '{point.name} <br> {point.value}',
+			 },
+			 
+			  events: {
+                    click: function (event) {
+                        //console.log(event.point.name);
+						copyHeatMapList( heatMapSectorSelected, event.point.parent )
+                    }
+                }
+  }],
+  tooltip: {
+            //headerFormat: 'Temperature<br/>',
+            pointFormat: '{point.name} <br> pChange: {point.pChange} <br> Rank: {point.value}'
+        },
+	
+  title: {
+    //text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTime"] +' | '+ mainOIDataObject['Date'],
+    text: heatMapSectorSelected +' | '+ dataObjectForHeatChart["selectedTradingDate"] +' | '+ dataObjectForHeatChart["selectedTime"],
+	   style: {
+                    //color: 'red',
+                    fontSize:'15px'
+                }
+  }
+});
+
+}
+
+function setHighChartsDarkTheme()
+{
+
+	Highcharts.theme = {
+    colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
+        '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+    chart: {
+        backgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+            stops: [
+                [0, '#2a2a2b'],
+                [1, '#3e3e40']
+            ]
+        },
+        style: {
+     
+        },
+        plotBorderColor: '#606063'
+    },
+    title: {
+        style: {
+            color: '#E0E0E3',
+            textTransform: 'uppercase',
+            fontSize: '20px'
+        }
+    },
+    subtitle: {
+        style: {
+            color: '#E0E0E3',
+            textTransform: 'uppercase'
+        }
+    },
+    xAxis: {
+        gridLineColor: '#707073',
+        labels: {
+            style: {
+                color: '#E0E0E3'
+            }
+        },
+        lineColor: '#707073',
+        minorGridLineColor: '#505053',
+        tickColor: '#707073',
+        title: {
+            style: {
+                color: '#A0A0A3'
+            }
+        }
+    },
+    yAxis: {
+        gridLineColor: '#707073',
+        labels: {
+            style: {
+                color: '#E0E0E3'
+            }
+        },
+        lineColor: '#707073',
+        minorGridLineColor: '#505053',
+        tickColor: '#707073',
+        tickWidth: 1,
+        title: {
+            style: {
+                color: '#A0A0A3'
+            }
+        }
+    },
+    tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        style: {
+            color: '#F0F0F0'
+        }
+    },
+    plotOptions: {
+        series: {
+            dataLabels: {
+                color: '#F0F0F3',
+                style: {
+                    fontSize: '12px'
+                }
+            },
+            marker: {
+                lineColor: '#333'
+            }
+        },
+        boxplot: {
+            fillColor: '#505053'
+        },
+        candlestick: {
+          
+        },
+        errorbar: {
+            
+        }
+    },
+    legend: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        itemStyle: {
+            color: '#E0E0E3'
+        },
+        itemHoverStyle: {
+            color: '#FFF'
+        },
+        itemHiddenStyle: {
+            color: '#606063'
+        },
+        title: {
+            style: {
+                color: '#C0C0C0'
+            }
+        }
+    },
+    credits: {
+        style: {
+            color: '#666'
+        }
+    },
+    labels: {
+        style: {
+            color: '#707073'
+        }
+    },
+    drilldown: {
+        activeAxisLabelStyle: {
+            color: '#F0F0F3'
+        },
+        activeDataLabelStyle: {
+            color: '#F0F0F3'
+        }
+    },
+    navigation: {
+        buttonOptions: {
+            symbolStroke: '#DDDDDD',
+            theme: {
+                fill: '#505053'
+            }
+        }
+    },
+    // scroll charts
+    rangeSelector: {
+        buttonTheme: {
+            fill: '#505053',
+            stroke: '#000000',
+            style: {
+              
+            },
+            states: {
+                hover: {
+                    fill: '#707073',
+                    stroke: '#000000',
+                    style: {
+                      
+                    }
+                },
+                select: {
+                    fill: '#000003',
+                    stroke: '#000000',
+                    style: {
+                        
+                    }
+                }
+            }
+        },
+        inputBoxBorderColor: '#505053',
+        inputStyle: {
+            backgroundColor: '#333',
+            color: 'silver'
+        },
+        labelStyle: {
+            color: 'silver'
+        }
+    },
+    navigator: {
+        handles: {
+            backgroundColor: '#666',
+            borderColor: '#AAA'
+        },
+        outlineColor: '#CCC',
+        maskFill: 'rgba(255,255,255,0.1)',
+        series: {
+            color: '#7798BF',
+            lineColor: '#A6C7ED'
+        },
+        xAxis: {
+            gridLineColor: '#505053'
+        }
+    },
+    scrollbar: {
+        barBackgroundColor: '#808083',
+        barBorderColor: '#808083',
+        buttonArrowColor: '#CCC',
+        buttonBackgroundColor: '#606063',
+        buttonBorderColor: '#606063',
+        rifleColor: '#FFF',
+        trackBackgroundColor: '#404043',
+        trackBorderColor: '#404043'
+    }
+};
+	// Apply the theme
+	Highcharts.setOptions(Highcharts.theme);
+
+}
+
+
+function copyHeatMapList( heatMapSectorSelected, greenOrRed )
+{
+	var symbolObject ={}
+	var sectorStockArray;
+	if( heatMapSectorSelected=='ALL BANKS' )
+	{
+		sectorStockArray = Object.keys(allBanksStocksObj)
+	}
+	else {
+	sectorStockArray = sectorStockNamesObj[heatMapSectorSelected]
+	}
+	
+	for( var s=0;s<sectorStockArray.length;s++)
+	{
+		var Symbol = sectorStockArray [s]
+		//console.log(Symbol)
+		if( dataObjectForHeatChart[Symbol] !=undefined )
+		{
+			if( dataObjectForHeatChart[Symbol]["parent"]==greenOrRed )
+				symbolObject[Symbol] = dataObjectForHeatChart[Symbol]["value"] //symbol's rank
+		}
+	}
+	
+	var stockNames=''
+	stockNames= ( 'NSE:'+dataObjectForHeatChart["selectedTime"] +'_'+ heatMapSectorSelected+',' ).replace(/ /g,'_')
+	
+	Object.keys(symbolObject).sort((a,b) => symbolObject[b]-symbolObject[a]).forEach((symbol) => {    	//  descending sort
+		stockNames +='NSE:'+symbol.replace(/-/g,'_').replace(/&amp;/g,'_').replace(/&/g,'_') +','
+	});
+
+	
+	
+	navigator.clipboard.writeText(stockNames);
+}
+
+
+</script>
+<!-- Spurts-Equity Code Ends Here -->
+
+
+
+<!-- All Derivatives Code Starts Here -->
+
+<style>    .spaceBetweenTables { border: 2px solid #4b4d4e;height: 518px;overflow-y: scroll;background-color: #32373a; }     .greenHeaderClass{   color: #ffffff;   background: #27ae60;   } .blueHeaderClass{   color: #ffffff;   background: #3a7dd4;    }  caption {	white-space: nowrap;  text-align: center; color: #ffffff; height: px; padding-top: 0rem; padding-bottom: 0rem;	}	</style>
+
+
+<script>
+var sectorStockNamesObj = {}
+
+function setDerivativesSelectorTimeValues( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var timeValuesArray = firestoreIndexObj[ tradingDate ]['all_derivatives_index']['time_values']
+	var selectElementRef = document.getElementById("derivativesTimeValues");
+	
+	handleTimeValues( passedValue, timeValuesArray, selectElementRef, getAllDerivativesData )
+	setDerivativesSymbolsSelector( passedValue )
+}
+
+function setDerivativesSymbolsSelector( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var allSymbolsArray = firestoreIndexObj[ tradingDate ]['all_derivatives_index']['all_symbols']
+	var selectElementRef = document.getElementById("derivativesSymbols");
+	
+	handleTimeValues( passedValue, allSymbolsArray, selectElementRef, null )
+}
+
+async function getAllDerivativesData( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	
+	var selectedDerivativesTimeRef = document.getElementById('derivativesTimeValues')
+	var selectedDerivativesTimeValue = selectedDerivativesTimeRef.value
+
+	var docPathForSpurts = '/'+selectedMonthYear+'/'+selectedTradingDate+'/all_derivatives/'+selectedDerivativesTimeValue+'/'+selectedDerivativesTimeValue
+	//var allDerivativesDataArray = await fetchDerivativesCollectionData( docPathForSpurts )
+	var allDerivativesDataObj = await fetchAndSaveDataIDB( docPathForSpurts );
+
+
+	//console.log( "allDerivativesDataArray", allDerivativesDataArray )
+	//console.log( "allDerivativesDataArray.length", JSON.stringify( allDerivativesDataArray ).length )
+	//console.log( "spurtsDataObjPrevious",JSON.parse( spurtsDataObjPrevious['data'] ) )
+	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
+	
+	//await showAllDerivativesData( selectedDerivativesTimeValue, selectedTradingDate, allDerivativesDataObj )
+	await calculateFutOptData( selectedDerivativesTimeValue, selectedTradingDate, allDerivativesDataObj )
+
+
+	/*
+	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
+	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedSpurtsTimeValue )
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	
+	//console.log( "docPathForEquity", docPathForEquity )
+	var equityDataObj = await fetchFirebaseDocData( docPathForEquity )
+	console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+
+	var docPathForDeliveryData = '/'+selectedMonthYear+'/'+selectedTradingDate+'/delivery_data/delivery_data'
+	var deliveryDataObj = await fetchDeliveryDataDocData( docPathForDeliveryData )
+	
+	//console.log( "deliveryDataObj",JSON.parse( deliveryDataObj['data'] ) )
+	
+	
+	var collectioPath = '/'+selectedMonthYear+'/'+selectedTradingDate+'/sector_stockNames/'
+	sectorStockNamesObj = await fetchSectorStockNamesCollectionData( collectioPath )
+	
+	await show_only_equity_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	await show_only_Spurts_Data( selectedSpurtsTimeValue, selectedTradingDate, JSON.parse( equityDataObj['data'] ), JSON.parse( spurtsDataObj['data'] ) , JSON.parse( deliveryDataObj['data'] ) )
+	*/
+	addEventListnerInTables()
+	 addOnclickEvent()
+}
+
+var temp_object_container = {}
+
+function getNearbyOptionStrikes(keys, ltp, numStrikes = 3) {
+  // --- Extract all expiry dates from option keys ---
+  const expiries = [...new Set(
+    keys
+      .filter(k => k.includes("OPTSTK"))
+      .map(k => {
+        const match = k.match(/OPTSTK(\d{2}-\d{2}-\d{4})/);
+        return match ? match[1] : null;
+      })
+      .filter(Boolean)
+  )];
+
+  if (expiries.length === 0) return [];
+
+  // --- Sort expiries by date ---
+  const sortedExpiries = expiries.sort((a, b) => {
+    const [da, ma, ya] = a.split("-").map(Number);
+    const [db, mb, yb] = b.split("-").map(Number);
+    return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
+  });
+
+  // --- Select nearest expiry (earliest) ---
+  const currentExpiry = sortedExpiries[0];
+
+  // --- Filter keys for current expiry ---
+  const currentExpiryKeys = keys.filter(
+    k => k.includes("OPTSTK") && k.includes(currentExpiry)
+  );
+
+  // --- Extract strike prices ---
+  const strikes = currentExpiryKeys
+    .map(k => {
+      const match = k.match(/(\d+\.\d+)$/);
+      return match ? parseFloat(match[1]) : null;
+    })
+    .filter(n => n !== null);
+
+  const sortedStrikes = [...new Set(strikes)].sort((a, b) => a - b);
+
+  // --- Find nearest strike index to LTP ---
+  const nearestIndex = sortedStrikes.findIndex(s => s >= ltp);
+  if (nearestIndex === -1) return [];
+
+  // --- Get N below and N above strikes ---
+  const below = sortedStrikes.slice(Math.max(0, nearestIndex - numStrikes), nearestIndex);
+  const above = sortedStrikes.slice(nearestIndex, nearestIndex + numStrikes);
+
+  const selectedStrikes = [...below, ...above];
+
+  // --- Return CE/PE keys for selected strikes ---
+  const selectedKeys = currentExpiryKeys.filter(k =>
+    selectedStrikes.some(s => k.endsWith(s.toFixed(2)))
+  );
+
+  return selectedKeys;
+}
+
+async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj )
+{
+	
+	var optionsOIPerChngObj = {}
+	var optionsPricePerChngObj = {}
+	var optionsTurnoverObj = {}
+	var allOptionsTurnoverObj = {}
+	
+	var futuresOIPerChngObj = {}
+	var futuresPricePerChngObj = {}
+	var futuresTurnoverObj = {}
+	var allFuturesTurnoverObj = {}
+	
+	temp_object_container = allDerivativesDataObj
+	console.log("allDerivativesDataObj", allDerivativesDataObj )
+	console.log("temp_object_container", temp_object_container )
+	//console.log("allDerivativesDataObj", JSON.parse(allDerivativesDataObj['ADANIENT']['data']) )
+	
+	for( var symbol in allDerivativesDataObj ) {
+
+	var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+	var spot_LTP = dataObj['underlyingValue']
+	
+	const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 2);
+
+	
+	for( var i=0; i< Object.keys( dataObj ).length ; i++ ) {
+	//for( var i=0; i< spotLTP_NearbyOptionStrikes.length ; i++ ) {
+	//for( var i=0; i< 7 ; i++ ) {
+	var identifier = Object.keys( dataObj )[i]
+	//var identifier = spotLTP_NearbyOptionStrikes[i]
+	//if( identifier.includes('FUTSTK')==true || identifier.includes('OPTSTK')==true )
+	if( identifier.includes('OPTSTK')==true )
+	{
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		var pchangeinOpenInterest = Number( dataArray[9][2].toFixed(2) ) // "pchangeinOpenInterest"
+		if( pchangeinOpenInterest > 1 || pchangeinOpenInterest < 0  )
+		{
+			optionsOIPerChngObj [ symbol+'_'+identifier  ] = pchangeinOpenInterest
+		}
+		optionsPricePerChngObj [ symbol+'_'+identifier  ] = dataArray[5] // "pChange"
+		//optionsTurnoverObj [ symbol+'_'+identifier  ] = dataArray[8] // "totalTurnover/value"
+		optionsTurnoverObj [ symbol+'_'+identifier  ] = dataArray[7] // "numberOfContractsTraded/tradedVolume"
+		
+		if( allOptionsTurnoverObj [ symbol ]==undefined )
+		{
+			//allOptionsTurnoverObj [ symbol ] = Number( dataArray[7] )// "numberOfContractsTraded/tradedVolume"
+			allOptionsTurnoverObj [ symbol ] = Number( dataArray[8] )// "totalTurnover/value"
+		}
+		else{
+			//allOptionsTurnoverObj [ symbol ] += Number( dataArray[7] )// "numberOfContractsTraded/tradedVolume"
+			allOptionsTurnoverObj [ symbol ] += Number( dataArray[8] )// "totalTurnover/value"
+		}
+		
+		
+	}
+	else if( identifier.includes('FUTSTK')==true )
+	{
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		var pchangeinOpenInterest = Number( dataArray[9][2].toFixed(2) ) // "pchangeinOpenInterest"
+		if( pchangeinOpenInterest > 1 ||  pchangeinOpenInterest < 0 )
+		{
+			futuresOIPerChngObj [ symbol+'_'+identifier  ] = pchangeinOpenInterest
+		}
+		futuresPricePerChngObj [ symbol+'_'+identifier  ] = dataArray[5] // "pChange"
+		//futuresTurnoverObj [ symbol+'_'+identifier  ] = dataArray[8] // "totalTurnover/value"
+		futuresTurnoverObj [ symbol+'_'+identifier  ] = dataArray[7] // "numberOfContractsTraded/tradedVolume"
+
+		if( allFuturesTurnoverObj [ symbol ]==undefined )
+		{
+			//allFuturesTurnoverObj [ symbol ] = Number( dataArray[7] )// "numberOfContractsTraded/tradedVolume"
+			allFuturesTurnoverObj [ symbol ] = Number( dataArray[8] )// "totalTurnover/value"
+		}
+		else{
+			//allFuturesTurnoverObj [ symbol ] += Number( dataArray[7] )// "numberOfContractsTraded/tradedVolume"
+			allFuturesTurnoverObj [ symbol ] += Number( dataArray[8] )// "totalTurnover/value"
+		}
+		
+	}
+	}
+	
+
+	}
+	
+	
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	
+	optionsOIPerChngObj = Object.fromEntries( Object.entries(optionsOIPerChngObj).sort( (a,b) => b[1] - a[1] )  ) 
+	futuresOIPerChngObj = Object.fromEntries( Object.entries(futuresOIPerChngObj).sort( (a,b) => b[1] - a[1] ) ) 
+	
+	optionsPricePerChngObj = Object.fromEntries( Object.entries(optionsPricePerChngObj).sort( (a,b) => b[1] - a[1] ) ) 
+	futuresPricePerChngObj = Object.fromEntries( Object.entries(futuresPricePerChngObj).sort( (a,b) => b[1] - a[1] ) ) 
+	
+	optionsTurnoverObj = Object.fromEntries( Object.entries(optionsTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
+	futuresTurnoverObj = Object.fromEntries( Object.entries(futuresTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
+	
+	allOptionsTurnoverObj = Object.fromEntries( Object.entries(allOptionsTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
+	allFuturesTurnoverObj = Object.fromEntries( Object.entries(allFuturesTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
+	
+	showOptOIGainersLosersStocks( selectedSpurtsTimeValue, selectedTradingDate, optionsOIPerChngObj )
+	showOptPricePerChngStocks( selectedSpurtsTimeValue, selectedTradingDate, optionsPricePerChngObj )
+	
+	showFutOIGainersLosersStocks( selectedSpurtsTimeValue, selectedTradingDate, futuresOIPerChngObj )
+	showFutPricePerChngStocks( selectedSpurtsTimeValue, selectedTradingDate, futuresPricePerChngObj )
+	
+	showOptMostActiveStocks( selectedSpurtsTimeValue, selectedTradingDate, optionsTurnoverObj )
+	showFutMostActiveStocks( selectedSpurtsTimeValue, selectedTradingDate, futuresTurnoverObj )
+	
+
+	showMostActiveOptStocks( selectedSpurtsTimeValue, selectedTradingDate, allOptionsTurnoverObj )
+	showMostActiveFutStocks( selectedSpurtsTimeValue, selectedTradingDate, allFuturesTurnoverObj )
+	
+	//console.log( optionsOIPerChngObj, futuresOIPerChngObj 	)
+	//console.log( optionsPricePerChngObj, futuresPricePerChngObj 	)
+	//console.log( optionsTurnoverObj, futuresTurnoverObj 	)
+	
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+
+async function showMostActiveOptStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	 document.getElementById('mostActiveOptStocksTableContainer').innerHTML = "";
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+	var allSymbolsLength = firestoreIndexObj[ selectedTradingDate ]['all_derivatives_index']['all_symbols'].length-1
+	var availableSymbolsLengthStr = Object.keys( passedDataObj ).length+' / '+allSymbolsLength
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+'<th>Spot LTP</th>'
+	+' <th>TO</th>'
+
+
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="mostActiveOptStocksTablesStr"><caption style="caption-side:top"> Most Active Opt Stocks | '+availableSymbolsLengthStr+' | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, data, spot_LTP )
+	{
+
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ spot_LTP
+		+'</td><td>'
+		+ data.toFixed(0)
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		//var symbol = symbolStr.split('_')[0]
+		var symbol = symbolStr
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var spot_LTP = dataObj['underlyingValue']
+		var data = passedDataObj[symbol]
+		//var identifier = symbolStr.split('_')[1]
+		//console.log( symbol )
+		optMostActiveTablesStr +=	returnDataStr( symbol, data, spot_LTP )
+		
+		
+	}
+		
+
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('mostActiveOptStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+async function showMostActiveFutStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	 document.getElementById('mostActiveFutStocksTableContainer').innerHTML = "";
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+	var allSymbolsLength = firestoreIndexObj[ selectedTradingDate ]['all_derivatives_index']['all_symbols'].length-1
+	var availableSymbolsLengthStr = Object.keys( passedDataObj ).length+' / '+allSymbolsLength
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+'<th>Spot LTP</th>'
+	+' <th>TO</th>'
+
+
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="mostActiveFutStocksTablesStr"><caption style="caption-side:top"> Most Active Fut Stocks | '+availableSymbolsLengthStr+' | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, data, spot_LTP )
+	{
+
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ spot_LTP
+		+'</td><td>'
+		+ data.toFixed(0)
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		//var symbol = symbolStr.split('_')[0]
+		var symbol = symbolStr
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var spot_LTP = dataObj['underlyingValue']
+		var data = passedDataObj[symbol]
+		//var identifier = symbolStr.split('_')[1]
+		//console.log( symbol )
+		optMostActiveTablesStr +=	returnDataStr( symbol, data, spot_LTP )
+		
+		
+	}
+		
+
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('mostActiveFutStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+
+async function showOptMostActiveStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	 document.getElementById('optionsDerivativesTableContainer').innerHTML = "";
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>Type</th>'
+	+' <th>LTP</th>'
+	+'<th>Vol</th>   '
+	//+'<th>Val</th>      '
+	+' <th>OI</th>'
+	+' <th>COI</th>      '
+	+' <th>%COI</th>      '
+	//+' <th>%price</th>      '
+	+' <th>PremTO</th>      '
+	//+' <th>TVol</th>      '
+	//+' <th>TO</th>      '
+
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optMostActiveTablesStr"><caption style="caption-side:top"> Options Most Active | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, identifier, dataArray )
+	{
+				var strikePrice;
+		if( identifier.includes('CE') ==true ) 
+			strikePrice =  "CE "+Number( identifier.split('CE')[1] ) +" ("+ formatDateMonth( identifier.split('CE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('PE') ==true ) 
+			strikePrice = "PE "+Number( identifier.split('PE')[1] ) +" ("+ formatDateMonth( identifier.split('PE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('FUT') ==true ) 
+			strikePrice = formatMonth( identifier.split('STK')[1].split('XX')[0] ) + " FUT"
+		
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		//+ identifier // fur/opt
+		+ strikePrice // fur/opt
+		+'</td><td>'
+		+ dataArray[3] // ltp
+		+'</td><td>'
+		+ dataArray[7] //"numberOfContractsTraded"
+		//+'</td><td>'
+		//+ dataArray[8] //"totalTurnover"
+		+'</td><td>'
+	 	  + dataArray[9][0]  //"OpenInterest"
+	 	  //+ dataArray[9][4]  //""tradedVolume""
+		+'</td><td>'
+		+ dataArray[9][1] // ""changeinOpenInterest""
+		+'</td><td>'
+		+ dataArray[9][2].toFixed(2)// "pchangeinOpenInterest"
+		//+ dataArray[5].toFixed(2)  // "pChange"
+		+'</td><td>'
+		+ dataArray[9][3].toFixed(0) // "premiumTurnover"
+		//+'</td><td>'
+		//+ dataArray[9][4] // "tradedVolume"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	//for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		var symbol = symbolStr.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStr.split('_')[1]
+		
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		
+		
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+	//optOILosersTablesStr
+			optMostActiveTablesStr +=	returnDataStr( symbol, identifier, dataArray )
+		
+		}
+	}
+		
+
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('optionsDerivativesTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+async function showFutMostActiveStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	
+	 document.getElementById('futuresDerivativesTableContainer').innerHTML = "";
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>Type</th>'
+	+' <th>LTP</th>'
+	+'<th>Vol</th>   '
+	//+'<th>Val</th>      '
+	+' <th>OI</th>'
+	+' <th>COI</th>      '
+	+' <th>%COI</th>      '
+	//+' <th>%price</th>      '
+	+' <th>PremTO</th>      '
+	//+' <th>TVol</th>      '
+	//+' <th>TO</th>      '
+
+	+' </tr></thead><tbody>'
+	var futMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="futMostActiveTablesStr"><caption style="caption-side:top"> Futures Most Active | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, identifier, dataArray )
+	{
+				var strikePrice;
+		if( identifier.includes('CE') ==true ) 
+			strikePrice =  "CE "+Number( identifier.split('CE')[1] ) +" ("+ formatDateMonth( identifier.split('CE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('PE') ==true ) 
+			strikePrice = "PE "+Number( identifier.split('PE')[1] ) +" ("+ formatDateMonth( identifier.split('PE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('FUT') ==true ) 
+			strikePrice = formatMonth( identifier.split('STK')[1].split('XX')[0] ) + " FUT"
+		
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		//+ identifier // fur/opt
+		+ strikePrice // fur/opt
+		+'</td><td>'
+		+ dataArray[3] // ltp
+		+'</td><td>'
+		+ dataArray[7] //"numberOfContractsTraded"
+		//+'</td><td>'
+		//+ dataArray[8] //"totalTurnover"
+		+'</td><td>'
+	 	  + dataArray[9][0]  //"OpenInterest"
+	 	  //+ dataArray[9][4]  //""tradedVolume""
+		+'</td><td>'
+		+ dataArray[9][1] // ""changeinOpenInterest""
+		+'</td><td>'
+		+ dataArray[9][2].toFixed(2)// "pchangeinOpenInterest"
+		//+ dataArray[5].toFixed(2)  // "pChange"
+		+'</td><td>'
+		+ dataArray[9][3].toFixed(0) // "premiumTurnover"
+		//+'</td><td>'
+		//+ dataArray[9][4] // "tradedVolume"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	//for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		var symbol = symbolStr.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStr.split('_')[1]
+		
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		
+		
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+			futMostActiveTablesStr +=	returnDataStr( symbol, identifier, dataArray )
+		
+		}
+	}
+		
+
+	}
+	
+	futMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('futuresDerivativesTableContainer').innerHTML = futMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+async function showOptOIGainersLosersStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	 document.getElementById('optOIGainersTableContainer').innerHTML = "";
+	 document.getElementById('optOILosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>LTP</th>'
+	+' <th>Type</th>'
+	+' <th>LTP</th>'
+	//+'<th>Vol</th>   '
+	+'<th>Val</th>      '
+	+' <th>OI</th>'
+	+' <th>COI</th>      '
+	+' <th>%COI</th>      '
+	+' <th>PremTO</th>      '
+	//+' <th>TVol</th>      '
+	//+' <th>TO</th>      '
+
+	+' </tr></thead><tbody>'
+	var optOIGainersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optOIGainersTablesStr"><caption style="caption-side:top"> Options OI Gainers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optOILosersTablesStr"><caption style="caption-side:top">Options OI Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, identifier, dataArray, spot_LTP )
+	{
+	
+		var strikePrice;
+		if( identifier.includes('CE') ==true ) 
+			strikePrice =  "CE "+Number( identifier.split('CE')[1] ) +" ("+ formatDateMonth( identifier.split('CE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('PE') ==true ) 
+			strikePrice = "PE "+Number( identifier.split('PE')[1] ) +" ("+ formatDateMonth( identifier.split('PE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('FUT') ==true ) 
+			strikePrice = formatMonth( identifier.split('STK')[1].split('XX')[0] ) + " FUT"
+		
+		
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ spot_LTP
+		+'</td><td>'
+		//+ identifier // fur/opt
+		+ strikePrice // fur/opt
+		+'</td><td>'
+		+ dataArray[3] // ltp
+		+'</td><td>'
+		//+ dataArray[7] //"numberOfContractsTraded"
+		//+'</td><td>'
+		+ dataArray[8] //"totalTurnover"
+		+'</td><td>'
+	 	  + dataArray[9][0]  //"OpenInterest"
+	 	  //+ dataArray[9][4]  //""tradedVolume""
+		+'</td><td>'
+		+ dataArray[9][1] // ""changeinOpenInterest""
+		+'</td><td>'
+		+ dataArray[9][2].toFixed(2)// "pchangeinOpenInterest"
+		+'</td><td>'
+		+ dataArray[9][3].toFixed(0) // "premiumTurnover"
+		//+'</td><td>'
+		//+ dataArray[9][4] // "tradedVolume"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	//for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		var symbol = symbolStr.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStr.split('_')[1]
+		
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		
+		var spot_LTP = dataObj[ 'underlyingValue' ]
+		
+	
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+	//optOILosersTablesStr
+			optOIGainersTablesStr +=	returnDataStr( symbol, identifier, dataArray, spot_LTP )
+		
+		}
+	}
+		
+	{
+		var symbol = symbolStrBackward.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStrBackward.split('_')[1]
+		
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		
+		var spot_LTP = dataObj[ 'underlyingValue' ]
+		
+	
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+		//optOILosersTablesStr
+		optOILosersTablesStr += returnDataStr( symbol, identifier, dataArray, spot_LTP )
+		
+		}
+	}
+	
+	}
+	
+	optOIGainersTablesStr +=' </tbody> </table>    </div>  </div>'
+	optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('optOIGainersTableContainer').innerHTML = optOIGainersTablesStr;
+	 document.getElementById('optOILosersTableContainer').innerHTML = optOILosersTablesStr;
+
+}	//	Function ENDS HERE
+
+async function showOptPricePerChngStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	 document.getElementById('optPriceGainersTableContainer').innerHTML = "";
+	 document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+'<th>Spot LTP</th>'
+	+' <th>Type</th>'
+	+' <th>LTP</th>'
+	//+'<th>Vol</th>   '
+	+'<th>Val</th>      '
+	+' <th>OI</th>'
+	+' <th>COI</th>      '
+	//+' <th>%COI</th>      '
+	+' <th>%price</th>      '
+	+' <th>PremTO</th>      '
+	//+' <th>TVol</th>      '
+	//+' <th>TO</th>      '
+
+	+' </tr></thead><tbody>'
+	var optOIGainersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceGainersTablesStr"><caption style="caption-side:top"> Options Price Gainers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, identifier, dataArray, spot_LTP )
+	{
+				var strikePrice;
+		if( identifier.includes('CE') ==true ) 
+			strikePrice =  "CE "+Number( identifier.split('CE')[1] ) +" ("+ formatDateMonth( identifier.split('CE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('PE') ==true ) 
+			strikePrice = "PE "+Number( identifier.split('PE')[1] ) +" ("+ formatDateMonth( identifier.split('PE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('FUT') ==true ) 
+			strikePrice = formatMonth( identifier.split('STK')[1].split('XX')[0] ) + " FUT"
+		
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ spot_LTP
+		+'</td><td>'
+		//+ identifier // fur/opt
+		+ strikePrice // fur/opt
+		+'</td><td>'
+		+ dataArray[3] // ltp
+		+'</td><td>'
+		//+ dataArray[7] //"numberOfContractsTraded"
+		//+'</td><td>'
+		+ dataArray[8] //"totalTurnover"
+		+'</td><td>'
+	 	  + dataArray[9][0]  //"OpenInterest"
+	 	  //+ dataArray[9][4]  //""tradedVolume""
+		+'</td><td>'
+		+ dataArray[9][1] // ""changeinOpenInterest""
+		+'</td><td>'
+		//+ dataArray[9][2].toFixed(2)// "pchangeinOpenInterest"
+		+ dataArray[5].toFixed(2)  // "pChange"
+		+'</td><td>'
+		+ dataArray[9][3].toFixed(0) // "premiumTurnover"
+		//+'</td><td>'
+		//+ dataArray[9][4] // "tradedVolume"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	//for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		var symbol = symbolStr.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStr.split('_')[1]
+		
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		var spot_LTP = dataObj[ 'underlyingValue' ]
+		
+		
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+	//optOILosersTablesStr
+			optOIGainersTablesStr +=	returnDataStr( symbol, identifier, dataArray, spot_LTP )
+		
+		}
+	}
+		
+	{
+		var symbol = symbolStrBackward.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStrBackward.split('_')[1]
+		
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		var spot_LTP = dataObj[ 'underlyingValue' ]
+		
+		
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+		//optOILosersTablesStr
+		optOILosersTablesStr += returnDataStr( symbol, identifier, dataArray, spot_LTP )
+		
+		}
+	}
+	
+	}
+	
+	optOIGainersTablesStr +=' </tbody> </table>    </div>  </div>'
+	optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('optPriceGainersTableContainer').innerHTML = optOIGainersTablesStr;
+	 document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+}	//	Function ENDS HERE
+
+async function showFutOIGainersLosersStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	
+	 document.getElementById('futOIGainersTableContainer').innerHTML = "";
+	 document.getElementById('futOILosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>Type</th>'
+	+' <th>LTP</th>'
+	//+'<th>Vol</th>   '
+	+'<th>Val</th>      '
+	+' <th>OI</th>'
+	+' <th>COI</th>      '
+	+' <th>%COI</th>      '
+	+' <th>PremTO</th>      '
+	//+' <th>TVol</th>      '
+	//+' <th>TO</th>      '
+
+	+' </tr></thead><tbody>'
+	var futOIGainersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="futOIGainersTablesStr"><caption style="caption-side:top"> Futures OI Gainers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	var futOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="futOILosersTablesStr"><caption style="caption-side:top">Futures OI Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, identifier, dataArray )
+	{
+		
+			var strikePrice;
+		if( identifier.includes('CE') ==true ) 
+			strikePrice =  "CE "+Number( identifier.split('CE')[1] ) +" ("+ formatDateMonth( identifier.split('CE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('PE') ==true ) 
+			strikePrice = "PE "+Number( identifier.split('PE')[1] ) +" ("+ formatDateMonth( identifier.split('PE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('FUT') ==true ) 
+			strikePrice = formatMonth( identifier.split('STK')[1].split('XX')[0] ) + " FUT"
+		
+		
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		//+ identifier // fur/opt
+		+ strikePrice // fur/opt
+		+'</td><td>'
+		+ dataArray[3] // ltp
+		+'</td><td>'
+		//+ dataArray[7] //"numberOfContractsTraded"
+		//+'</td><td>'
+		+ dataArray[8] //"totalTurnover"
+		+'</td><td>'
+	 	  + dataArray[9][0]  //"OpenInterest"
+	 	  //+ dataArray[9][4]  //""tradedVolume""
+		+'</td><td>'
+		+ dataArray[9][1] // ""changeinOpenInterest""
+		+'</td><td>'
+		+ dataArray[9][2].toFixed(2)// "pchangeinOpenInterest"
+		+'</td><td>'
+		+ dataArray[9][3].toFixed(0) // "premiumTurnover"
+		//+'</td><td>'
+		//+ dataArray[9][4] // "tradedVolume"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	//for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		var symbol = symbolStr.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStr.split('_')[1]
+
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+	
+			//if( symbol.includes('NIFTY')==false )
+			{
+	//optOILosersTablesStr
+			futOIGainersTablesStr +=	returnDataStr( symbol, identifier, dataArray )
+		
+		}
+	}
+		
+	{
+		var symbol = symbolStrBackward.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStrBackward.split('_')[1]
+		
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		
+		
+		
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+		//optOILosersTablesStr
+		futOILosersTablesStr += returnDataStr( symbol, identifier, dataArray )
+		
+		}
+	}
+	
+	}
+	
+	futOIGainersTablesStr +=' </tbody> </table>    </div>  </div>'
+	futOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('futOIGainersTableContainer').innerHTML = futOIGainersTablesStr;
+	 document.getElementById('futOILosersTableContainer').innerHTML = futOILosersTablesStr;
+
+}	// Function ENDS HERE
+
+async function showFutPricePerChngStocks( selectedSpurtsTimeValue, selectedTradingDate, passedDataObj )
+{
+	 document.getElementById('futPriceGainersTableContainer').innerHTML = "";
+	 document.getElementById('futPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>Type</th>'
+	+' <th>LTP</th>'
+	//+'<th>Vol</th>   '
+	+'<th>Val</th>      '
+	+' <th>OI</th>'
+	+' <th>COI</th>      '
+	//+' <th>%COI</th>      '
+	+' <th>%Price</th>      '
+	+' <th>PremTO</th>      '
+	//+' <th>TVol</th>      '
+	//+' <th>TO</th>      '
+
+	+' </tr></thead><tbody>'
+	var futOIGainersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="futPriceGainersTablesStr"><caption style="caption-side:top"> Futures Price Gainers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	var futOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="futPriceLosersTablesStr"><caption style="caption-side:top">Futures Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	function returnDataStr( symbol, identifier, dataArray )
+	{
+		
+			var strikePrice;
+		if( identifier.includes('CE') ==true ) 
+			strikePrice =  "CE "+Number( identifier.split('CE')[1] ) +" ("+ formatDateMonth( identifier.split('CE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('PE') ==true ) 
+			strikePrice ="PE "+Number( identifier.split('PE')[1] ) +" ("+ formatDateMonth( identifier.split('PE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('FUT') ==true ) 
+			strikePrice = formatMonth( identifier.split('STK')[1].split('XX')[0] ) + " FUT"
+		
+		
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		//+ identifier // fur/opt
+		+ strikePrice // fur/opt
+		+'</td><td>'
+		+ dataArray[3] // ltp
+		+'</td><td>'
+		//+ dataArray[7] //"numberOfContractsTraded"
+		//+'</td><td>'
+		+ dataArray[8] //"totalTurnover"
+		+'</td><td>'
+	 	  + dataArray[9][0]  //"OpenInterest"
+	 	  //+ dataArray[9][4]  //""tradedVolume""
+		+'</td><td>'
+		+ dataArray[9][1] // ""changeinOpenInterest""
+		+'</td><td>'
+		//+ dataArray[9][2].toFixed(2)// "pchangeinOpenInterest"
+		+ dataArray[5].toFixed(2)// "pchange"
+		+'</td><td>'
+		+ dataArray[9][3].toFixed(0) // "premiumTurnover"
+		//+'</td><td>'
+		//+ dataArray[9][4] // "tradedVolume"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	//for( var i=0; i< Object.keys( passedDataObj ).length ; i++ ) {
+	for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbolStr = Object.keys( passedDataObj )[i]
+	var symbolStrBackward = Object.keys( passedDataObj )[ Object.keys( passedDataObj ).length -1 - i ]
+	
+	{
+		var symbol = symbolStr.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStr.split('_')[1]
+
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+	
+			//if( symbol.includes('NIFTY')==false )
+			{
+	//optOILosersTablesStr
+			futOIGainersTablesStr +=	returnDataStr( symbol, identifier, dataArray )
+		
+		}
+	}
+		
+	{
+		var symbol = symbolStrBackward.split('_')[0]
+		var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+		var identifier = symbolStrBackward.split('_')[1]
+		
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		
+		
+		
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+		//optOILosersTablesStr
+		futOILosersTablesStr += returnDataStr( symbol, identifier, dataArray )
+		
+		}
+	}
+	
+	}
+	
+	futOIGainersTablesStr +=' </tbody> </table>    </div>  </div>'
+	futOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('futPriceGainersTableContainer').innerHTML = futOIGainersTablesStr;
+	 document.getElementById('futPriceLosersTableContainer').innerHTML = futOILosersTablesStr;
+
+}	//Function ENDS HERE
+
+const formatDate = inputDate => {
+  const [day, month, year] = inputDate.split('-');
+  return `${day}-${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(month, 10) - 1]}-${year}`;
+};
+
+const formatDateMonth = inputDate => {
+  const [day, month, year] = inputDate.split('-');
+  return `${day} ${['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][parseInt(month, 10) - 1]}`;
+};
+
+
+const formatMonth = inputDate => {
+  const [day, month, year] = inputDate.split('-');
+  return `${['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][parseInt(month, 10) - 1]}`;
+};
+
+async function getPerticularDerivativeData( passedValue )
+{
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	
+	var selectedDerivativesTimeRef = document.getElementById('derivativesTimeValues')
+	var selectedDerivativesTimeValue = selectedDerivativesTimeRef.value
+
+	var docPathForSpurts = '/'+selectedMonthYear+'/'+selectedTradingDate+'/all_derivatives/'+selectedDerivativesTimeValue+'/'+selectedDerivativesTimeValue
+	//var allDerivativesDataArray = await fetchDerivativesCollectionData( docPathForSpurts )
+	var allDerivativesDataObj = await fetchAndSaveDataIDB( docPathForSpurts );
+
+	//console.log( "allDerivativesDataArray", allDerivativesDataArray )
+	//console.log( "allDerivativesDataArray.length", JSON.stringify( allDerivativesDataArray ).length )
+
+	await showPerticularDerivativeData( selectedDerivativesTimeValue, selectedTradingDate, allDerivativesDataObj )
+	
+	addEventListnerInTables()
+}
+
+async function showPerticularDerivativeData( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj )
+{
+
+	 document.getElementById('perticularDerivativeTableContainer').innerHTML = "";
+	 //document.getElementById('optionsDerivativesTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+	var selectedDerivativesSymbol = document.getElementById('derivativesSymbols').value
+	//var spurtsInOIUnderlyingsObject = spurtsDataObj['data']
+	//var niftyTotalMarketObject = equityDataObj ['data']
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+'<th>Spot LTP</th>'
+	+' <th>Type</th>'
+	+' <th>LTP</th>'
+	+'<th>Vol</th>   '
+	+'<th>Val</th>      '
+	+' <th>OI</th>'
+	+' <th>COI</th>      '
+	+' <th>%COI</th>      '
+	+' <th>PremTO</th>      '
+	+' <th>%Chng</th>      '
+	//+' <th>TO</th>      '
+	//+' <th>BuyQ</th>      '
+	//+' <th>SellQ</th>      '
+	+' <th>BuyQ%</th>      '
+	+' <th>SellQ%</th>      '
+
+	+' </tr></thead><tbody>'
+	//var tablesStrFutures =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="futuresDerivativesTableStr"><caption style="caption-side:top"> Futures Derivatives | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	var tablesStrOptions =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optionsPerticularDerivativeTableStr"><caption style="caption-side:top">Options Derivatives | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+		
+	{
+	//for( var symbol in allDerivativesDataObj ) {
+
+	 var symbol = selectedDerivativesSymbol
+	var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+	
+	var spot_LTP = dataObj[ 'underlyingValue' ]
+	//const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 4);
+	
+	//console.log( symbol,dataObj )
+	for( var i=0; i< Object.keys( dataObj ).length ; i++ ) {
+	//for( var i=0; i< spotLTP_NearbyOptionStrikes.length ; i++ ) {
+	//for( var i=0; i< 9 ; i++ ) {
+	var identifier = Object.keys( dataObj )[i]
+	//var identifier = spotLTP_NearbyOptionStrikes[i]
+	//if( identifier.includes('FUTSTK')==true || identifier.includes('OPTSTK')==true )
+	if( identifier.includes('OPTSTK')==true && document.getElementById('optionsCheckbox').checked )
+	{
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		
+		
+		var strikePrice;
+		var expirtDate;
+		
+		if( identifier.includes('CE') ==true ) 
+		{
+		strikePrice = "CE "+Number( identifier.split('CE')[1] )
+		expirtDate = formatDate( identifier.split('CE')[0].split('STK')[1] );
+
+		
+		}
+		else if( identifier.includes('PE') ==true ) 
+		{
+		strikePrice = "PE "+Number( identifier.split('PE')[1] )
+		expirtDate = formatDate( identifier.split('PE')[0].split('STK')[1] );
+		}
+			
+		
+		identifier = identifier.split('STK')[0]
+		
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+		tablesStrOptions +='<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		+ spot_LTP
+		+'</td><td>'
+		//+ identifier // fur/opt
+		+ strikePrice + ' ('+expirtDate +')'// fur/opt
+		+'</td><td>'
+		+ dataArray[3] // ltp
+		+'</td><td>'
+		+ dataArray[7] //"numberOfContractsTraded"
+		+'</td><td>'
+		+ dataArray[8] //"totalTurnover"
+		+'</td><td>'
+	 	  + dataArray[9][0]  //"OpenInterest"
+	 	  //+ dataArray[9][4]  //""tradedVolume""
+		+'</td><td>'
+		+ dataArray[9][1] // ""changeinOpenInterest""
+		+'</td><td>'
+		+ dataArray[9][2].toFixed(2)// "pchangeinOpenInterest"
+		+'</td><td>'
+		+ dataArray[9][3].toFixed(0) // "premiumTurnover"
+		+'</td><td>'
+		+ dataArray[5].toFixed(2) // "pchange"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td><td>'
+		//+ dataArray[10][0] // "marketDeptOrderBook -> totalBuyQuantity"
+		//+'</td><td>'
+		//+ dataArray[10][1] // "marketDeptOrderBook -> "totalSellQuantity""
+		
+		+ ( (dataArray[10][0] / (dataArray[10][0]+dataArray[10][1]) ) * 100 ).toFixed(2)// "marketDeptOrderBook -> totalBuyQuantity"
+		+'</td><td>'
+		+ ( (dataArray[10][1] / (dataArray[10][0]+dataArray[10][1]) ) * 100 ).toFixed(2) // "marketDeptOrderBook -> "totalSellQuantity""
+		
+		
+		+'</td></tr>'
+		}
+	}	
+	else if( identifier.includes('FUTSTK')==true && document.getElementById('futuresCheckbox').checked )
+	{
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		identifier = identifier.split('STK')[0]
+		
+			//if( symbol.includes('NIFTY')==false )
+			{
+
+		tablesStrOptions +='<tr class="item"><td>'
+			+ symbol
+		+'</td><td>'
+		+ spot_LTP
+		+'</td><td>'
+		//+ identifier // fur/opt
+		+ identifier // fur/opt
+		+'</td><td>'
+		+ dataArray[3] // ltp
+		+'</td><td>'
+		+ dataArray[7] //"numberOfContractsTraded"
+		+'</td><td>'
+		+ dataArray[8] //"totalTurnover"
+		+'</td><td>'
+	 	  + dataArray[9][0]  //"OpenInterest"
+	 	  //+ dataArray[9][4]  //""tradedVolume""
+		+'</td><td>'
+		+ dataArray[9][1] // ""changeinOpenInterest""
+		+'</td><td>'
+		+ dataArray[9][2].toFixed(2)// "pchangeinOpenInterest"
+		+'</td><td>'
+		+ dataArray[9][3].toFixed(0) // "premiumTurnover"
+		+'</td><td>'
+		+ dataArray[5].toFixed(2) // "pchange"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td><td>'
+		//+ dataArray[10][0] // "marketDeptOrderBook -> totalBuyQuantity"
+		//+'</td><td>'
+		//+ dataArray[10][1] // "marketDeptOrderBook -> "totalSellQuantity""
+		
+		+ ( (dataArray[10][0] / (dataArray[10][0]+dataArray[10][1]) ) * 100 ).toFixed(2)// "marketDeptOrderBook -> totalBuyQuantity"
+		+'</td><td>'
+		+ ( (dataArray[10][1] / (dataArray[10][0]+dataArray[10][1]) ) * 100 ).toFixed(2) // "marketDeptOrderBook -> "totalSellQuantity""
+		
+		+'</td></tr>'
+		}
+	}
+	}
+	
+	
+	
+	}
+	//tablesStrFutures +=' </tbody> </table>    </div>  </div>'
+	tablesStrOptions +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 //document.getElementById('futuresDerivativesTableContainer').innerHTML = tablesStrFutures;
+	 document.getElementById('perticularDerivativeTableContainer').innerHTML = tablesStrOptions;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+function addOnclickEvent()
+{
+var tableRows = document.getElementsByTagName('tr')
+
+for( var i=0;i<tableRows.length;i++ )
+{
+var tableData = tableRows[i].getElementsByTagName('td')[0]
+var tableHead = tableRows[i].getElementsByTagName('th')
+
+if( tableData==undefined && tableHead[0] !=undefined )
+{
+/*
+console.log(tableHead[0].innerHTML)
+for( var j=0;j<tableHead.length;j++ )
+{
+var functionStr ="addOnclickEvent();" + tableHead[j].getAttribute('onclick')
+ tableHead[j].setAttribute('onclick', functionStr)
+ }
+ */
+}
+else
+{
+var functionStr = "document.getElementById('derivativesSymbols').value ='"+tableData.innerHTML+"';getPerticularDerivativeData();document.getElementById('derivativesSymbols').scrollIntoView();"
+tableData.setAttribute('onclick', functionStr)
+}
+}
+}
+
+function tableSortAndPushData(tableHead,event)
+{
+	var clicked_heading_index = tableHead.closest('th').cellIndex
+	var clicked_table_id=tableHead.closest("table").id
+	
+	//console.log("clicked heading index "+ clicked_heading_index  )
+	//console.log("clicked table index "+ clicked_table_id )
+	
+	var table=tableHead.closest("table")
+   	var fetchedTableData = [];
+	table.tBodies[0].getElementsByTagName('tr').length
+
+	for( var tableRow=0;  tableRow<table.tBodies[0].getElementsByTagName('tr').length; tableRow++ )
+	{
+	var keysValuesObj={}
+	var td=(table.tBodies[0].getElementsByTagName('tr')[tableRow]).getElementsByTagName('td')
+	for( var tableData=0;  tableData< td.length; tableData++ )
+	{
+	if(isNaN(td[tableData].innerText) == false )
+	{
+	keysValuesObj["column"+tableData] = Number( td[tableData].innerText )
+	}
+	else
+	{
+	keysValuesObj["column"+tableData] =  td[tableData].innerText 
+	}
+
+	}
+	
+	fetchedTableData.push(keysValuesObj)
+	}
+	//console.log(fetchedTableData)
+	
+	
+	
+	   let element = event.target;
+		//  console.log(element)
+      let caret, field, reverse;
+      if (element.tagName === 'SPAN') {
+        caret = element.getElementsByClassName('caret')[0];
+ 
+      }
+      else {
+        caret = element;
+ 
+      }
+	  
+	       field = "column"+clicked_heading_index 
+		   
+      let iconClassName = caret.className;
+      clearArrow();
+	 // console.log("cleared carets, iconClassName: " + iconClassName)
+      if (iconClassName.includes(caretUpClassName)) {
+        caret.className = `caret ${caretDownClassName}`;
+        reverse = false;
+      } else {
+		 caret.className = `caret ${caretUpClassName}`;
+        reverse = true;
+      }
+
+      fetchedTableData.sort(sort_by(field, reverse));
+      populateTable(fetchedTableData, clicked_table_id);
+	addOnclickEvent()
+	} // tableSortAndPushData() ENDS HERE
+
+</script>
+<!-- All Derivatives Code Ends Here -->
+
+
+
+
+<!-- Floating Buttons Code Starts Here -->
+<style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
+<!-- Floating Buttons Code Ends Here -->
+
+
+<script>
+generateMonthYearFromDate( new Date("April 2023") );
+</script>
