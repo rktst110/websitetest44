@@ -144,6 +144,15 @@ body {
 
 
 
+<div class="row" name="OIBuildup">
+  <div class="column equityLeft" style="background-color:#aaa;">
+    <div class="spaceBetweenTables">  	<div id="overallOIBuildupStocksTableContainer"></div> </div>
+  </div>
+  <div class="column spurtsRight" style="background-color:#bbb;">
+    <div class="spaceBetweenTables">  	<div id="overallOIBuildupStocksTableContainer"></div> </div>
+  </div>
+</div>
+
 
 <div class="row">
   <div class="column equityLeft" style="background-color:#aaa;">
@@ -1184,6 +1193,7 @@ async function getAllDerivativesData( passedValue )
 }
 
 var temp_object_container = {}
+var temp_object_container2 = {}
 
 function getNearbyOptionStrikes(keys, ltp, numStrikes = 3) {
   // --- Extract all expiry dates from option keys ---
@@ -1255,6 +1265,8 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	var futuresTurnoverObj = {}
 	var allFuturesTurnoverObj = {}
 	
+	var added_OptionsOIChngObj = {}
+	
 	temp_object_container = allDerivativesDataObj
 	console.log("allDerivativesDataObj", allDerivativesDataObj )
 	console.log("temp_object_container", temp_object_container )
@@ -1265,23 +1277,33 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
 	var spot_LTP = dataObj['underlyingValue']
 	
-	const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 2);
+	const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 1);
 
-	
-	for( var i=0; i< Object.keys( dataObj ).length ; i++ ) {
-	//for( var i=0; i< spotLTP_NearbyOptionStrikes.length ; i++ ) {
+	var addition_optionsOIChngObj = 0
+	var addition_previous_day_OI = 0
+	 
+	//for( var i=0; i< Object.keys( dataObj ).length ; i++ ) {
+	for( var i=0; i< spotLTP_NearbyOptionStrikes.length ; i++ ) {
 	//for( var i=0; i< 7 ; i++ ) {
-	var identifier = Object.keys( dataObj )[i]
-	//var identifier = spotLTP_NearbyOptionStrikes[i]
+	//var identifier = Object.keys( dataObj )[i]
+	var identifier = spotLTP_NearbyOptionStrikes[i]
 	//if( identifier.includes('FUTSTK')==true || identifier.includes('OPTSTK')==true )
 	if( identifier.includes('OPTSTK')==true )
 	{
 		//console.log(symbol, identifier, dataObj[ identifier ])
 		var dataArray = dataObj[ identifier ]
 		var pchangeinOpenInterest = Number( dataArray[9][2].toFixed(2) ) // "pchangeinOpenInterest"
+		var changeinOpenInterest = Number( dataArray[9][1].toFixed(2) ) // "changeinOpenInterest"
+		addition_previous_day_OI += Number( dataArray[9][0] )  - Number( dataArray[9][1] ) 
+		
+		addition_optionsOIChngObj += (changeinOpenInterest)
+		//addition_optionsOIChngObj += Math.abs(changeinOpenInterest)
+		//optionsOIPerChngObj [ symbol ] += changeinOpenInterest
+		
 		if( pchangeinOpenInterest > 1 || pchangeinOpenInterest < 0  )
 		{
 			optionsOIPerChngObj [ symbol+'_'+identifier  ] = pchangeinOpenInterest
+			
 		}
 		optionsPricePerChngObj [ symbol+'_'+identifier  ] = dataArray[5] // "pChange"
 		//optionsTurnoverObj [ symbol+'_'+identifier  ] = dataArray[8] // "totalTurnover/value"
@@ -1325,9 +1347,12 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	}
 	}
 	
-
-	}
 	
+	added_OptionsOIChngObj [ symbol ] = addition_optionsOIChngObj
+	//added_OptionsOIChngObj [ symbol ] = ( (addition_optionsOIChngObj / addition_previous_day_OI) *100 ).toFixed(2)
+	}
+	console.log("added_OptionsOIChngObj ", added_OptionsOIChngObj )
+	temp_object_container2 = added_OptionsOIChngObj
 	
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
@@ -1344,6 +1369,12 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	allOptionsTurnoverObj = Object.fromEntries( Object.entries(allOptionsTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
 	allFuturesTurnoverObj = Object.fromEntries( Object.entries(allFuturesTurnoverObj).sort( (a,b) => b[1] - a[1] )  ) 
 	
+	
+	
+	showOverallOIBuildupStocks( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj ) // adding on 18-Nov-2025
+	
+	
+	
 	showOptOIGainersLosersStocks( selectedSpurtsTimeValue, selectedTradingDate, optionsOIPerChngObj )
 	showOptPricePerChngStocks( selectedSpurtsTimeValue, selectedTradingDate, optionsPricePerChngObj )
 	
@@ -1358,6 +1389,10 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	showMostActiveFutStocks( selectedSpurtsTimeValue, selectedTradingDate, allFuturesTurnoverObj )
 	
 	//console.log( optionsOIPerChngObj, futuresOIPerChngObj 	)
+	//console.log( optionsPricePerChngObj, futuresPricePerChngObj 	)
+	//console.log( optionsTurnoverObj, futuresTurnoverObj 	)
+	
+	//console.log( "optionsOIPerChngObj", optionsOIPerChngObj 	)
 	//console.log( optionsPricePerChngObj, futuresPricePerChngObj 	)
 	//console.log( optionsTurnoverObj, futuresTurnoverObj 	)
 	
@@ -2220,6 +2255,200 @@ async function showFutPricePerChngStocks( selectedSpurtsTimeValue, selectedTradi
 	 document.getElementById('futPriceLosersTableContainer').innerHTML = futOILosersTablesStr;
 
 }	//Function ENDS HERE
+
+
+async function showOverallOIBuildupStocks( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj )
+{
+	
+	 document.getElementById('overallOIBuildupStocksTableContainer').innerHTML = "";
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>CE_OI_Chng</th>'
+	+' <th>PE_OI_Chng</th>'
+	
+	+' <th>CE_OI_%</th> '
+	+' <th>PE_OI_%</th>'
+	
+	+' <th>CE_PE_Ratio</th>'
+	+'<th>Total_OI</th>   '
+	+'<th>PrevDay_OI</th>   '
+	+'<th>Overall_OI_Chng%</th>   '
+
+	+' <th>Tot_CE_OI</th> '
+	+' <th>Tot_PE_OI</th>'
+	
+	//+' <th>%price</th>      '
+
+	//+' <th>TVol</th>      '
+	//+' <th>TO</th>      '
+
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="overallOIBuildupStocksTableStr"><caption style="caption-side:top"> Overall OI Buildup Stocks | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	
+	
+	function returnDataStr( symbol,  dataObj )
+	{
+	
+	
+	var spot_LTP = dataObj['underlyingValue']
+	
+	const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 1);
+
+	var today_total_OI_change = 0
+	var CE_OI_change = 0
+	var PE_OI_change = 0
+	var total_CE_OI = 0
+	var total_PE_OI = 0
+	var addition_previous_day_OI = 0
+	var CE_PE_Ratio = 0
+	 
+		
+	for( var i=0; i< Object.keys( dataObj ).length ; i++ ) {
+	//for( var i=0; i< spotLTP_NearbyOptionStrikes.length ; i++ ) {
+	//for( var i=0; i< 7 ; i++ ) {
+	var identifier = Object.keys( dataObj )[i]
+	//var identifier = spotLTP_NearbyOptionStrikes[i]
+	//if( identifier.includes('FUTSTK')==true || identifier.includes('OPTSTK')==true )
+	if( identifier.includes('OPTSTK')==true )
+	{
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var dataArray = dataObj[ identifier ]
+		var pchangeinOpenInterest = Number( dataArray[9][2].toFixed(2) ) // "pchangeinOpenInterest"
+		var changeinOpenInterest = Number( dataArray[9][1].toFixed(2) ) // "changeinOpenInterest"
+		var openInterest = Number( dataArray[9][0].toFixed(2) ) // "openInterest"
+		addition_previous_day_OI += Number( dataArray[9][0] )  - Number( dataArray[9][1] ) 
+		
+		if( identifier.includes('CE') ==true ) 
+		{
+			CE_OI_change += changeinOpenInterest
+			total_CE_OI += openInterest
+		}
+		else if( identifier.includes('PE') ==true ) 
+		{
+			PE_OI_change += changeinOpenInterest
+			total_PE_OI += openInterest
+		}
+			
+		
+		today_total_OI_change = CE_OI_change + PE_OI_change
+		
+		//addition_optionsOIChngObj += (changeinOpenInterest)
+		//addition_optionsOIChngObj += Math.abs(changeinOpenInterest)
+		//optionsOIPerChngObj [ symbol ] += changeinOpenInterest
+		/*
+		if( pchangeinOpenInterest > 1 || pchangeinOpenInterest < 0  )
+		{
+			optionsOIPerChngObj [ symbol+'_'+identifier  ] = pchangeinOpenInterest
+			
+		}
+		*/
+		
+		
+		
+		
+	}
+	}
+		if(  Math.abs(	CE_OI_change ) > Math.abs( PE_OI_change ) )
+		{
+			CE_PE_Ratio = ( Math.abs( CE_OI_change ) / Math.abs( PE_OI_change ) ).toFixed(2)
+		}
+		else
+		{
+			CE_PE_Ratio = ( Math.abs( PE_OI_change ) / Math.abs( CE_OI_change ) ).toFixed(2)
+		}
+		
+		
+		/*
+				var strikePrice;
+		if( identifier.includes('CE') ==true ) 
+			strikePrice =  "CE "+Number( identifier.split('CE')[1] ) +" ("+ formatDateMonth( identifier.split('CE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('PE') ==true ) 
+			strikePrice = "PE "+Number( identifier.split('PE')[1] ) +" ("+ formatDateMonth( identifier.split('PE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('FUT') ==true ) 
+			strikePrice = formatMonth( identifier.split('STK')[1].split('XX')[0] ) + " FUT"
+		*/
+		
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+	
+		
+		
+		
+		+'</td><td>'
+		+CE_OI_change // ltp
+		+'</td><td>'
+		+PE_OI_change // ltp
+		+'</td><td>'
+		
+		+	( (CE_OI_change / total_CE_OI) *100 ).toFixed(2) // ltp
+		+'</td><td>'
+		+	( (PE_OI_change / total_PE_OI) *100 ).toFixed(2) // ltp
+	
+		+'</td><td>'
+		+CE_PE_Ratio // ltp
+		+'</td><td>'
+		
+		+today_total_OI_change // ltp
+		+'</td><td>'
+		+addition_previous_day_OI // ltp
+	
+		+'</td><td>'
+		+ ( (today_total_OI_change / addition_previous_day_OI) *100 ).toFixed(2) // ltp
+	
+		+'</td><td>'
+		+ total_CE_OI
+	
+		+'</td><td>'
+		+ total_PE_OI
+	
+	
+		//+'</td><td>'
+		//+ dataArray[9][4] // "tradedVolume"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	for( var symbol in allDerivativesDataObj ) {
+
+	var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+	var spot_LTP = dataObj['underlyingValue']
+	
+	const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 1);
+
+	var addition_optionsOIChngObj = 0
+	var addition_previous_day_OI = 0
+	 
+	optMostActiveTablesStr +=	returnDataStr( symbol, dataObj )
+	 
+	
+	//added_OptionsOIChngObj [ symbol ] = addition_optionsOIChngObj
+	//added_OptionsOIChngObj [ symbol ] = ( (addition_optionsOIChngObj / addition_previous_day_OI) *100 ).toFixed(2)
+	}
+
+
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+	 document.getElementById('overallOIBuildupStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+
 
 const formatDate = inputDate => {
   const [day, month, year] = inputDate.split('-');
