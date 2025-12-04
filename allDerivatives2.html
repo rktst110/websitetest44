@@ -149,7 +149,7 @@ body {
     <div class="spaceBetweenTables">  	<div id="overallOIBuildupStocksTableContainer"></div> </div>
   </div>
   <div class="column spurtsRight" style="background-color:#bbb;">
-    <div class="spaceBetweenTables">  	<div id="overallOIBuildupStocksTableContainer"></div> </div>
+    <div class="spaceBetweenTables">  	<div id="HighestOIBreakoutsStocksTableContainer"></div> </div>
   </div>
 </div>
 
@@ -1157,6 +1157,16 @@ async function getAllDerivativesData( passedValue )
 	//var allDerivativesDataArray = await fetchDerivativesCollectionData( docPathForSpurts )
 	var allDerivativesDataObj = await fetchAndSaveDataIDB( docPathForSpurts );
 
+	
+	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
+	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedDerivativesTimeValue )
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	
+	//console.log( "docPathForEquity", docPathForEquity )
+	var equityDataObj =  await fetchFirebaseDocData( docPathForEquity ) 
+	var equityDataObj =JSON.parse( equityDataObj['data'] ) 
+	//console.log( "equityDataObj",JSON.parse( equityDataObj['data'] ) )
+
 
 	//console.log( "allDerivativesDataArray", allDerivativesDataArray )
 	//console.log( "allDerivativesDataArray.length", JSON.stringify( allDerivativesDataArray ).length )
@@ -1164,7 +1174,7 @@ async function getAllDerivativesData( passedValue )
 	//showIndicesPerformanceChart ( JSON.parse( dataObj['data'] ) )
 	
 	//await showAllDerivativesData( selectedDerivativesTimeValue, selectedTradingDate, allDerivativesDataObj )
-	await calculateFutOptData( selectedDerivativesTimeValue, selectedTradingDate, allDerivativesDataObj )
+	await calculateFutOptData( selectedDerivativesTimeValue, selectedTradingDate, allDerivativesDataObj, equityDataObj )
 
 
 	/*
@@ -1252,7 +1262,7 @@ function getNearbyOptionStrikes(keys, ltp, numStrikes = 3) {
   return selectedKeys;
 }
 
-async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj )
+async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj, equityDataObj )
 {
 	
 	var optionsOIPerChngObj = {}
@@ -1282,11 +1292,11 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	var addition_optionsOIChngObj = 0
 	var addition_previous_day_OI = 0
 	 
-	//for( var i=0; i< Object.keys( dataObj ).length ; i++ ) {
-	for( var i=0; i< spotLTP_NearbyOptionStrikes.length ; i++ ) {
+	for( var i=0; i< Object.keys( dataObj ).length ; i++ ) {
+	//for( var i=0; i< spotLTP_NearbyOptionStrikes.length ; i++ ) {
 	//for( var i=0; i< 7 ; i++ ) {
-	//var identifier = Object.keys( dataObj )[i]
-	var identifier = spotLTP_NearbyOptionStrikes[i]
+	var identifier = Object.keys( dataObj )[i]
+	//var identifier = spotLTP_NearbyOptionStrikes[i]
 	//if( identifier.includes('FUTSTK')==true || identifier.includes('OPTSTK')==true )
 	if( identifier.includes('OPTSTK')==true )
 	{
@@ -1372,6 +1382,7 @@ async function calculateFutOptData( selectedSpurtsTimeValue, selectedTradingDate
 	
 	
 	showOverallOIBuildupStocks( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj ) // adding on 18-Nov-2025
+	showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj, equityDataObj ) // adding on 18-Nov-2025
 	
 	
 	
@@ -2256,7 +2267,6 @@ async function showFutPricePerChngStocks( selectedSpurtsTimeValue, selectedTradi
 
 }	//Function ENDS HERE
 
-
 async function showOverallOIBuildupStocks( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj )
 {
 	
@@ -2443,6 +2453,365 @@ async function showOverallOIBuildupStocks( selectedSpurtsTimeValue, selectedTrad
 	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
 
 	 document.getElementById('overallOIBuildupStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	// await addEventListnerInTables()
+}	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
+
+async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTradingDate, allDerivativesDataObj, equityDataObj )
+{
+	
+	 document.getElementById('HighestOIBreakoutsStocksTableContainer').innerHTML = "";
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = "";
+
+	var onlySpurtsSelectedTime = selectedSpurtsTimeValue
+
+
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+'<th>%Chg</th>'
+	+'<th>CE_Break</th>'
+	+'<th>CE_Strikes</th>'
+	+'<th>PE_Break</th>'
+	+'<th>PE_Strikes</th>'
+	
+	
+	+' <th>CE_OI_Chng</th>'
+	+' <th>PE_OI_Chng</th>'
+	
+	+' <th>CE_OI_%</th> '
+	+' <th>PE_OI_%</th>'
+	
+	+' <th>CE_PE_Ratio</th>'
+	+'<th>Total_OI</th>   '
+	+'<th>PrevDay_OI</th>   '
+	+'<th>Overall_OI_Chng%</th>   '
+
+	+' <th>Tot_CE_OI</th> '
+	+' <th>Tot_PE_OI</th>'
+	
+	//+' <th>%price</th>      '
+
+	//+' <th>TVol</th>      '
+	//+' <th>TO</th>      '
+
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="HighestOIBreakoutsStocksTableStr"><caption style="caption-side:top"> Highest OI Strike Breakout Stocks | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+	
+	//console.log("equityDataObj", equityDataObj )
+	var symbolwise_highest_CE_PE_dataObj = {}
+	function returnDataStr( symbol,  dataObj )
+	{
+	
+	
+	var spot_LTP = dataObj['underlyingValue']
+	
+	const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 100);
+
+	var today_total_OI_change = 0
+	var CE_OI_change = 0
+	var PE_OI_change = 0
+	var total_CE_OI = 0
+	var total_PE_OI = 0
+	var addition_previous_day_OI = 0
+	var CE_PE_Ratio = 0
+	
+	var highest_OI_CE_PE_strikes = {
+	"CE":{},
+	"PE":{},
+	}
+	 
+	//console.log( symbol, dataObj )
+	
+	//for( var i=0; i< Object.keys( dataObj ).length ; i++ ) {
+	for( var i=0; i< spotLTP_NearbyOptionStrikes.length ; i++ ) {
+	//for( var i=0; i< 7 ; i++ ) {
+	//var identifier = Object.keys( dataObj )[i]
+	
+	var identifier = spotLTP_NearbyOptionStrikes[i]
+	//if( identifier.includes('FUTSTK')==true || identifier.includes('OPTSTK')==true )
+	if( identifier.includes('OPTSTK')==true )
+	{
+		//console.log(symbol, identifier, dataObj[ identifier ])
+		var strike_price =  identifier.includes('CE') ?  identifier.split('CE')[1] : identifier.split('PE')[1] ;
+		var dataArray = dataObj[ identifier ]
+		var pchangeinOpenInterest = Number( dataArray[9][2].toFixed(2) ) // "pchangeinOpenInterest"
+		var changeinOpenInterest = Number( dataArray[9][1].toFixed(2) ) // "changeinOpenInterest"
+		var openInterest = Number( dataArray[9][0].toFixed(2) ) // "openInterest"
+		addition_previous_day_OI += Number( dataArray[9][0] )  - Number( dataArray[9][1] ) 
+		
+		var previous_day_OI_CE_PE = Number( dataArray[9][0] )  - Number( dataArray[9][1] ) 
+		
+		if( identifier.includes('CE') ==true ) 
+		{
+			CE_OI_change += changeinOpenInterest
+			total_CE_OI += openInterest
+			highest_OI_CE_PE_strikes["CE"] [strike_price] = previous_day_OI_CE_PE
+		}
+		else if( identifier.includes('PE') ==true ) 
+		{
+			PE_OI_change += changeinOpenInterest
+			total_PE_OI += openInterest
+			highest_OI_CE_PE_strikes["PE"] [strike_price] = previous_day_OI_CE_PE
+		}
+			
+		
+		today_total_OI_change = CE_OI_change + PE_OI_change
+		
+		//addition_optionsOIChngObj += (changeinOpenInterest)
+		//addition_optionsOIChngObj += Math.abs(changeinOpenInterest)
+		//optionsOIPerChngObj [ symbol ] += changeinOpenInterest
+		/*
+		if( pchangeinOpenInterest > 1 || pchangeinOpenInterest < 0  )
+		{
+			optionsOIPerChngObj [ symbol+'_'+identifier  ] = pchangeinOpenInterest
+			
+		}
+		*/
+		
+		
+		
+		
+	}
+	}
+		
+		
+		if(  Math.abs(	CE_OI_change ) > Math.abs( PE_OI_change ) )
+		{
+			CE_PE_Ratio = ( Math.abs( CE_OI_change ) / Math.abs( PE_OI_change ) ).toFixed(2)
+		}
+		else
+		{
+			CE_PE_Ratio = ( Math.abs( PE_OI_change ) / Math.abs( CE_OI_change ) ).toFixed(2)
+		}
+		
+		
+		
+		//console.log("highest_OI_CE_PE_strikes", highest_OI_CE_PE_strikes, equityDataObj ['data'] [symbol])
+		symbolwise_highest_CE_PE_dataObj[ symbol ] = {}
+		symbolwise_highest_CE_PE_dataObj[ symbol ] ['highest_OI_CE_PE_strikes'] = highest_OI_CE_PE_strikes
+		symbolwise_highest_CE_PE_dataObj[ symbol ] ['dataObj']= dataObj
+		//console.log( symbol, highest_OI_CE_PE_strikes )
+		var symbol_equityDataObj = equityDataObj ['data'] [symbol]
+			
+		/*
+		// 🔥 Convert objects to array, sort by OI descending
+		const sortedCE = Object.entries(highest_OI_CE_PE_strikes.CE).sort((a, b) => b[1] - a[1]);
+		const sortedPE = Object.entries(highest_OI_CE_PE_strikes.PE).sort((a, b) => b[1] - a[1]);
+
+		console.log("Sorted CE:", sortedCE);
+		console.log("Sorted PE:", sortedPE);
+				
+		const sortedCEObj = Object.fromEntries(sortedCE);
+		const sortedPEObj = Object.fromEntries(sortedPE);
+
+		console.log(sortedCEObj);
+		console.log(sortedPEObj);
+		*/
+			
+
+		//console.log("symbol_equityDataObj", symbol_equityDataObj);
+		let ltp = symbol_equityDataObj['lastPrice'] ;   // example
+		let open = symbol_equityDataObj['open'] ;  // example
+		let high = symbol_equityDataObj['dayHigh'] ;  // example
+		let low = symbol_equityDataObj['dayLow'] ;  // example
+		const todaysChange = ((ltp - open) / open) * 100;
+		
+		/*
+		// -------------------------------
+		// 1️⃣ Sort CE & PE by OI descending
+		// -------------------------------
+		const sortedCE = Object.entries(highest_OI_CE_PE_strikes.CE).sort((a, b) => b[1] - a[1]);
+		const sortedPE = Object.entries(highest_OI_CE_PE_strikes.PE).sort((a, b) => b[1] - a[1]);
+		
+		// Highest OI strikes
+		const highestCEStrike = parseFloat(sortedCE[0][0]);
+		const highestPEStrike = parseFloat(sortedPE[0][0]);
+
+		// -------------------------------
+		// 2️⃣ Calculate today's % change
+		// -------------------------------
+		
+
+		// -------------------------------
+		// 3️⃣ Select CE or PE based on trend
+		// -------------------------------
+		let targetStrike = todaysChange > 0 ? highestCEStrike : highestPEStrike;
+
+		// -------------------------------
+		// 4️⃣ Calculate LTP distance to selected strike in %
+		// -------------------------------
+		const diffPercent = ((ltp - targetStrike) / targetStrike) * 100;
+
+		console.log("Symbol:",symbol);
+		console.log("Today's % Change:", todaysChange.toFixed(2) + "%");
+		console.log("Selected Strike:", targetStrike);
+		console.log("Distance From LTP:", diffPercent.toFixed(2) + "%");
+
+				
+		*/
+				
+				
+		// ------------------------------
+		// 1️⃣ Get Top-3 CE & PE by OI (with ranking)
+		// ------------------------------
+		const sortedCE = Object.entries(highest_OI_CE_PE_strikes.CE).sort((a,b)=>b[1]-a[1]).slice(0,3);
+		const sortedPE = Object.entries(highest_OI_CE_PE_strikes.PE).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+		const ceStrikes = sortedCE.map(([s]) => parseFloat(s));
+		const peStrikes = sortedPE.map(([s]) => parseFloat(s));
+
+		//const ranks = ["1st", "2nd", "3rd"];
+		const ranks = ["1", "2", "3"];
+		
+		/*
+		// ------------------------------
+		// 2️⃣ Check breakout but return rank instead of strike
+		// ------------------------------
+		const ceBreakouts = ceStrikes
+			.map((strike, idx) => high > strike ? ranks[idx] : null)
+			.filter(x => x !== null);
+
+		const peBreakouts = peStrikes
+			.map((strike, idx) => low < strike ? ranks[idx] : null)
+			.filter(x => x !== null);
+
+		// ------------------------------
+		// 3️⃣ Output
+		// ------------------------------
+		*/
+		
+
+		// ------------------------------
+		// 2️⃣ REAL breakouts only (no gap-based fake breakouts)
+		// ------------------------------
+		function realCEBreakout(strike) {
+			return low <= strike && high > strike;
+			//return low < strike && high > strike;
+		}
+
+		function realPEBreakout(strike) {
+			//return high >= strike && low < strike;
+			return low <= strike && high > strike;
+		}
+
+		const ceBreakouts = ceStrikes
+			.map((strike, idx) => realCEBreakout(strike) ? ranks[idx] : null)
+			.filter(x => x !== null);
+
+		const peBreakouts = peStrikes
+			.map((strike, idx) => realPEBreakout(strike) ? ranks[idx] : null)
+			.filter(x => x !== null);
+
+		// ------------------------------
+		//console.log("Symbol:",symbol);
+		//console.log("Today's % Change:", todaysChange.toFixed(2) + "%");
+		//console.log("Top 3 CE:", ceStrikes, sortedCE);
+		//console.log("Top 3 PE:", peStrikes, sortedPE);
+
+		//console.log("CE Breakouts:", ceBreakouts);
+		//console.log("PE Breakouts:", peBreakouts);
+
+		
+		
+		
+		/*
+				var strikePrice;
+		if( identifier.includes('CE') ==true ) 
+			strikePrice =  "CE "+Number( identifier.split('CE')[1] ) +" ("+ formatDateMonth( identifier.split('CE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('PE') ==true ) 
+			strikePrice = "PE "+Number( identifier.split('PE')[1] ) +" ("+ formatDateMonth( identifier.split('PE')[0].split('STK')[1] ) +")"
+		else if( identifier.includes('FUT') ==true ) 
+			strikePrice = formatMonth( identifier.split('STK')[1].split('XX')[0] ) + " FUT"
+		*/
+		
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+	
+		
+		
+		
+		+'</td><td>'
+		+todaysChange.toFixed(2) 
+		
+		+'</td><td>'
+		//+ ( ceBreakouts )
+		+ ( ceBreakouts.length>0 ? ceBreakouts[0]  : '100' )
+		
+		+'</td><td>'
+		+ceStrikes
+		
+		+'</td><td>'
+		//+peBreakouts
+		+ ( peBreakouts.length>0 ? peBreakouts[0] : '100' )
+		
+		+'</td><td>'
+		+peStrikes
+		
+		+'</td><td>'
+		+CE_OI_change // ltp
+		+'</td><td>'
+		+PE_OI_change // ltp
+		+'</td><td>'
+		
+		+	( (CE_OI_change / total_CE_OI) *100 ).toFixed(2) // ltp
+		+'</td><td>'
+		+	( (PE_OI_change / total_PE_OI) *100 ).toFixed(2) // ltp
+	
+		+'</td><td>'
+		+CE_PE_Ratio // ltp
+		+'</td><td>'
+		
+		+today_total_OI_change // ltp
+		+'</td><td>'
+		+addition_previous_day_OI // ltp
+	
+		+'</td><td>'
+		+ ( (today_total_OI_change / addition_previous_day_OI) *100 ).toFixed(2) // ltp
+	
+		+'</td><td>'
+		+ total_CE_OI
+	
+		+'</td><td>'
+		+ total_PE_OI
+	
+	
+		//+'</td><td>'
+		//+ dataArray[9][4] // "tradedVolume"
+		//+'</td><td>'
+		//+ dataArray[9][5] // "value"
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	for( var symbol in allDerivativesDataObj ) {
+
+	var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+	var spot_LTP = dataObj['underlyingValue']
+	
+	const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 1);
+
+	var addition_optionsOIChngObj = 0
+	var addition_previous_day_OI = 0
+	 
+	optMostActiveTablesStr +=	returnDataStr( symbol, dataObj )
+	 
+	
+	//added_OptionsOIChngObj [ symbol ] = addition_optionsOIChngObj
+	//added_OptionsOIChngObj [ symbol ] = ( (addition_optionsOIChngObj / addition_previous_day_OI) *100 ).toFixed(2)
+	}
+
+	console.log( "symbolwise_highest_CE_PE_dataObj", symbolwise_highest_CE_PE_dataObj )
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+	 document.getElementById('HighestOIBreakoutsStocksTableContainer').innerHTML = optMostActiveTablesStr;
 	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
 
 	// await addEventListnerInTables()
