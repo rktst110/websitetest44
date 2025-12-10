@@ -1160,7 +1160,10 @@ async function getAllDerivativesData( passedValue )
 	
 	var equityTimeValuesArray = firestoreIndexObj[ tradingDate ]['Index']['equity_market']['FnO']
 	var equitySyncedTimeValue = syncTimeValues( equityTimeValuesArray, selectedDerivativesTimeValue )
-	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	//var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/FnO/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	var docPathForEquity = '/'+selectedMonthYear+'/'+selectedTradingDate+'/equity_market/ALL/'+equitySyncedTimeValue[0]+'/'+equitySyncedTimeValue[0]
+	
+	
 	
 	//console.log( "docPathForEquity", docPathForEquity )
 	var equityDataObj =  await fetchFirebaseDocData( docPathForEquity ) 
@@ -2472,6 +2475,9 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Symbol</th>'
 	+'<th>%Chg</th>'
+	+'<th>nearHOI</th>'
+	+'<th>nearHOI_CE</th>'
+	+'<th>nearHOI_PE</th>'
 	+'<th>CE_Break</th>'
 	+'<th>CE_Strikes</th>'
 	+'<th>PE_Break</th>'
@@ -2502,7 +2508,7 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	
 	
-	//console.log("equityDataObj", equityDataObj )
+	console.log("equityDataObj in showHighestOIBreakoutsStocks", equityDataObj )
 	var symbolwise_highest_CE_PE_dataObj = {}
 	function returnDataStr( symbol,  dataObj )
 	{
@@ -2595,7 +2601,7 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 		symbolwise_highest_CE_PE_dataObj[ symbol ] = {}
 		symbolwise_highest_CE_PE_dataObj[ symbol ] ['highest_OI_CE_PE_strikes'] = highest_OI_CE_PE_strikes
 		symbolwise_highest_CE_PE_dataObj[ symbol ] ['dataObj']= dataObj
-		//console.log( symbol, highest_OI_CE_PE_strikes )
+		console.log( symbol, highest_OI_CE_PE_strikes )
 		var symbol_equityDataObj = equityDataObj ['data'] [symbol]
 			
 		/*
@@ -2716,6 +2722,23 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 		//console.log("CE Breakouts:", ceBreakouts);
 		//console.log("PE Breakouts:", peBreakouts);
 
+		// Highest OI strikes
+		const highestCEStrike = parseFloat(sortedCE[0][0]);
+		const highestPEStrike = parseFloat(sortedPE[0][0]);
+
+		// -------------------------------
+		// 3️⃣ Select CE or PE based on trend
+		// -------------------------------
+		let targetStrike = todaysChange > 0 ? highestCEStrike : highestPEStrike;
+
+		// -------------------------------
+		// 4️⃣ Calculate LTP distance to selected strike in %
+		// -------------------------------
+		//const diffPercent = ((ltp - targetStrike) / targetStrike) * 100;
+		const nearHighestOI_CE_PE = ((ltp - targetStrike) / targetStrike) * 100;
+		const nearHighestOI_CE = ((ltp - highestCEStrike) / highestCEStrike) * 100;
+		const nearHighestOI_PE = ((ltp - highestPEStrike) / highestPEStrike) * 100;
+
 		
 		
 		
@@ -2737,6 +2760,15 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 		
 		+'</td><td>'
 		+todaysChange.toFixed(2) 
+		
+		+'</td><td>'
+		+Math.abs( nearHighestOI_CE_PE ).toFixed(2) 
+		
+		+'</td><td>'
+		+Math.abs( nearHighestOI_CE ).toFixed(2) 
+		
+		+'</td><td>'
+		+Math.abs( nearHighestOI_PE ).toFixed(2) 
 		
 		+'</td><td>'
 		//+ ( ceBreakouts )
@@ -2790,8 +2822,12 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 	}
 
 	for( var symbol in allDerivativesDataObj ) {
-
+	
 	var dataObj = JSON.parse( allDerivativesDataObj[symbol]['data'] )
+	console.log( "dataObj", dataObj )
+	if( Object.keys(dataObj).length >0 && equityDataObj ['data'] [symbol] )
+	{
+	
 	var spot_LTP = dataObj['underlyingValue']
 	
 	const spotLTP_NearbyOptionStrikes = getNearbyOptionStrikes( Object.keys( dataObj ), spot_LTP, 1);
@@ -2804,9 +2840,12 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 	
 	//added_OptionsOIChngObj [ symbol ] = addition_optionsOIChngObj
 	//added_OptionsOIChngObj [ symbol ] = ( (addition_optionsOIChngObj / addition_previous_day_OI) *100 ).toFixed(2)
+	
+	}
 	}
 
 	console.log( "symbolwise_highest_CE_PE_dataObj", symbolwise_highest_CE_PE_dataObj )
+	console.log( "symbolwise_highest_CE_PE_dataObj", Object.keys(symbolwise_highest_CE_PE_dataObj) )
 	
 	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
 	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
