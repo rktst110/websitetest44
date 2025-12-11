@@ -142,6 +142,7 @@ body {
 <br><br>
 
 
+&nbsp;&nbsp;Breakout of Which Highest OI CE/PE?  &nbsp;<input id="BreakoutOfWhichHighestOI" type="number" min="0" value="0" size="3" onchange="getAllDerivativesData()">  	
 
 
 <div class="row" name="OIBuildup">
@@ -2483,6 +2484,7 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 	+'<th>PE_Break</th>'
 	+'<th>PE_Strikes</th>'
 	
+	+'<th>Symbol</th>'
 	
 	+' <th>CE_OI_Chng</th>'
 	+' <th>PE_OI_Chng</th>'
@@ -2627,6 +2629,9 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 		let low = symbol_equityDataObj['dayLow'] ;  // example
 		const todaysChange = ((ltp - open) / open) * 100;
 		
+		//var BreakoutOfWhichHighestOI = Number(document.getElementById("BreakoutOfWhichHighestOI").value)
+		var BreakoutOfWhichHighestOI = (document.getElementById("BreakoutOfWhichHighestOI").value)
+		
 		/*
 		// -------------------------------
 		// 1️⃣ Sort CE & PE by OI descending
@@ -2716,15 +2721,30 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 		// ------------------------------
 		//console.log("Symbol:",symbol);
 		//console.log("Today's % Change:", todaysChange.toFixed(2) + "%");
-		//console.log("Top 3 CE:", ceStrikes, sortedCE);
-		//console.log("Top 3 PE:", peStrikes, sortedPE);
+		console.log("Top 3 CE:", ceStrikes, sortedCE);
+		console.log("Top 3 PE:", peStrikes, sortedPE);
 
-		//console.log("CE Breakouts:", ceBreakouts);
-		//console.log("PE Breakouts:", peBreakouts);
+		console.log("CE Breakouts:", ceBreakouts);
+		console.log("PE Breakouts:", peBreakouts);
+		console.log("BreakoutOfWhichHighestOI:", BreakoutOfWhichHighestOI);
 
+		if((  sortedCE.length>0 && sortedPE.length>0 )
+			//&&( ceBreakouts.includes(BreakoutOfWhichHighestOI) == true || peBreakouts.includes(BreakoutOfWhichHighestOI) == true )
+		)
+		{
 		// Highest OI strikes
-		const highestCEStrike = parseFloat(sortedCE[0][0]);
-		const highestPEStrike = parseFloat(sortedPE[0][0]);
+		var highestCEStrike = parseFloat(sortedCE[0][0]);
+		var highestPEStrike = parseFloat(sortedPE[0][0]);
+		
+		//if( Number(BreakoutOfWhichHighestOI) > 1 )
+		{
+			if( sortedCE.length>2 )
+				highestCEStrike = parseFloat(sortedCE [ Number(BreakoutOfWhichHighestOI) ] [0]);
+				
+			 if( sortedPE.length>2 )
+				highestPEStrike = parseFloat(sortedPE [ Number(BreakoutOfWhichHighestOI) ] [0]);
+		
+		}
 
 		// -------------------------------
 		// 3️⃣ Select CE or PE based on trend
@@ -2785,6 +2805,10 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 		+peStrikes
 		
 		+'</td><td>'
+		+ symbol
+	
+		
+		+'</td><td>'
 		+CE_OI_change // ltp
 		+'</td><td>'
 		+PE_OI_change // ltp
@@ -2819,6 +2843,8 @@ async function showHighestOIBreakoutsStocks( selectedSpurtsTimeValue, selectedTr
 		+'</td></tr>'
 		
 		return tablesStr;
+	}
+	
 	}
 
 	for( var symbol in allDerivativesDataObj ) {
